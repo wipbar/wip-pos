@@ -22,5 +22,9 @@ module.exports = {
     sourceType: "module",
   },
   plugins: ["react", "react-hooks", "prettier"],
-  rules: { "react/prop-types": "off" },
+  rules: {
+    "react/prop-types": "off",
+    "react-hooks/rules-of-hooks": [2],
+    "react-hooks/exhaustive-deps": [1],
+  },
 };

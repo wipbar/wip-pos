@@ -1,8 +1,10 @@
 import React from "react";
+import { useCurrentUser } from "react-meteor-hooks";
+import AccountsUIWrapper from "./AccountsUIWrapper";
 import Hello from "./Hello";
 import Info from "./Info";
-import AccountsUIWrapper from "./AccountsUIWrapper";
-import { useCurrentUser } from "react-meteor-hooks";
+import ProductPicker from "./ProductPicker";
+import SlideConfirm from "./SlideConfirm";
 
 export default function App() {
   const currentUser = useCurrentUser();
@@ -11,8 +13,10 @@ export default function App() {
     <div>
       <AccountsUIWrapper />
       <h1>Welcome to Meteor, {currentUser && currentUser.username}!</h1>
+      <SlideConfirm onConfirm={() => console.log("confirmed!")} />
       <Hello />
       <Info />
+      <ProductPicker />
     </div>
   );
 }
