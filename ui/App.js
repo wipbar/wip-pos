@@ -1,18 +1,30 @@
 import React from "react";
+import useSession from "../hooks/useSession";
+import AccountsUIWrapper from "./AccountsUIWrapper";
 import Hello from "./Hello";
 import Info from "./Info";
-import AccountsUIWrapper from "./AccountsUIWrapper";
-import { useCurrentUser } from "react-meteor-hooks";
+import ProductPicker from "./ProductPicker";
+import SlideConfirm from "./SlideConfirm";
+import CartView from "./CartView";
 
 export default function App() {
-  const currentUser = useCurrentUser();
-  console.log(currentUser);
+  const [pickedProductIds, setPickedProductIds] = useSession(
+    "pickedProductIds",
+    [],
+  );
+  console.log("?");
   return (
     <div>
       <AccountsUIWrapper />
-      <h1>Welcome to Meteor, {currentUser && currentUser.username}!</h1>
+      <SlideConfirm onConfirm={() => console.log("confirmed!")} />
       <Hello />
       <Info />
+      <ProductPicker
+        onProductPicked={productId =>
+          setPickedProductIds([...pickedProductIds, productId])
+        }
+      />
+      <CartView />
     </div>
   );
 }

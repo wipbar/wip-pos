@@ -16,7 +16,8 @@
     "meteor-node-stubs": "^0.4.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-meteor-hooks": "^0.3.1"
+    "react-meteor-hooks": "^0.3.1",
+    "simpl-schema": "^1.5.5"
   },
   "meteor": {
     "mainModule": {

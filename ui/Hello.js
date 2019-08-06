@@ -5,7 +5,7 @@ export default function Hello() {
   const [counter, setCounter] = useState(0);
   const incrementCounter = useCallback(
     () => setCounter(counter => counter + 1),
-    [useCallback],
+    [],
   );
   return (
     <div
