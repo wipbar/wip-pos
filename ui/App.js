@@ -1,27 +1,21 @@
 import React from "react";
 import useSession from "../hooks/useSession";
 import AccountsUIWrapper from "./AccountsUIWrapper";
-import Hello from "./Hello";
-import Info from "./Info";
-import ProductPicker from "./ProductPicker";
-import SlideConfirm from "./SlideConfirm";
 import CartView from "./CartView";
+import ProductPicker from "./ProductPicker";
 
 export default function App() {
-  const [pickedProductIds, setPickedProductIds] = useSession(
-    "pickedProductIds",
-    [],
-  );
-  console.log("?");
+  const [, setPickedProductIds] = useSession("pickedProductIds", []);
+
   return (
     <div>
       <AccountsUIWrapper />
-      <SlideConfirm onConfirm={() => console.log("confirmed!")} />
-      <Hello />
-      <Info />
       <ProductPicker
         onProductPicked={productId =>
-          setPickedProductIds([...pickedProductIds, productId])
+          setPickedProductIds(pickedProductIds => [
+            ...pickedProductIds,
+            productId,
+          ])
         }
       />
       <CartView />

@@ -26,5 +26,6 @@ module.exports = {
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": [2],
     "react-hooks/exhaustive-deps": [1],
+    "no-else-return": ["error"],
   },
 };

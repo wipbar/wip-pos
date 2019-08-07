@@ -1,14 +1,8 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import SimpleSchema from "simpl-schema";
+import Purchases from "./purchases";
 
 const Products = new Mongo.Collection("products");
-
-Products.attachSchema(
-  new SimpleSchema({
-    name: { type: String },
-  }),
-);
 
 if (Meteor.isServer)
   Meteor.startup(() => {
@@ -18,3 +12,30 @@ if (Meteor.isServer)
   });
 
 export default Products;
+
+Meteor.methods({
+  "Products.addProduct"({ product }) {
+    Players.update(
+      { score: { $gt: 10 } },
+      {
+        $addToSet: { badges: "Winner" },
+      },
+      { upsert: true },
+    );
+  },
+  "Products.sellProducts"({ productIds }) {
+    const { userId } = this;
+    const newPurchase = {
+      userId,
+      currency: "HAX",
+      country: "DK",
+      amount: 0,
+      timestamp: new Date(),
+      products: productIds.map(_id => Products.find({ _id }).fetch()),
+    };
+    console.log(this, newPurchase);
+    return;
+    Purchases.insert(newPurchase);
+  },
+});
+if (Meteor.isClient) window.Purchases = Purchases;

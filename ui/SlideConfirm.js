@@ -10,7 +10,7 @@ export default function SlideConfirm({ onConfirm }) {
   const inputRange = useRef();
   const successHandler = useCallback(() => {
     onConfirm();
-    inputRange.value = 0;
+    inputRange.current.value = 0;
   }, [onConfirm]);
   const animateHandler = useCallback(() => {
     // update input range

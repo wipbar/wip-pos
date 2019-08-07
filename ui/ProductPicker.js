@@ -12,8 +12,10 @@ export default function ProductPicker({ onProductPicked }) {
       <h2>products!</h2>
       <ul>
         {products.map(product => (
-          <li key={product._id} onClick={() => onProductPicked(product._id)}>
-            {product.name}
+          <li key={product._id}>
+            <button onClick={() => onProductPicked(product._id)}>
+              {product.name}
+            </button>
           </li>
         ))}
       </ul>
