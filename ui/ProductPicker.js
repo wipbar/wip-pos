@@ -6,7 +6,6 @@ import useSubscription from "../hooks/useSubscription";
 export default function ProductPicker({ onProductPicked, ...props }) {
   useSubscription("products");
   const products = useTracker(() => Products.find().fetch());
-
   return (
     <div {...props}>
       <h2>products!</h2>

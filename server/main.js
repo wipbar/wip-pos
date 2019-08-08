@@ -8,6 +8,8 @@ Meteor.publish("products", () => Products.find());
 Meteor.publish("sales", () => Sales.find());
 Meteor.publish("stocks", () => Stocks.find());
 
+Accounts.config({ forbidClientAccountCreation: true });
+
 if (!Meteor.users.length)
   Accounts.createUser({
     username: "admin",

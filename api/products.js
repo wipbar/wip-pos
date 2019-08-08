@@ -29,8 +29,11 @@ Meteor.methods({
     });
   },
   "Products.removeProduct"(productId) {
-    if (productId) return Products.remove({ _id: productId });
-    //TODO: soft delete
+    if (productId)
+      return Products.update(
+        { _id: productId },
+        { $set: { removedAt: new Date() } },
+      );
   },
 });
 

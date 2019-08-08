@@ -9,6 +9,7 @@ import UI from "../ui";
 Accounts.ui.config({ passwordSignupFields: "USERNAME_ONLY" });
 
 const browserHistory = createBrowserHistory();
+Accounts.config({ forbidClientAccountCreation: true });
 Meteor.startup(() =>
   render(
     <Router history={browserHistory}>
