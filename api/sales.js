@@ -14,6 +14,7 @@ if (Meteor.isServer)
 Meteor.methods({
   "Sales.sellProducts"({ productIds }) {
     const { userId } = this;
+    if (!userId) throw new Meteor.Error("log in please");
     const newSale = {
       userId,
       currency: "HAX",

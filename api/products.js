@@ -20,6 +20,7 @@ export default Products;
 
 Meteor.methods({
   "Products.addProduct"(newProduct) {
+    if (!this.userId) throw new Meteor.Error("log in please");
     return Products.insert({
       name: newProduct.name,
       salePrice: +newProduct.salePrice,

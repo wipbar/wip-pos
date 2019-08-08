@@ -10,7 +10,7 @@ Meteor.publish("stocks", () => Stocks.find());
 
 Accounts.config({ forbidClientAccountCreation: true });
 
-if (!Meteor.users.length)
+if (!Meteor.users.find({}).fetch().length)
   Accounts.createUser({
     username: "admin",
     email: "jonas@klarstrup.dk",
