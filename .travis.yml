@@ -12,3 +12,8 @@ script:
 cache:
   directories:
     - node_modules
+deploy:
+  provider: script
+  script: meteor deploy wip-pos.eu.meteorapp.com --settings settings.json
+  on:
+    branch: master
