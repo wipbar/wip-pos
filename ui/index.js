@@ -19,12 +19,12 @@ export default function UI() {
           background: rgba(0, 0, 0, 0.2);
         `}
       >
+        <AccountsUIWrapper />
         <nav>
           <Link to="/">Sell</Link>
           <Link to="/stock">Stock</Link>
           <Link to="/sales">Sales</Link>
         </nav>
-        <AccountsUIWrapper />
       </div>
       <Switch>
         <Route exact path="/" component={App} />
