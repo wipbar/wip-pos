@@ -30,6 +30,7 @@ Meteor.methods({
     });
   },
   "Products.removeProduct"(productId) {
+    if (!this.userId) throw new Meteor.Error("log in please");
     if (productId)
       return Products.update(
         { _id: productId },
