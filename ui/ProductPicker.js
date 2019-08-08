@@ -13,8 +13,8 @@ export default function ProductPicker({ onProductPicked, ...props }) {
       <div
         className={css`
           display: grid;
-          grid-template-columns: repeat(4, 22%);
-          grid-template-rows: repeat(4, auto);
+          grid-template-columns: repeat(3, 31%);
+          grid-template-rows: repeat(3, auto);
           width: 100%;
           grid-gap: 0.5em;
         `}
