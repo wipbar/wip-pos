@@ -53,14 +53,23 @@ export default function CartView() {
                   <div
                     className={css`
                       display: flex;
+                      align-items: center;
+                      max-width: 100%;
+                      padding-left: 5px;
                     `}
                   >
                     <button
                       className={css`
-                        background: gray;
+                        display: flex;
+                        background: white;
                         color: red;
-                        border-radius: 5px;
+                        border-radius: 100%;
                         margin-right: 5px;
+                        width: 40px;
+                        height: 40px;
+                        font-family: sans-serif;
+                        align-items: center;
+                        justify-content: center;
                       `}
                       onClick={() =>
                         setPickedProductIds(removeItem(pickedProductIds, i + 1))
@@ -69,12 +78,14 @@ export default function CartView() {
                       X
                     </button>
                     <div>
-                      <big>{product.name}</big> |{" "}
+                      <big>{product.name}</big>
+                      <br />
                       <i>
                         {product.unitSize}
                         {product.sizeUnit}
-                      </i>{" "}
-                      | <b>{product.salePrice} HAX</b>
+                      </i>
+                      <br />
+                      <b>{product.salePrice} HAX</b>
                     </div>
                   </div>
                   <hr />
