@@ -26,6 +26,7 @@ export default function App() {
         }
         className={css`
           flex: 3;
+          overflow: scroll;
         `}
       />
       <CartView

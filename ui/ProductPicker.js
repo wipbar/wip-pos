@@ -9,7 +9,6 @@ export default function ProductPicker({ onProductPicked, ...props }) {
   const products = useTracker(() => Products.find().fetch());
   return (
     <div {...props}>
-      <h2>products!</h2>
       <div
         className={css`
           display: grid;
