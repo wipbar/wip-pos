@@ -14,7 +14,14 @@ export default function ProductPicker({ onProductPicked, ...props }) {
         {products.map(product => (
           <li key={product._id}>
             <button onClick={() => onProductPicked(product._id)}>
-              {product.name}
+              <big>{product.name}</big>
+              <br />
+              <i>
+                {product.unitSize}
+                {product.sizeUnit}
+              </i>
+              <br />
+              <b>{product.salePrice} HAX</b>
             </button>
           </li>
         ))}

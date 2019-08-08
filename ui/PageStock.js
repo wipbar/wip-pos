@@ -34,7 +34,9 @@ export default function PageStock() {
             return m;
           }, {});
           await addProduct(newProduct);
-          e.currentTarget.reset();
+          fieldNames.forEach(
+            inputName => (e.currentTarget[inputName].value = ""),
+          );
         }}
       >
         {fieldNames.map(fieldName => (

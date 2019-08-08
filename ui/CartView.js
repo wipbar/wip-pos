@@ -35,9 +35,25 @@ export default function CartView() {
             {pickedProductIds
               .map(id => products.find(({ _id }) => id == _id))
               .map((product, i) => (
-                <li key={i + product._id}>{product.name}</li>
+                <li key={i + product._id}>
+                  <big>{product.name}</big> |{" "}
+                  <i>
+                    {product.unitSize}
+                    {product.sizeUnit}
+                  </i>{" "}
+                  | <b>{product.salePrice} HAX</b>
+                </li>
               ))}
           </ul>
+          <big>
+            <b>
+              {pickedProductIds.reduce(
+                (m, id) => m + products.find(({ _id }) => id == _id).salePrice,
+                0,
+              )}{" "}
+              HAX
+            </b>
+          </big>
           <div>
             Slide to sell:
             <SlideConfirm
