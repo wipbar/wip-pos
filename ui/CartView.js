@@ -7,6 +7,9 @@ import useTracker from "../hooks/useTracker";
 import SlideConfirm from "./SlideConfirm";
 import { css } from "emotion";
 
+const removeItem = (items, i) =>
+  items.slice(0, i - 1).concat(items.slice(i, items.length));
+
 export default function CartView() {
   const loading = useSubscription("products");
   const products = useTracker(() => Products.find().fetch());
@@ -31,18 +34,50 @@ export default function CartView() {
           <ul
             className={css`
               flex: 1;
+              margin: 0;
+              list-style: none;
+              padding: 0;
             `}
           >
             {pickedProductIds
               .map(id => products.find(({ _id }) => id == _id))
               .map((product, i) => (
-                <li key={i + product._id}>
-                  <big>{product.name}</big> |{" "}
-                  <i>
-                    {product.unitSize}
-                    {product.sizeUnit}
-                  </i>{" "}
-                  | <b>{product.salePrice} HAX</b>
+                <li
+                  key={i + product._id}
+                  className={css`
+                    margin: 0;
+                    list-style: none;
+                    padding: 0;
+                  `}
+                >
+                  <div
+                    className={css`
+                      display: flex;
+                    `}
+                  >
+                    <button
+                      className={css`
+                        background: gray;
+                        color: red;
+                        border-radius: 5px;
+                        margin-right: 5px;
+                      `}
+                      onClick={() =>
+                        setPickedProductIds(removeItem(pickedProductIds, i + 1))
+                      }
+                    >
+                      X
+                    </button>
+                    <div>
+                      <big>{product.name}</big> |{" "}
+                      <i>
+                        {product.unitSize}
+                        {product.sizeUnit}
+                      </i>{" "}
+                      | <b>{product.salePrice} HAX</b>
+                    </div>
+                  </div>
+                  <hr />
                 </li>
               ))}
           </ul>

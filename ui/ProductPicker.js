@@ -3,8 +3,10 @@ import Products from "../api/products";
 import useTracker from "../hooks/useTracker";
 import useSubscription from "../hooks/useSubscription";
 import { css } from "emotion";
+import useSession from "../hooks/useSession";
 
-export default function ProductPicker({ onProductPicked, ...props }) {
+export default function ProductPicker({ ...props }) {
+  const [, setPickedProductIds] = useSession("pickedProductIds", []);
   useSubscription("products");
   const products = useTracker(() => Products.find().fetch());
   return (
@@ -16,12 +18,18 @@ export default function ProductPicker({ onProductPicked, ...props }) {
           grid-template-rows: repeat(3, auto);
           width: 100%;
           grid-gap: 0.5em;
+          padding: 4px;
         `}
       >
         {products.map(product => (
           <button
             key={product._id}
-            onClick={() => onProductPicked(product._id)}
+            onClick={() =>
+              setPickedProductIds(pickedProductIds => [
+                ...pickedProductIds,
+                product._id,
+              ])
+            }
             className={css`
               background: lightgray;
               display: block;

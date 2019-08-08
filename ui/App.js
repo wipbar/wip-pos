@@ -5,8 +5,6 @@ import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 
 export default function App() {
-  const [, setPickedProductIds] = useSession("pickedProductIds", []);
-
   return (
     <div
       className={css`
@@ -18,12 +16,6 @@ export default function App() {
       `}
     >
       <ProductPicker
-        onProductPicked={productId =>
-          setPickedProductIds(pickedProductIds => [
-            ...pickedProductIds,
-            productId,
-          ])
-        }
         className={css`
           flex: 3;
           overflow: scroll;
