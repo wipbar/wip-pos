@@ -23,6 +23,10 @@ export default function ProductPicker({ onProductPicked, ...props }) {
           <button
             key={product._id}
             onClick={() => onProductPicked(product._id)}
+            className={css`
+              background: lightgray;
+              display: block;
+            `}
           >
             <big>{product.name}</big>
             <br />
