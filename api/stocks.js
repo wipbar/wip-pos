@@ -13,8 +13,6 @@ if (Meteor.isServer)
         amount: 12,
       });
     }
-    console.log(Products.find({}).fetch());
-    console.log(Stocks.find({}).fetch());
   });
 
 export default Stocks;

@@ -19,11 +19,13 @@ Meteor.methods({
       userId,
       currency: "HAX",
       country: "DK",
-      amount: 0,
+      amount: productIds.reduce(
+        (m, _id) => m + Products.findOne({ _id }).salePrice,
+        0,
+      ),
       timestamp: new Date(),
       products: productIds.map(_id => Products.findOne({ _id })),
     };
-    console.log(this, newSale);
     return Sales.insert(newSale);
   },
 });
