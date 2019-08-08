@@ -3,12 +3,12 @@ import Products from "../api/products";
 import useTracker from "../hooks/useTracker";
 import useSubscription from "../hooks/useSubscription";
 
-export default function ProductPicker({ onProductPicked }) {
+export default function ProductPicker({ onProductPicked, ...props }) {
   useSubscription("products");
   const products = useTracker(() => Products.find().fetch());
 
   return (
-    <div>
+    <div {...props}>
       <h2>products!</h2>
       <ul>
         {products.map(product => (
