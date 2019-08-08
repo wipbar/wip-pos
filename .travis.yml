@@ -14,6 +14,8 @@ cache:
     - node_modules
 deploy:
   provider: script
-  script: meteor deploy wip-pos.eu.meteorapp.com --settings settings.json
+  script:
+    - echo $METEOR_TOKEN > token.json
+    - METEOR_SESSION_FILE=token.json meteor deploy wip-pos.eu.meteorapp.com --settings settings.json
   on:
     branch: master
