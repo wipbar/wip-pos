@@ -5,20 +5,33 @@ const Products = new Mongo.Collection("products");
 const addProduct = product => Products.insert(product);
 if (Meteor.isServer)
   Meteor.startup(() => {
-    Products.remove({});
     if (Products.find().count() === 0) {
       addProduct({
         name: "øl",
-        unitPrice: 25,
+        salePrice: 25,
         unitSize: 500,
         sizeUnit: "ml",
-        comment: null,
+        shopPrices: [{ buyPrice: 10, timestamp: new Date() }],
       });
     }
   });
 
 export default Products;
 
-Meteor.methods({});
+Meteor.methods({
+  "Products.addProduct"(newProduct) {
+    return Products.insert({
+      name: newProduct.name,
+      salePrice: +newProduct.salePrice,
+      unitSize: +newProduct.unitSize,
+      sizeUnit: newProduct.sizeUnit,
+      shopPrices: [{ buyPrice: +newProduct.buyPrice, timestamp: new Date() }],
+    });
+  },
+  "Products.removeProduct"(productId) {
+    if (productId) return Products.remove({ _id: productId });
+    //TODO: soft delete
+  },
+});
 
 if (Meteor.isClient) window.Products = Products;

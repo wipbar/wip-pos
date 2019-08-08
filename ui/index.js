@@ -1,10 +1,11 @@
+import { css } from "emotion";
 import React from "react";
 import { Route, Switch } from "react-router";
 import { Link } from "react-router-dom";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import App from "./App";
 import PageSales from "./PageSales";
-import { css } from "emotion";
+import PageStock from "./PageStock";
 
 export default function UI() {
   return (
@@ -24,12 +25,14 @@ export default function UI() {
           <Link to="/">Sell</Link>
           <Link to="/stock">Stock</Link>
           <Link to="/sales">Sales</Link>
+          <Link to="/stats">Stats</Link>
         </nav>
       </div>
       <Switch>
         <Route exact path="/" component={App} />
-        <Route exact path="/stock" component={() => "stock"} />
+        <Route exact path="/stock" component={PageStock} />
         <Route exact path="/sales" component={PageSales} />
+        <Route exact path="/stats" component={() => "stats"} />
       </Switch>
     </div>
   );
