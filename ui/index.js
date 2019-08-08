@@ -13,6 +13,7 @@ export default function UI() {
       className={css`
         display: flex;
         flex-direction: column;
+        height: 100%;
       `}
     >
       <div

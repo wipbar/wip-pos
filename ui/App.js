@@ -14,6 +14,7 @@ export default function App() {
         display: flex;
         width: 100%;
         height: 100%;
+        align-items: stretch;
       `}
     >
       <ProductPicker
@@ -24,10 +25,14 @@ export default function App() {
           ])
         }
         className={css`
+          flex: 3;
+        `}
+      />
+      <CartView
+        className={css`
           flex: 1;
         `}
       />
-      <CartView />
     </div>
   );
 }

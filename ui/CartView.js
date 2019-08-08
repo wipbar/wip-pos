@@ -23,6 +23,7 @@ export default function CartView() {
         background: rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
+        flex: 1;
       `}
     >
       {pickedProductIds && pickedProductIds.length ? (
