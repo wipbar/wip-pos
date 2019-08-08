@@ -13,10 +13,10 @@ export default function ProductPicker({ onProductPicked, ...props }) {
       <div
         className={css`
           display: grid;
-          grid-template-columns: repeat(4, calc(25% - 1em * 2));
+          grid-template-columns: repeat(4, 22%);
           grid-template-rows: repeat(4, auto);
           width: 100%;
-          grid-gap: 1em;
+          grid-gap: 0.5em;
         `}
       >
         {products.map(product => (
@@ -26,6 +26,7 @@ export default function ProductPicker({ onProductPicked, ...props }) {
             className={css`
               background: lightgray;
               display: block;
+              border-radius: 5px;
             `}
           >
             <big>{product.name}</big>

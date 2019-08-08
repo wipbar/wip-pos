@@ -56,13 +56,15 @@ export default function CartView() {
             </b>
           </big>
           <div>
-            Slide to sell:
-            <SlideConfirm
-              onConfirm={async () => {
+            <button
+              type="button"
+              onClick={async () => {
                 await doSellProducts({ productIds: pickedProductIds });
                 setPickedProductIds([]);
               }}
-            />
+            >
+              Press To Sell
+            </button>
           </div>
         </>
       ) : null}
