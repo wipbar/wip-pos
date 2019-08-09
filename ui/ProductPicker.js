@@ -21,6 +21,9 @@ export default function ProductPicker({ ...props }) {
           grid-gap: 0.5em;
           max-width: 100%;
           padding: 0.5em;
+          @media (orientation: portrait) {
+            grid-template-columns: repeat(3, calc(25% - 0.5em));
+          }
         `}
       >
         {[...products]
