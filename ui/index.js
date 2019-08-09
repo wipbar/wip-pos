@@ -2,12 +2,15 @@ import { css } from "emotion";
 import React from "react";
 import { Route, Switch } from "react-router";
 import { Link } from "react-router-dom";
+import useCurrentUser from "../hooks/useCurrentUser";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import App from "./App";
 import PageSales from "./PageSales";
 import PageStock from "./PageStock";
 
 export default function UI() {
+  const user = useCurrentUser();
+
   return (
     <div
       className={css`
@@ -31,9 +34,13 @@ export default function UI() {
             align-items: center;
           `}
         >
-          <Link to="/">Sell</Link>
-          <Link to="/stock">Stock</Link>
-          <Link to="/sales">Sales</Link>
+          {user ? (
+            <>
+              <Link to="/">Sell</Link>
+              <Link to="/stock">Stock</Link>
+              <Link to="/sales">Sales</Link>
+            </>
+          ) : null}
           <Link to="/stats">Stats</Link>
         </nav>
       </div>
