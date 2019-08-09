@@ -15,17 +15,12 @@ export default function ProductPicker({ ...props }) {
     <div {...props}>
       <div
         className={css`
-          display: grid;
-          grid-template-columns: repeat(4, calc(25% - 0.5em));
-          align-items: stretch;
-          justify-content: center;
+          display: flex;
+          justify-content: space-around;
+          flex-wrap: wrap;
           width: 100%;
-          grid-gap: 0.5em;
           max-width: 100%;
           padding: 0.5em;
-          @media (orientation: portrait) {
-            grid-template-columns: repeat(3, calc(34% - 0.5em));
-          }
         `}
       >
         {[...products]
@@ -44,12 +39,17 @@ export default function ProductPicker({ ...props }) {
                 ])
               }
               className={css`
+                @media (orientation: portrait) {
+                  width: 32%;
+                }
+                width: 24%;
                 background: rgba(255, 255, 255, 1);
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
                 border-radius: 5px;
                 align-items: center;
+                margin-bottom: 5px;
               `}
             >
               <div
@@ -91,6 +91,22 @@ export default function ProductPicker({ ...props }) {
               </div>
             </button>
           ))}
+        <div
+          className={css`
+            @media (orientation: portrait) {
+              width: 32%;
+            }
+            width: 24%;
+          `}
+        />
+        <div
+          className={css`
+            @media (orientation: portrait) {
+              width: 32%;
+            }
+            width: 24%;
+          `}
+        />
       </div>
     </div>
   );

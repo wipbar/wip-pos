@@ -23,13 +23,13 @@ Meteor.methods({
     if (!this.userId) throw new Meteor.Error("log in please");
     return Products.insert({
       createdAt: new Date(),
-      brandName: newProduct.brandName,
-      name: newProduct.name,
-      salePrice: +newProduct.salePrice,
-      unitSize: +newProduct.unitSize,
-      sizeUnit: newProduct.sizeUnit,
+      brandName: newProduct.brandName.trim(),
+      name: newProduct.name.trim(),
+      salePrice: +newProduct.salePrice.trim(),
+      unitSize: +newProduct.unitSize.trim(),
+      sizeUnit: newProduct.sizeUnit.trim(),
       shopPrices: newProduct.buyPrice
-        ? [{ buyPrice: +newProduct.buyPrice, timestamp: new Date() }]
+        ? [{ buyPrice: +newProduct.buyPrice.trim(), timestamp: new Date() }]
         : undefined,
     });
   },
@@ -41,9 +41,9 @@ Meteor.methods({
       {
         $set: {
           ...updatedProduct,
-          shopPrices: salePrice
+          shopPrices: salePrice.trim()
             ? (oldProduct.shopPrices || []).concat([
-                { buyPrice: +salePrice, timestamp: new Date() },
+                { buyPrice: +salePrice.trim(), timestamp: new Date() },
               ])
             : undefined,
         },
