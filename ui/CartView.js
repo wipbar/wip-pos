@@ -82,7 +82,11 @@ export default function CartView() {
                     >
                       X
                     </button>
-                    <div>
+                    <div
+                      className={css`
+                        flex: 1;
+                      `}
+                    >
                       {product.brandName ? (
                         <>
                           {product.brandName} <br />
@@ -94,9 +98,17 @@ export default function CartView() {
                         {product.unitSize}
                         {product.sizeUnit}
                       </i>
-                      <br />
-                      <b>{product.salePrice} HAX</b>
                     </div>
+                    <b
+                      className={css`
+                        line-height: 0.7;
+                      `}
+                    >
+                      <div>{product.salePrice}</div>
+                      <small>
+                        <small>HAX</small>
+                      </small>
+                    </b>
                   </div>
                   <hr />
                 </li>
@@ -120,7 +132,9 @@ export default function CartView() {
                     m + products.find(({ _id }) => id == _id).salePrice,
                   0,
                 )}{" "}
-                HAX
+                <small>
+                  <small>HAX</small>
+                </small>
               </b>
             </big>
             <div>

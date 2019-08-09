@@ -14,7 +14,7 @@ export default function ProductPicker({ ...props }) {
       <div
         className={css`
           display: grid;
-          grid-template-columns: repeat(3, calc(34% - 0.5em));
+          grid-template-columns: repeat(4, calc(25% - 0.5em));
           align-items: stretch;
           justify-content: center;
           width: 100%;
@@ -39,7 +39,7 @@ export default function ProductPicker({ ...props }) {
                 ])
               }
               className={css`
-                background: lightgray;
+                background: rgba(255, 255, 255, 1);
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -58,7 +58,9 @@ export default function ProductPicker({ ...props }) {
               >
                 {product.brandName ? <div>{product.brandName}</div> : null}
                 <div>
-                  <big>{product.name}</big>
+                  <b>
+                    <big>{product.name}</big>
+                  </b>
                   <small>
                     <small>
                       {" "}
@@ -70,7 +72,14 @@ export default function ProductPicker({ ...props }) {
                   </small>
                 </div>
               </div>
-              <b>{product.salePrice} HAX</b>
+              <div
+                className={css`
+                  margin-top: 6px;
+                  opacity: 0.5;
+                `}
+              >
+                <b>{product.salePrice} HAX</b>
+              </div>
             </button>
           ))}
       </div>

@@ -25,7 +25,6 @@ export default function UI() {
           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
         `}
       >
-        <AccountsUIWrapper />
         <nav
           className={css`
             padding: 1em;
@@ -34,6 +33,7 @@ export default function UI() {
             align-items: center;
           `}
         >
+          <AccountsUIWrapper />
           {user ? (
             <>
               <Link to="/">Sell</Link>
