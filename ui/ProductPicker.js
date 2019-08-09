@@ -15,7 +15,7 @@ export default function ProductPicker({ ...props }) {
         className={css`
           display: grid;
           grid-template-columns: repeat(3, calc(34% - 0.5em));
-          align-items: center;
+          align-items: stretch;
           justify-content: center;
           width: 100%;
           grid-gap: 0.5em;

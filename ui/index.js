@@ -45,10 +45,19 @@ export default function UI() {
         </nav>
       </div>
       <Switch>
-        <Route exact path="/" component={App} />
-        <Route exact path="/stock" component={PageStock} />
-        <Route exact path="/sales" component={PageSales} />
-        <Route exact path="/stats" component={() => "stats"} />
+        {user ? (
+          <>
+            <Route exact path="/" component={App} />
+            <Route exact path="/stock" component={PageStock} />
+            <Route exact path="/sales" component={PageSales} />
+            <Route exact path="/stats" component={() => "stats"} />
+          </>
+        ) : (
+          <>
+            <Route exact path="/" component={() => "stats"} />
+            <Route exact path="/stats" component={() => "stats"} />
+          </>
+        )}
       </Switch>
     </div>
   );
