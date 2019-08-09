@@ -51,8 +51,9 @@ export default function ProductPicker({ ...props }) {
                 className={css`
                   flex: 1;
                   display: flex;
-                  justify-items: center;
+                  justify-content: center;
                   align-items: center;
+                  flex-direction: column;
                 `}
               >
                 {product.brandName ? <div>{product.brandName}</div> : null}
