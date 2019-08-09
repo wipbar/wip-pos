@@ -10,7 +10,7 @@ export default function ProductPicker({ ...props }) {
   useSubscription("products");
   const products = useTracker(() => Products.find({}).fetch());
   return (
-    <div {...props}>
+    <div {...props} style={{ maxWidth: "100%" }}>
       <div
         className={css`
           display: grid;

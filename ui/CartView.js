@@ -39,6 +39,7 @@ export default function CartView() {
               list-style: none;
               padding: 0;
               overflow-y: scroll;
+              overflow-x: hidden;
             `}
           >
             {pickedProductIds
