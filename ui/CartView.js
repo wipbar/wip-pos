@@ -23,11 +23,13 @@ export default function CartView() {
   return (
     <div
       className={css`
-        background: rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.1);
         display: flex;
         flex-direction: column;
         max-height: 100%;
         flex: 1;
+        overflow: hidden;
+        border-left: 1px solid rgba(255, 255, 255, 0.4);
       `}
     >
       {pickedProductIds && pickedProductIds.length ? (
@@ -103,7 +105,12 @@ export default function CartView() {
           <div
             className={css`
               flex-shrink: 0;
-              border-top: 2px solid rgba(0, 0, 0, 0.1);
+              border-top: 2px solid rgba(255, 255, 255, 0.1);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              padding: 1em 0;
+              box-shadow: #ffed00 0 0 10px 0px;
             `}
           >
             <big>
@@ -123,6 +130,11 @@ export default function CartView() {
                   await doSellProducts({ productIds: pickedProductIds });
                   setPickedProductIds([]);
                 }}
+                className={css`
+                  display: block;
+                  background-color: #ffed00;
+                  color: black;
+                `}
               >
                 Press To Sell
               </button>

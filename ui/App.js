@@ -22,11 +22,7 @@ export default function App() {
           overflow-x: hidden;
         `}
       />
-      <CartView
-        className={css`
-          flex: 1;
-        `}
-      />
+      <CartView />
     </div>
   );
 }

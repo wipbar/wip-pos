@@ -40,23 +40,35 @@ export default function ProductPicker({ ...props }) {
               }
               className={css`
                 background: lightgray;
-                display: block;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
                 border-radius: 5px;
+                align-items: center;
               `}
             >
-              {product.brandName ? (
-                <>
-                  {product.brandName}
-                  <br />
-                </>
-              ) : null}
-              <big>{product.name}</big>
-              <br />
-              <i>
-                {product.unitSize}
-                {product.sizeUnit}
-              </i>
-              <br />
+              <div
+                className={css`
+                  flex: 1;
+                  display: flex;
+                  justify-items: center;
+                  align-items: center;
+                `}
+              >
+                {product.brandName ? <div>{product.brandName}</div> : null}
+                <div>
+                  <big>{product.name}</big>
+                  <small>
+                    <small>
+                      {" "}
+                      <i>
+                        {product.unitSize}
+                        {product.sizeUnit}
+                      </i>
+                    </small>
+                  </small>
+                </div>
+              </div>
               <b>{product.salePrice} HAX</b>
             </button>
           ))}
