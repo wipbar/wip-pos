@@ -22,6 +22,7 @@ Meteor.methods({
   "Products.addProduct"(newProduct) {
     if (!this.userId) throw new Meteor.Error("log in please");
     return Products.insert({
+      createdAt: new Date(),
       brandName: newProduct.brandName,
       name: newProduct.name,
       salePrice: +newProduct.salePrice,

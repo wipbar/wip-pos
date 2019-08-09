@@ -111,7 +111,12 @@ function StockProductItem({ product, columns }) {
 
 export default function PageStock() {
   useSubscription("products");
-  const products = useTracker(() => Products.find().fetch());
+  const products = useTracker(() =>
+    Products.find(
+      { removedAt: { $exists: false } },
+      { sort: { createdAt: -1 } },
+    ).fetch(),
+  );
   const [addProduct] = useMethod("Products.addProduct");
   const columns = useMemo(
     () =>
@@ -120,12 +125,35 @@ export default function PageStock() {
           Object.keys(product).map(key => m.add(key));
           return m;
         }, new Set()),
-      ].filter(name => !["_id", "buyPrice", "shopPrices"].includes(name)),
+      ].filter(
+        name =>
+          !["_id", "buyPrice", "shopPrices", "createdAt", "removedAt"].includes(
+            name,
+          ),
+      ),
     [products],
   );
 
   return (
     <>
+      <table>
+        <thead>
+          <tr>
+            {columns.map(column => (
+              <th key={column}>{column}</th>
+            ))}
+            <th>buyPrice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <ProductForm
+              columns={[...columns, "buyPrice"]}
+              onSubmit={newProduct => addProduct(newProduct)}
+            />
+          </tr>
+        </tbody>
+      </table>
       {products && products.length && (
         <table>
           <thead>
@@ -146,24 +174,6 @@ export default function PageStock() {
           </tbody>
         </table>
       )}
-      <table>
-        <thead>
-          <tr>
-            {columns.map(column => (
-              <th key={column}>{column}</th>
-            ))}
-            <th>buyPrice</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <ProductForm
-              columns={[...columns, "buyPrice"]}
-              onSubmit={newProduct => addProduct(newProduct)}
-            />
-          </tr>
-        </tbody>
-      </table>
     </>
   );
 }

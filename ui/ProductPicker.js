@@ -8,7 +8,9 @@ import useSession from "../hooks/useSession";
 export default function ProductPicker({ ...props }) {
   const [, setPickedProductIds] = useSession("pickedProductIds", []);
   useSubscription("products");
-  const products = useTracker(() => Products.find({}).fetch());
+  const products = useTracker(() =>
+    Products.find({ removedAt: { $exists: false } }).fetch(),
+  );
   return (
     <div {...props}>
       <div
