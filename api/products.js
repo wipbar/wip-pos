@@ -33,7 +33,7 @@ Meteor.methods({
         : undefined,
     });
   },
-  "Products.editProduct"(id, { salePrice, ...updatedProduct }) {
+  "Products.editProduct"(id, { buyPrice, ...updatedProduct }) {
     if (!this.userId) throw new Meteor.Error("log in please");
     const oldProduct = Products.findOne({ _id: id });
     return Products.update(
@@ -41,9 +41,9 @@ Meteor.methods({
       {
         $set: {
           ...updatedProduct,
-          shopPrices: salePrice.trim()
+          shopPrices: buyPrice && buyPrice.trim()
             ? (oldProduct.shopPrices || []).concat([
-                { buyPrice: +salePrice.trim(), timestamp: new Date() },
+                { buyPrice: +buyPrice.trim(), timestamp: new Date() },
               ])
             : undefined,
         },

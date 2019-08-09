@@ -45,7 +45,7 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
                 m[input.name] = input.value;
                 return m;
               }, {});
-//            e.currentTarget.reset();
+            //            e.currentTarget.reset();
             await onSubmit(newProduct);
           }}
         >
@@ -84,6 +84,7 @@ function StockProductItem({ product, columns }) {
           columns={columns}
           initialValues={product}
           onSubmit={async newProduct => {
+            console.log(newProduct);
             await editProduct(product._id, newProduct);
             setIsEditing(false);
           }}
