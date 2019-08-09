@@ -10,13 +10,16 @@ export default function ProductPicker({ ...props }) {
   useSubscription("products");
   const products = useTracker(() => Products.find({}).fetch());
   return (
-    <div {...props} style={{ maxWidth: "100%" }}>
+    <div {...props}>
       <div
         className={css`
           display: grid;
-          grid-template-columns: repeat(3, 31%);
+          grid-template-columns: repeat(3, calc(34% - 0.5em));
+          align-items: center;
+          justify-content: center;
           width: 100%;
           grid-gap: 0.5em;
+          max-width: 100%;
           padding: 0.5em;
         `}
       >
