@@ -1,11 +1,77 @@
+import { css } from "emotion";
 import React from "react";
 import Products from "../api/products";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
 import useTracker from "../hooks/useTracker";
-import SlideConfirm from "./SlideConfirm";
-import { css } from "emotion";
+
+function CartViewProductsItem({ product, onRemoveClick }) {
+  return (
+    <li
+      className={css`
+        margin: 0;
+        list-style: none;
+        padding: 8px;
+      `}
+    >
+      <div
+        className={css`
+          display: flex;
+          align-items: center;
+          max-width: 100%;
+        `}
+      >
+        <button
+          className={css`
+            display: flex;
+            background: white;
+            color: red;
+            border-radius: 100%;
+            margin-right: 5px;
+            width: 40px;
+            height: 40px;
+            font-family: sans-serif;
+            align-items: center;
+            justify-content: center;
+          `}
+          onClick={onRemoveClick}
+        >
+          X
+        </button>
+        <div
+          className={css`
+            flex: 1;
+          `}
+        >
+          {product.brandName ? (
+            <>
+              {product.brandName} <br />
+            </>
+          ) : null}
+          <big>{product.name}</big>
+          <br />
+          <i>
+            {product.unitSize}
+            {product.sizeUnit}
+          </i>
+        </div>
+        <b
+          className={css`
+            line-height: 0.7;
+            text-align: center;
+          `}
+        >
+          <div>{product.salePrice}</div>
+          <small>
+            <small>HAX</small>
+          </small>
+        </b>
+      </div>
+      <hr />
+    </li>
+  );
+}
 
 const removeItem = (items, i) =>
   items.slice(0, i - 1).concat(items.slice(i, items.length));
@@ -44,75 +110,15 @@ export default function CartView() {
               overflow-x: hidden;
             `}
           >
-            {pickedProductIds
-              .map(id => products.find(({ _id }) => id == _id))
-              .map((product, i) => (
-                <li
-                  key={i + product._id}
-                  className={css`
-                    margin: 0;
-                    list-style: none;
-                    padding: 8px;
-                  `}
-                >
-                  <div
-                    className={css`
-                      display: flex;
-                      align-items: center;
-                      max-width: 100%;
-                    `}
-                  >
-                    <button
-                      className={css`
-                        display: flex;
-                        background: white;
-                        color: red;
-                        border-radius: 100%;
-                        margin-right: 5px;
-                        width: 40px;
-                        height: 40px;
-                        font-family: sans-serif;
-                        align-items: center;
-                        justify-content: center;
-                      `}
-                      onClick={() =>
-                        setPickedProductIds(removeItem(pickedProductIds, i + 1))
-                      }
-                    >
-                      X
-                    </button>
-                    <div
-                      className={css`
-                        flex: 1;
-                      `}
-                    >
-                      {product.brandName ? (
-                        <>
-                          {product.brandName} <br />
-                        </>
-                      ) : null}
-                      <big>{product.name}</big>
-                      <br />
-                      <i>
-                        {product.unitSize}
-                        {product.sizeUnit}
-                      </i>
-                    </div>
-                    <b
-                      className={css`
-                        line-height: 0.7;
-                        text-align: center;
-                      `}
-                    >
-                      <div>{product.salePrice}</div>
-                      <small>
-                        <small>HAX</small>
-                      </small>
-                    </b>
-                  </div>
-                  <hr />
-                </li>
-              ))}
+            {pickedProductIds.map((id, i) => (
+              <CartViewProductsItem
+                key={id + i}
+                product={products.find(({ _id }) => id == _id)}
+                onRemoveClick={() =>
+                  setPickedProductIds(removeItem(pickedProductIds, i + 1))
+                }
+              />
+            ))}
           </ul>
           <div
             className={css`

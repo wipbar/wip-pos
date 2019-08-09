@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import Products from "../api/products";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
 import useTracker from "../hooks/useTracker";
+import { css } from "emotion";
 
 const fieldNames = [
   "brandName",
@@ -13,58 +14,156 @@ const fieldNames = [
   "salePrice",
 ];
 
-const ProductForm = ({ onSubmit, initialValues }) => (
-  <form
-    onSubmit={async e => {
-      e.preventDefault();
-      const newProduct = fieldNames.reduce((m, inputName) => {
-        m[inputName] = e.currentTarget[inputName].value;
-        return m;
-      }, {});
-      e.currentTarget.reset();
-      await onSubmit(newProduct);
-    }}
-  >
-    {fieldNames.map(fieldName => (
-      <label key={fieldName}>
-        {fieldName}:{" "}
-        <input
-          name={fieldName}
-          placeholder={fieldName}
-          defaultValue={initialValues ? initialValues[fieldName] : ""}
-          required={!(fieldName == "buyPrice")}
+const ProductForm = ({ onSubmit, initialValues, columns }) => {
+  const formId = initialValues ? initialValues._id : "newProductForm";
+  return (
+    <>
+      {columns
+        .filter(fieldName => (initialValues ? fieldName !== "buyPrice" : true))
+        .map(fieldName => (
+          <td key={fieldName}>
+            <input
+              form={formId}
+              name={fieldName}
+              placeholder={fieldName}
+              defaultValue={initialValues ? initialValues[fieldName] : ""}
+              required={!(fieldName == "buyPrice")}
+              className={css`
+                width: 100%;
+              `}
+            />
+          </td>
+        ))}
+      <td>
+        <form
+          id={formId}
+          onSubmit={async e => {
+            e.preventDefault();
+            const newProduct = [...e.currentTarget.elements]
+              .filter(({ name }) => fieldNames.includes(name))
+              .reduce((m, input) => {
+                m[input.name] = input.value;
+                return m;
+              }, {});
+            e.currentTarget.reset();
+            await onSubmit(newProduct);
+          }}
+        >
+          <Button type="submit">{initialValues ? "Update" : "Add"}</Button>
+        </form>
+      </td>
+    </>
+  );
+};
+
+function Button(props) {
+  return (
+    <button
+      {...props}
+      className={
+        css`
+          background-color: #ffed00;
+          color: black;
+        ` +
+        " " +
+        (props.className || "")
+      }
+    />
+  );
+}
+
+function StockProductItem({ product, columns }) {
+  const [editProduct] = useMethod("Products.editProduct");
+  const [removeProduct] = useMethod("Products.removeProduct");
+  const [isEditing, setIsEditing] = useState(false);
+  return (
+    <tr>
+      {isEditing ? (
+        <ProductForm
+          columns={columns}
+          initialValues={product}
+          onSubmit={async newProduct => {
+            await editProduct(product._id, newProduct);
+            setIsEditing(false);
+          }}
         />
-      </label>
-    ))}
-    <input type="submit" value={initialValues ? "Update" : "Add"} />
-  </form>
-);
+      ) : (
+        <>
+          {columns.map(column => (
+            <th key={column}>{product[column]}</th>
+          ))}
+        </>
+      )}
+      {isEditing ? null : <td>&nbsp;</td>}
+      <td>
+        <Button type="button" onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? "cancel" : "edit"}
+        </Button>
+      </td>
+      <td>
+        <Button type="button" onClick={() => removeProduct(product._id)}>
+          remove
+        </Button>
+      </td>
+    </tr>
+  );
+}
 
 export default function PageStock() {
   useSubscription("products");
   const products = useTracker(() => Products.find().fetch());
   const [addProduct] = useMethod("Products.addProduct");
-  const [editProduct] = useMethod("Products.editProduct");
-  const [removeProduct] = useMethod("Products.removeProduct");
+  const columns = useMemo(
+    () =>
+      [
+        ...products.reduce((m, product) => {
+          Object.keys(product).map(key => m.add(key));
+          return m;
+        }, new Set()),
+      ].filter(name => !["_id", "buyPrice", "shopPrices"].includes(name)),
+    [products],
+  );
+
   return (
     <>
       {products && products.length && (
-        <ul>
-          {products.map(product => (
-            <li key={product._id}>
-              <button type="button" onClick={() => removeProduct(product._id)}>
-                remove
-              </button>
-              <pre>{JSON.stringify(product)}</pre>
-              <ProductForm
-                initialValues={product}
-                onSubmit={newProduct => editProduct(product._id, newProduct)}
+        <table>
+          <thead>
+            <tr>
+              {columns.map(column => (
+                <th key={column}>{column}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {products.map(product => (
+              <StockProductItem
+                key={product._id}
+                columns={columns}
+                product={product}
               />
-            </li>
-          ))}
-        </ul>
+            ))}
+          </tbody>
+        </table>
       )}
-      <ProductForm onSubmit={newProduct => addProduct(newProduct)} />
+      <table>
+        <thead>
+          <tr>
+            {columns.map(column => (
+              <th key={column}>{column}</th>
+            ))}
+            <th>buyPrice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <ProductForm
+              columns={[...columns, "buyPrice"]}
+              onSubmit={newProduct => addProduct(newProduct)}
+            />
+          </tr>
+        </tbody>
+      </table>
     </>
   );
 }

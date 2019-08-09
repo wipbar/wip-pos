@@ -27,10 +27,13 @@ export default function UI() {
       >
         <nav
           className={css`
-            padding: 1em;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            > a,
+            > span {
+              padding: 1em 2em;
+            }
           `}
         >
           <AccountsUIWrapper />
