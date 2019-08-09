@@ -52,7 +52,7 @@ export default function CartView() {
                   className={css`
                     margin: 0;
                     list-style: none;
-                    padding: 0;
+                    padding: 8px;
                   `}
                 >
                   <div
@@ -60,7 +60,6 @@ export default function CartView() {
                       display: flex;
                       align-items: center;
                       max-width: 100%;
-                      padding-left: 5px;
                     `}
                   >
                     <button
@@ -102,6 +101,7 @@ export default function CartView() {
                     <b
                       className={css`
                         line-height: 0.7;
+                        text-align: center;
                       `}
                     >
                       <div>{product.salePrice}</div>
