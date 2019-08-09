@@ -7,6 +7,7 @@ import AccountsUIWrapper from "./AccountsUIWrapper";
 import App from "./App";
 import PageSales from "./PageSales";
 import PageStock from "./PageStock";
+import PageStats from "./PageStats";
 
 export default function UI() {
   const user = useCurrentUser();
@@ -53,12 +54,12 @@ export default function UI() {
             <Route exact path="/" component={App} />
             <Route exact path="/stock" component={PageStock} />
             <Route exact path="/sales" component={PageSales} />
-            <Route exact path="/stats" component={() => "stats"} />
+            <Route exact path="/stats" component={PageStats} />
           </>
         ) : (
           <>
-            <Route exact path="/" component={() => "stats"} />
-            <Route exact path="/stats" component={() => "stats"} />
+            <Route exact path="/" component={PageStats} />
+            <Route exact path="/stats" component={PageStats} />
           </>
         )}
       </Switch>

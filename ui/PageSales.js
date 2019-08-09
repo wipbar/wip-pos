@@ -14,8 +14,8 @@ export default function PageSales() {
             {"" + sale.timestamp} {sale.amount}
             <small>{sale.currency}</small>
             <ul>
-              {products.map(product => (
-                <li key={sale._id + product._id}>
+              {products.map((product, i) => (
+                <li key={sale._id + i + product._id}>
                   {product.name} {product.brandName}
                 </li>
               ))}
