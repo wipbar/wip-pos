@@ -1,5 +1,5 @@
 import { css } from "emotion";
-import React from "react";
+import React, { useState } from "react";
 import Products from "../api/products";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
@@ -81,6 +81,7 @@ const removeItem = (items, i) =>
 
 export default function CartView() {
   const loading = useSubscription("products");
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const products = useTracker(() => Products.find().fetch());
   const [pickedProductIds, setPickedProductIds] = useSession(
     "pickedProductIds",
@@ -89,6 +90,10 @@ export default function CartView() {
   const [doSellProducts] = useMethod("Sales.sellProducts");
 
   if (loading) return null;
+  const haxTotal = pickedProductIds.reduce(
+    (m, id) => m + products.find(({ _id }) => id == _id).salePrice,
+    0,
+  );
   return (
     <div
       className={css`
@@ -136,11 +141,7 @@ export default function CartView() {
           >
             <big>
               <b>
-                {pickedProductIds.reduce(
-                  (m, id) =>
-                    m + products.find(({ _id }) => id == _id).salePrice,
-                  0,
-                )}{" "}
+                {haxTotal}{" "}
                 <small>
                   <small>HAX</small>
                 </small>
@@ -149,9 +150,8 @@ export default function CartView() {
             <div>
               <button
                 type="button"
-                onClick={async () => {
-                  await doSellProducts({ productIds: pickedProductIds });
-                  setPickedProductIds([]);
+                onClick={() => {
+                  setConfirmOpen(true);
                 }}
                 className={css`
                   display: block;
@@ -164,6 +164,50 @@ export default function CartView() {
             </div>
           </div>
         </>
+      ) : null}
+      {confirmOpen ? (
+        <div
+          className={css`
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+          `}
+          onClick={() => setConfirmOpen(false)}
+        >
+          <div
+            className={css`
+              background: white;
+              color: black;
+              padding: 1em;
+              text-align: center;
+            `}
+          >
+            please confirm tending {haxTotal} HAX
+            <br />
+            <button
+              type="button"
+              className={css`
+                margin-top: 1em;
+                background-color: #ffed00;
+                color: black;
+                padding: 0.5em;
+              `}
+              onClick={async () => {
+                await doSellProducts({ productIds: pickedProductIds });
+                setPickedProductIds([]);
+                setConfirmOpen(false);
+              }}
+            >
+              yeah i got it
+            </button>
+          </div>
+        </div>
       ) : null}
     </div>
   );

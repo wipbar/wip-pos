@@ -59,6 +59,7 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
 function Button(props) {
   return (
     <button
+      type="button"
       {...props}
       className={
         css`
