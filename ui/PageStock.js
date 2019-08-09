@@ -45,7 +45,7 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
                 m[input.name] = input.value;
                 return m;
               }, {});
-            e.currentTarget.reset();
+//            e.currentTarget.reset();
             await onSubmit(newProduct);
           }}
         >

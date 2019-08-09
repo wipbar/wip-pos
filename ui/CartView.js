@@ -140,12 +140,14 @@ export default function CartView() {
             `}
           >
             <big>
-              <b>
-                {haxTotal}{" "}
-                <small>
-                  <small>HAX</small>
-                </small>
-              </b>
+              <big>
+                <b>
+                  {haxTotal}{" "}
+                  <small>
+                    <small>HAX</small>
+                  </small>
+                </b>
+              </big>
             </big>
             <div>
               <button
@@ -157,6 +159,7 @@ export default function CartView() {
                   display: block;
                   background-color: #ffed00;
                   color: black;
+                  margin-top: 1em;
                 `}
               >
                 Press To Sell
