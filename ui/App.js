@@ -18,7 +18,7 @@ export default function App() {
       <ProductPicker
         className={css`
           flex: 3;
-          overflow: scroll;
+          overflow-y: scroll;
         `}
       />
       <CartView
