@@ -78,7 +78,7 @@ export default function CartView() {
                       X
                     </button>
                     <div>
-                      <big>{product.name}</big>
+                      {product.brandName} <br /> <big>{product.name}</big>
                       <br />
                       <i>
                         {product.unitSize}

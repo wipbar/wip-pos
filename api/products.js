@@ -22,12 +22,32 @@ Meteor.methods({
   "Products.addProduct"(newProduct) {
     if (!this.userId) throw new Meteor.Error("log in please");
     return Products.insert({
+      brandName: newProduct.brandName,
       name: newProduct.name,
       salePrice: +newProduct.salePrice,
       unitSize: +newProduct.unitSize,
       sizeUnit: newProduct.sizeUnit,
-      shopPrices: [{ buyPrice: +newProduct.buyPrice, timestamp: new Date() }],
+      shopPrices: newProduct.buyPrice
+        ? [{ buyPrice: +newProduct.buyPrice, timestamp: new Date() }]
+        : undefined,
     });
+  },
+  "Products.editProduct"(id, { salePrice, ...updatedProduct }) {
+    if (!this.userId) throw new Meteor.Error("log in please");
+    const oldProduct = Products.findOne({ _id: id });
+    return Products.update(
+      { _id: id },
+      {
+        $set: {
+          ...updatedProduct,
+          shopPrices: salePrice
+            ? (oldProduct.shopPrices || []).concat([
+                { buyPrice: +salePrice, timestamp: new Date() },
+              ])
+            : undefined,
+        },
+      },
+    );
   },
   "Products.removeProduct"(productId) {
     if (!this.userId) throw new Meteor.Error("log in please");

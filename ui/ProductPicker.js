@@ -8,7 +8,7 @@ import useSession from "../hooks/useSession";
 export default function ProductPicker({ ...props }) {
   const [, setPickedProductIds] = useSession("pickedProductIds", []);
   useSubscription("products");
-  const products = useTracker(() => Products.find().fetch());
+  const products = useTracker(() => Products.find({}).fetch());
   return (
     <div {...props}>
       <div
@@ -21,31 +21,43 @@ export default function ProductPicker({ ...props }) {
           padding: 4px;
         `}
       >
-        {products.map(product => (
-          <button
-            key={product._id}
-            onClick={() =>
-              setPickedProductIds(pickedProductIds => [
-                ...pickedProductIds,
-                product._id,
-              ])
-            }
-            className={css`
-              background: lightgray;
-              display: block;
-              border-radius: 5px;
-            `}
-          >
-            <big>{product.name}</big>
-            <br />
-            <i>
-              {product.unitSize}
-              {product.sizeUnit}
-            </i>
-            <br />
-            <b>{product.salePrice} HAX</b>
-          </button>
-        ))}
+        {[...products]
+          .sort((a, b) =>
+            ((a.brandName || "ZZZZZZZZZ") + a.name).localeCompare(
+              (b.brandName || "ZZZZZZZZZ") + b.name,
+            ),
+          )
+          .map(product => (
+            <button
+              key={product._id}
+              onClick={() =>
+                setPickedProductIds(pickedProductIds => [
+                  ...pickedProductIds,
+                  product._id,
+                ])
+              }
+              className={css`
+                background: lightgray;
+                display: block;
+                border-radius: 5px;
+              `}
+            >
+              {product.brandName ? (
+                <>
+                  {product.brandName}
+                  <br />
+                </>
+              ) : null}
+              <big>{product.name}</big>
+              <br />
+              <i>
+                {product.unitSize}
+                {product.sizeUnit}
+              </i>
+              <br />
+              <b>{product.salePrice} HAX</b>
+            </button>
+          ))}
       </div>
     </div>
   );
