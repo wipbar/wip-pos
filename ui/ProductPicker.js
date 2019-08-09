@@ -22,7 +22,7 @@ export default function ProductPicker({ ...props }) {
           max-width: 100%;
           padding: 0.5em;
           @media (orientation: portrait) {
-            grid-template-columns: repeat(3, calc(25% - 0.5em));
+            grid-template-columns: repeat(3, calc(34% - 0.5em));
           }
         `}
       >
