@@ -22,7 +22,14 @@ export default function UI() {
         `}
       >
         <AccountsUIWrapper />
-        <nav>
+        <nav
+          className={css`
+            padding: 1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          `}
+        >
           <Link to="/">Sell</Link>
           <Link to="/stock">Stock</Link>
           <Link to="/sales">Sales</Link>
