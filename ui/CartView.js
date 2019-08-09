@@ -13,6 +13,7 @@ function CartViewProductsItem({ product, onRemoveClick }) {
         margin: 0;
         list-style: none;
         padding: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.4);
       `}
     >
       <div
@@ -71,7 +72,6 @@ function CartViewProductsItem({ product, onRemoveClick }) {
           </small>
         </b>
       </div>
-      <hr />
     </li>
   );
 }
@@ -82,7 +82,9 @@ const removeItem = (items, i) =>
 export default function CartView() {
   const loading = useSubscription("products");
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const products = useTracker(() => Products.find().fetch());
+  const products = useTracker(() =>
+    Products.find({ removedAt: { $exists: false } }).fetch(),
+  );
   const [pickedProductIds, setPickedProductIds] = useSession(
     "pickedProductIds",
     [],
@@ -91,7 +93,7 @@ export default function CartView() {
 
   if (loading) return null;
   const haxTotal = pickedProductIds.reduce(
-    (m, id) => m + products.find(({ _id }) => id == _id).salePrice,
+    (m, id) => m + +products.find(({ _id }) => id == _id).salePrice,
     0,
   );
   return (
@@ -171,7 +173,7 @@ export default function CartView() {
       {confirmOpen ? (
         <div
           className={css`
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -196,10 +198,12 @@ export default function CartView() {
             <button
               type="button"
               className={css`
+                display: inline-block;
                 margin-top: 1em;
                 background-color: #ffed00;
                 color: black;
-                padding: 0.5em;
+                padding: 1em;
+                width: 100%;
               `}
               onClick={async () => {
                 await doSellProducts({ productIds: pickedProductIds });
