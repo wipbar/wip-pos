@@ -61,7 +61,11 @@ export default function ProductPicker({ ...props }) {
                   flex-direction: column;
                 `}
               >
-                {product.brandName ? <div>{product.brandName}</div> : null}
+                {product.brandName ? (
+                  <div>
+                    <small>{product.brandName}</small>
+                  </div>
+                ) : null}
                 <div>
                   <b>
                     <big>{product.name}</big>

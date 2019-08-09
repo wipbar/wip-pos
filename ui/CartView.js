@@ -46,15 +46,18 @@ function CartViewProductsItem({ product, onRemoveClick }) {
         >
           {product.brandName ? (
             <>
-              {product.brandName} <br />
+              <small>{product.brandName}</small>
+              <br />
             </>
           ) : null}
           <big>{product.name}</big>
           <br />
-          <i>
-            {product.unitSize}
-            {product.sizeUnit}
-          </i>
+          <small>
+            <i>
+              {product.unitSize}
+              {product.sizeUnit}
+            </i>
+          </small>
         </div>
         <b
           className={css`
