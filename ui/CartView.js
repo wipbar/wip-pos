@@ -38,6 +38,7 @@ export default function CartView() {
               margin: 0;
               list-style: none;
               padding: 0;
+              overflow-y: scroll;
             `}
           >
             {pickedProductIds
@@ -79,7 +80,12 @@ export default function CartView() {
                       X
                     </button>
                     <div>
-                      {product.brandName} <br /> <big>{product.name}</big>
+                      {product.brandName ? (
+                        <>
+                          {product.brandName} <br />
+                        </>
+                      ) : null}
+                      <big>{product.name}</big>
                       <br />
                       <i>
                         {product.unitSize}
@@ -93,25 +99,33 @@ export default function CartView() {
                 </li>
               ))}
           </ul>
-          <big>
-            <b>
-              {pickedProductIds.reduce(
-                (m, id) => m + products.find(({ _id }) => id == _id).salePrice,
-                0,
-              )}{" "}
-              HAX
-            </b>
-          </big>
-          <div>
-            <button
-              type="button"
-              onClick={async () => {
-                await doSellProducts({ productIds: pickedProductIds });
-                setPickedProductIds([]);
-              }}
-            >
-              Press To Sell
-            </button>
+          <div
+            className={css`
+              flex-shrink: 0;
+              border-top: 2px solid rgba(0, 0, 0, 0.1);
+            `}
+          >
+            <big>
+              <b>
+                {pickedProductIds.reduce(
+                  (m, id) =>
+                    m + products.find(({ _id }) => id == _id).salePrice,
+                  0,
+                )}{" "}
+                HAX
+              </b>
+            </big>
+            <div>
+              <button
+                type="button"
+                onClick={async () => {
+                  await doSellProducts({ productIds: pickedProductIds });
+                  setPickedProductIds([]);
+                }}
+              >
+                Press To Sell
+              </button>
+            </div>
           </div>
         </>
       ) : null}

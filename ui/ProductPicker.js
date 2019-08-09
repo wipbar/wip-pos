@@ -15,10 +15,9 @@ export default function ProductPicker({ ...props }) {
         className={css`
           display: grid;
           grid-template-columns: repeat(3, 31%);
-          grid-template-rows: repeat(3, auto);
           width: 100%;
           grid-gap: 0.5em;
-          padding: 4px;
+          padding: 0.5em;
         `}
       >
         {[...products]

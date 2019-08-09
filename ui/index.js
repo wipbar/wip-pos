@@ -19,6 +19,7 @@ export default function UI() {
       <div
         className={css`
           background: rgba(0, 0, 0, 0.2);
+          border-bottom: 2px solid rgba(0, 0, 0, 0.3);
         `}
       >
         <AccountsUIWrapper />
