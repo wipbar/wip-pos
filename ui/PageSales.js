@@ -5,7 +5,9 @@ import useTracker from "../hooks/useTracker";
 
 export default function PageSales() {
   useSubscription("sales");
-  const sales = useTracker(() => Sales.find().fetch());
+  const sales = useTracker(() =>
+    Sales.find({}, { sort: { timestamp: -1 } }).fetch(),
+  );
   return (
     sales && (
       <ul>

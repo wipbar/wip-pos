@@ -20,7 +20,7 @@ Meteor.methods({
       currency: "HAX",
       country: "DK",
       amount: productIds.reduce(
-        (m, _id) => m + Products.findOne({ _id }).salePrice,
+        (m, _id) => m + +Products.findOne({ _id }).salePrice,
         0,
       ),
       timestamp: new Date(),
