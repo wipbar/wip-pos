@@ -137,7 +137,7 @@ export default function CartView() {
               display: flex;
               flex-direction: column;
               align-items: center;
-              padding: 1em 0;
+              padding-bottom: 1em;
               box-shadow: #ffed00 0 0 10px 0px;
             `}
           >
@@ -162,6 +162,7 @@ export default function CartView() {
                   background-color: #ffed00;
                   color: black;
                   margin-top: 1em;
+                  padding: 1em;
                 `}
               >
                 Press To Sell
