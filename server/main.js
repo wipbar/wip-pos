@@ -11,7 +11,7 @@ Meteor.publish("stocks", () => Stocks.find());
 Accounts.config({ forbidClientAccountCreation: true });
 Meteor.startup(() => {
   const products = Products.find({ removedAt: { $exists: false } }).fetch();
-  products.forEach(product => {
+  false && products.forEach(product => {
     console.log(product.brandName.toLowerCase());
     if (
       !product.tags &&

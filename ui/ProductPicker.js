@@ -1,29 +1,49 @@
-import React, { useCallback, useState } from "react";
-import Products from "../api/products";
-import useTracker from "../hooks/useTracker";
-import useSubscription from "../hooks/useSubscription";
 import { css } from "emotion";
+import React, { useCallback, useEffect, useState } from "react";
+import Products from "../api/products";
 import useSession from "../hooks/useSession";
+import useSubscription from "../hooks/useSubscription";
+import useTracker from "../hooks/useTracker";
 
 const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
 
-export default function ProductPicker({ ...props }) {
+export default function ProductPicker(props) {
   const [activeFilters, setActiveFilters] = useState([]);
-  const [, setPickedProductIds] = useSession("pickedProductIds", []);
+  const [pickedProductIds, setPickedProductIds] = useSession(
+    "pickedProductIds",
+    [],
+  );
+  const [prevPickedProductIds, setPrevPickedProductIds] = useState(
+    activeFilters,
+  );
+  useEffect(() => {
+    if (
+      pickedProductIds &&
+      pickedProductIds.length == 0 &&
+      prevPickedProductIds &&
+      prevPickedProductIds.length > 0
+    ) {
+      setActiveFilters([]);
+    }
+    setPrevPickedProductIds(pickedProductIds);
+  }, [pickedProductIds, prevPickedProductIds]);
   useSubscription("products");
   const products = useTracker(() =>
     Products.find({ removedAt: { $exists: false } }).fetch(),
   );
-  const toggleTag = tag => {
-    if (activeFilters.includes(tag.trim()))
-      setActiveFilters(
-        removeItem(activeFilters, activeFilters.indexOf(tag.trim())),
-      );
-    else {
-      setActiveFilters([...activeFilters, tag.trim()]);
-    }
-  };
+  const toggleTag = useCallback(
+    tag => {
+      if (activeFilters.includes(tag.trim()))
+        setActiveFilters(
+          removeItem(activeFilters, activeFilters.indexOf(tag.trim())),
+        );
+      else {
+        setActiveFilters([...activeFilters, tag.trim()]);
+      }
+    },
+    [activeFilters],
+  );
   const allTags = [
     ...products.reduce((memo, product) => {
       if (product.tags) {
@@ -41,6 +61,8 @@ export default function ProductPicker({ ...props }) {
           justify-content: space-around;
           margin-top: 1em;
           margin-bottom: 0.5em;
+
+          flex-wrap: wrap;
         `}
       >
         {allTags.map(tag => (
@@ -53,6 +75,7 @@ export default function ProductPicker({ ...props }) {
               padding: 0 6px;
               border-radius: 4px;
               margin-right: 2px;
+              margin-bottom: 4px;
               font-size: 1.5em;
             `}
           >
@@ -94,6 +117,7 @@ export default function ProductPicker({ ...props }) {
           .filter(product => {
             if (!activeFilters.length) return true;
             if (!product.tags) return true;
+
             return activeFilters.every(filter =>
               product.tags
                 .split(",")
