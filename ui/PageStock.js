@@ -85,7 +85,6 @@ function StockProductItem({ product, columns }) {
           columns={columns}
           initialValues={product}
           onSubmit={async newProduct => {
-            console.log(newProduct);
             await editProduct(product._id, newProduct);
             setIsEditing(false);
           }}
