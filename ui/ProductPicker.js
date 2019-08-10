@@ -53,6 +53,7 @@ export default function ProductPicker({ ...props }) {
               padding: 0 6px;
               border-radius: 4px;
               margin-right: 2px;
+              font-size: 1.5em;
             `}
           >
             <input
