@@ -28,6 +28,7 @@ Meteor.methods({
       salePrice: +newProduct.salePrice.trim(),
       unitSize: +newProduct.unitSize.trim(),
       sizeUnit: newProduct.sizeUnit.trim(),
+      tags: newProduct.tags.split(",").map(tag => tag.trim()),
       shopPrices: newProduct.buyPrice
         ? [{ buyPrice: +newProduct.buyPrice.trim(), timestamp: new Date() }]
         : undefined,
@@ -41,11 +42,12 @@ Meteor.methods({
       {
         $set: {
           ...updatedProduct,
-          shopPrices: buyPrice && buyPrice.trim()
-            ? (oldProduct.shopPrices || []).concat([
-                { buyPrice: +buyPrice.trim(), timestamp: new Date() },
-              ])
-            : undefined,
+          shopPrices:
+            buyPrice && buyPrice.trim()
+              ? (oldProduct.shopPrices || []).concat([
+                  { buyPrice: +buyPrice.trim(), timestamp: new Date() },
+                ])
+              : undefined,
         },
       },
     );

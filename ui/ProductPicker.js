@@ -1,18 +1,69 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import Products from "../api/products";
 import useTracker from "../hooks/useTracker";
 import useSubscription from "../hooks/useSubscription";
 import { css } from "emotion";
 import useSession from "../hooks/useSession";
 
+const removeItem = (items, i) =>
+  items.slice(0, i).concat(items.slice(i + 1, items.length));
+
 export default function ProductPicker({ ...props }) {
+  const [activeFilters, setActiveFilters] = useState([]);
   const [, setPickedProductIds] = useSession("pickedProductIds", []);
   useSubscription("products");
   const products = useTracker(() =>
     Products.find({ removedAt: { $exists: false } }).fetch(),
   );
+  const toggleTag = tag => {
+    if (activeFilters.includes(tag.trim()))
+      setActiveFilters(
+        removeItem(activeFilters, activeFilters.indexOf(tag.trim())),
+      );
+    else {
+      setActiveFilters([...activeFilters, tag.trim()]);
+    }
+  };
+  const allTags = [
+    ...products.reduce((memo, product) => {
+      if (product.tags) {
+        product.tags.split(",").forEach(tag => memo.add(tag.trim()));
+      }
+      return memo;
+    }, new Set()),
+  ];
+
   return (
     <div {...props}>
+      <div
+        className={css`
+          display: flex;
+          justify-content: space-around;
+          margin-top: 1em;
+          margin-bottom: 0.5em;
+        `}
+      >
+        {allTags.map(tag => (
+          <label
+            key={tag}
+            className={css`
+              display: inline-block;
+              background: rgba(255, 255, 255, 0.4);
+              color: white;
+              padding: 0 6px;
+              border-radius: 4px;
+              margin-right: 2px;
+            `}
+          >
+            <input
+              type="checkbox"
+              checked={activeFilters.includes(tag.trim())}
+              onChange={() => toggleTag(tag)}
+            />{" "}
+            {tag}
+          </label>
+        ))}
+      </div>
       <div
         className={css`
           display: flex;
@@ -25,10 +76,30 @@ export default function ProductPicker({ ...props }) {
       >
         {[...products]
           .sort((a, b) =>
-            ((a.brandName || "ZZZZZZZZZ") + a.name).localeCompare(
-              (b.brandName || "ZZZZZZZZZ") + b.name,
-            ),
+            activeFilters.length
+              ? (
+                  (a.tags ? "!!!!" : "") +
+                  (a.brandName || "ZZZZZZZZZ") +
+                  a.name
+                ).localeCompare(
+                  (b.tags ? "!!!!" : "") +
+                    (b.brandName || "ZZZZZZZZZ") +
+                    b.name,
+                )
+              : ((a.brandName || "ZZZZZZZZZ") + a.name).localeCompare(
+                  (b.brandName || "ZZZZZZZZZ") + b.name,
+                ),
           )
+          .filter(product => {
+            if (!activeFilters.length) return true;
+            if (!product.tags) return true;
+            return activeFilters.every(filter =>
+              product.tags
+                .split(",")
+                .map(tag => tag.trim())
+                .includes(filter.trim()),
+            );
+          })
           .map(product => (
             <button
               key={product._id}
@@ -70,13 +141,29 @@ export default function ProductPicker({ ...props }) {
                   <b>
                     <big>{product.name}</big>
                   </b>
+                  <br />
                   <small>
                     <small>
-                      {" "}
                       <i>
                         {product.unitSize}
                         {product.sizeUnit}
-                      </i>
+                      </i>{" "}
+                      {product.tags &&
+                        product.tags.split(",").map(tag => (
+                          <span
+                            key={tag}
+                            className={css`
+                              display: inline-block;
+                              background: rgba(0, 0, 0, 0.4);
+                              color: white;
+                              padding: 0 3px;
+                              border-radius: 4px;
+                              margin-left: 2px;
+                            `}
+                          >
+                            {tag.trim()}
+                          </span>
+                        ))}
                     </small>
                   </small>
                 </div>

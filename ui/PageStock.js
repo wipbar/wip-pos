@@ -12,6 +12,7 @@ const fieldNames = [
   "sizeUnit",
   "buyPrice",
   "salePrice",
+  "tags",
 ];
 
 const ProductForm = ({ onSubmit, initialValues, columns }) => {
@@ -27,7 +28,7 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
               name={fieldName}
               placeholder={fieldName}
               defaultValue={initialValues ? initialValues[fieldName] : ""}
-              required={!(fieldName == "buyPrice")}
+              required={!["buyPrice", "tags"].includes(fieldName)}
               className={css`
                 width: 100%;
               `}
@@ -126,7 +127,7 @@ export default function PageStock() {
         ...products.reduce((m, product) => {
           Object.keys(product).map(key => m.add(key));
           return m;
-        }, new Set()),
+        }, new Set(["tags"])),
       ].filter(
         name =>
           !["_id", "buyPrice", "shopPrices", "createdAt", "removedAt"].includes(
