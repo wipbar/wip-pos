@@ -159,7 +159,9 @@ export default function ProductPicker(props) {
               >
                 {product.brandName ? (
                   <div>
-                    <small>{product.brandName}</small>
+                    <small>
+                      <small>{product.brandName}</small>
+                    </small>
                   </div>
                 ) : null}
                 <div>
