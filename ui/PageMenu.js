@@ -45,6 +45,17 @@ export default function PageMenu() {
         .sort((a, b) => a[0].localeCompare(b[0]))
         //        .sort((a, b) => b[1].length - a[1].length)
         .map(([tags, products]) => {
+          const productsByBrandName = Object.entries(
+            products.reduce((m, product) => {
+              if (m[product.brandName]) {
+                m[product.brandName].push(product);
+              } else {
+                m[product.brandName] = [product];
+              }
+              return m;
+            }, {}),
+          ).sort((a, b) => b[1].length - a[1].length);
+
           return (
             <div
               key={tags}
@@ -52,7 +63,7 @@ export default function PageMenu() {
                 -webkit-column-break-inside: avoid;
                 page-break-inside: avoid;
                 break-inside: avoid;
-                border: 2px solid #ffed00;
+                border: 3px solid #ffed00;
                 margin-bottom: 24px;
                 padding: 4px;
               `}
@@ -72,16 +83,17 @@ export default function PageMenu() {
                   list-style: none;
                 `}
               >
-                {products.map(product => (
+                {productsByBrandName.map(([brandName, products]) => (
                   <li
-                    key={product._id}
+                    key={brandName}
                     className={css`
                       margin: 0;
                       padding: 4px 6px;
                       display: flex;
+                      flex-direction: column;
                       background: rgba(255, 255, 255, 0.1);
                       margin-top: 4px;
-                      align-items: center;
+                      align-items: stretch;
                       -webkit-column-break-inside: avoid;
                       page-break-inside: avoid;
                       break-inside: avoid;
@@ -90,32 +102,29 @@ export default function PageMenu() {
                     <div
                       className={css`
                         flex: 1;
+                        display: flex;
+                        justify-content: space-between;
                       `}
                     >
-                      <small>
-                        <small>{product.brandName}</small>
-                      </small>
-                      <br />
-                      <b>{product.name}</b>
-                    </div>
-                    <div
-                      className={css`
-                        margin-left: 5px;
-                        font-size: 1.1em;
-                        text-align: center;
-                      `}
-                    >
-                      <div
-                        className={css`
-                          margin-bottom: -12px;
-                        `}
-                      >
-                        <b>{product.salePrice}</b>
-                      </div>
+                      <small>{brandName}</small>
                       <small>
                         <small>HAX</small>
                       </small>
                     </div>
+                    {products.map(product => (
+                      <div
+                        key={product._id}
+                        className={css`
+                          flex: 1;
+                          display: flex;
+                          justify-content: space-between;
+                          border-top: rgba(255, 255, 255, 0.3) 1px solid;
+                        `}
+                      >
+                        <big>{product.name}</big>
+                        <b>{product.salePrice}</b>
+                      </div>
+                    ))}
                   </li>
                 ))}
               </ul>
