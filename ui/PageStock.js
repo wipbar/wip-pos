@@ -10,6 +10,7 @@ const fieldNames = [
   "name",
   "unitSize",
   "sizeUnit",
+  "abv",
   "buyPrice",
   "salePrice",
   "tags",
@@ -138,7 +139,7 @@ export default function PageStock() {
             ...products.reduce((m, product) => {
               Object.keys(product).map(key => m.add(key));
               return m;
-            }, new Set(["tags"])),
+            }, new Set(["tags", "brandName", "name", "salePrice", "unitSize", "sizeUnit", "abv"])),
           ].filter(
             name =>
               ![

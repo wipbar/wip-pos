@@ -125,9 +125,19 @@ export default function PageMenu() {
                           <b>{product.name}</b>{" "}
                           <small>
                             <small>
-                              <small>{`${product.unitSize}${
-                                product.sizeUnit
-                              }`}</small>
+                              {[
+                                product.unitSize && product.sizeUnit
+                                  ? `${product.unitSize}${product.sizeUnit}`
+                                  : null,
+                                product.abv ? `${product.abv}%` : null,
+                              ]
+                                .filter(Boolean)
+                                .map((thing, i) => (
+                                  <>
+                                    {i > 0 ? ", " : null}
+                                    <small key={thing}>{thing}</small>
+                                  </>
+                                ))}
                             </small>
                           </small>
                         </big>

@@ -28,6 +28,7 @@ Meteor.methods({
       salePrice: +newProduct.salePrice.trim(),
       unitSize: +newProduct.unitSize.trim(),
       sizeUnit: newProduct.sizeUnit.trim(),
+      abv: +newProduct.abv.trim(),
       tags: newProduct.tags
         .split(",")
         .map(tag => tag.trim())

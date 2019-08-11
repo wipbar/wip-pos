@@ -147,10 +147,7 @@ export default function ProductPicker(props) {
                 .includes(filter.trim()),
             );
           })
-          .filter(product => {
-            if (showOnlyMenuItems) return product.isOnMenu;
-            return true;
-          })
+          .filter(product => (showOnlyMenuItems ? product.isOnMenu : true))
           .map(product => (
             <button
               key={product._id}
