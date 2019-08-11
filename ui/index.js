@@ -8,6 +8,7 @@ import App from "./App";
 import PageSales from "./PageSales";
 import PageStock from "./PageStock";
 import PageStats from "./PageStats";
+import PageMenu from "./PageMenu";
 
 export default function UI() {
   const user = useCurrentUser();
@@ -46,6 +47,7 @@ export default function UI() {
             </>
           ) : null}
           <Link to="/stats">Stats</Link>
+          <Link to="/menu">Menu</Link>
         </nav>
       </div>
       <Switch>
@@ -55,11 +57,13 @@ export default function UI() {
             <Route exact path="/stock" component={PageStock} />
             <Route exact path="/sales" component={PageSales} />
             <Route exact path="/stats" component={PageStats} />
+            <Route exact path="/menu" component={PageMenu} />
           </>
         ) : (
           <>
             <Route exact path="/" component={PageStats} />
             <Route exact path="/stats" component={PageStats} />
+            <Route exact path="/menu" component={PageMenu} />
           </>
         )}
       </Switch>

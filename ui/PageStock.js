@@ -107,6 +107,16 @@ function StockProductItem({ product, columns }) {
           remove
         </Button>
       </td>
+      <td>
+        <Button
+          type="button"
+          onClick={() =>
+            editProduct(product._id, { isOnMenu: !product.isOnMenu })
+          }
+        >
+          {product.isOnMenu ? "Remove from menu" : "Add to menu"}
+        </Button>
+      </td>
     </tr>
   );
 }
@@ -137,6 +147,7 @@ export default function PageStock() {
                 "shopPrices",
                 "createdAt",
                 "removedAt",
+                "isOnMenu",
               ].includes(name),
           ),
     [products, productsLoading],
