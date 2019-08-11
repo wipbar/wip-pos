@@ -37,6 +37,7 @@ export default function PageMenu() {
         columns: 3;
         padding: 16px;
         font-size: 1.2em;
+        height: 100%;
         max-height: 100%;
       `}
     >
