@@ -80,6 +80,16 @@ function StockProductItem({ product, columns }) {
   const [isEditing, setIsEditing] = useState(false);
   return (
     <tr>
+      <td>
+        <Button
+          type="button"
+          onClick={() =>
+            editProduct(product._id, { isOnMenu: !product.isOnMenu })
+          }
+        >
+          {product.isOnMenu ? "Remove from menu" : "Add to menu"}
+        </Button>
+      </td>
       {isEditing ? (
         <ProductForm
           columns={columns}
@@ -105,16 +115,6 @@ function StockProductItem({ product, columns }) {
       <td>
         <Button type="button" onClick={() => removeProduct(product._id)}>
           remove
-        </Button>
-      </td>
-      <td>
-        <Button
-          type="button"
-          onClick={() =>
-            editProduct(product._id, { isOnMenu: !product.isOnMenu })
-          }
-        >
-          {product.isOnMenu ? "Remove from menu" : "Add to menu"}
         </Button>
       </td>
     </tr>

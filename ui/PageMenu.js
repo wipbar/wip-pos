@@ -37,6 +37,7 @@ export default function PageMenu() {
         columns: 3;
         padding: 16px;
         font-size: 1.1em;
+        max-height: 100%;
       `}
     >
       {productsGroupedByTags.map(([tags, products], i) => {
