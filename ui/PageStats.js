@@ -36,16 +36,21 @@ export default function PageStats() {
     return hours;
   }, [firstSale, sales]);
 
-  const salesByHour = allHours.map(hour => {
-    const hourEnd = endOfHour(hour);
-    return [
-      hour,
-      sales.filter(
-        sale =>
-          isAfter(sale.timestamp, hour) && isBefore(sale.timestamp, hourEnd),
-      ),
-    ];
-  });
+  const salesByHour = useMemo(
+    () =>
+      allHours.map(hour => {
+        const hourEnd = endOfHour(hour);
+        return [
+          hour,
+          sales.filter(
+            sale =>
+              isAfter(sale.timestamp, hour) &&
+              isBefore(sale.timestamp, hourEnd),
+          ),
+        ];
+      }),
+    [allHours, sales],
+  );
 
   const mostSold = useMemo(
     () =>
@@ -59,20 +64,24 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
-  const mostSalesInAnHour = salesByHour.reduce((m, [, hourSales]) => {
-    const total = hourSales.reduce(
-      (m, hourSale) =>
-        hourSale.products.filter(({ _id, tags }) => {
-          return true;
-          const product = products.find(product => product._id == _id);
-          if (product) return product.tags && product.tags.includes("beer");
-          return tags && tags.includes("beer");
-        }).length + m,
-      0,
-    );
-    if (total > m) m = total;
-    return m;
-  }, 0);
+  const mostSalesInAnHour = useMemo(
+    () =>
+      salesByHour.reduce((m, [, hourSales]) => {
+        const total = hourSales.reduce(
+          (m, hourSale) =>
+            hourSale.products.filter(({ _id, tags }) => {
+              return true;
+              const product = products.find(product => product._id == _id);
+              if (product) return product.tags && product.tags.includes("beer");
+              return tags && tags.includes("beer");
+            }).length + m,
+          0,
+        );
+        if (total > m) m = total;
+        return m;
+      }, 0),
+    [products, salesByHour],
+  );
   return (
     <>
       <div
