@@ -41,7 +41,8 @@ export default function PageMenu() {
       `}
     >
       {productsGroupedByTags
-        .sort((a, b) => b[1].length - a[1].length)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        //        .sort((a, b) => b[1].length - a[1].length)
         .map(([tags, products], i) => {
           return (
             <div
@@ -52,7 +53,7 @@ export default function PageMenu() {
                 break-inside: avoid;
               `}
             >
-              <h2
+              <h3
                 className={
                   i == 0
                     ? css`
@@ -62,7 +63,7 @@ export default function PageMenu() {
                 }
               >
                 {tags.split(",").join(", ")}
-              </h2>
+              </h3>
               <ul
                 className={css`
                   margin: 0;
