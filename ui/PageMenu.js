@@ -37,8 +37,8 @@ export default function PageMenu() {
         columns: 4;
         padding: 16px;
         font-size: 1.15em;
-        height: 100%;
-        max-height: 100%;
+        /*height: 100%;
+        max-height: 100%;*/
       `}
     >
       {productsGroupedByTags
