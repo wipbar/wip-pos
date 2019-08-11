@@ -36,7 +36,7 @@ export default function PageMenu() {
       className={css`
         columns: 3;
         padding: 16px;
-        font-size: 1.2em;
+        font-size: 1.24em;
         height: 100%;
         max-height: 100%;
       `}
@@ -44,7 +44,7 @@ export default function PageMenu() {
       {productsGroupedByTags
         .sort((a, b) => a[0].localeCompare(b[0]))
         //        .sort((a, b) => b[1].length - a[1].length)
-        .map(([tags, products], i) => {
+        .map(([tags, products]) => {
           return (
             <div
               key={tags}
@@ -52,16 +52,16 @@ export default function PageMenu() {
                 -webkit-column-break-inside: avoid;
                 page-break-inside: avoid;
                 break-inside: avoid;
+                border: 1px solid #ffed00;
+                margin-bottom: 24px;
+                padding: 4px;
               `}
             >
               <h3
-                className={
-                  i == 0
-                    ? css`
-                        margin-top: 0;
-                      `
-                    : undefined
-                }
+                className={css`
+                  margin: 0;
+                  padding: 8px;
+                `}
               >
                 {tags.split(",").join(", ")}
               </h3>
@@ -80,7 +80,7 @@ export default function PageMenu() {
                       padding: 4px 6px;
                       display: flex;
                       background: rgba(255, 255, 255, 0.1);
-                      margin-bottom: 4px;
+                      margin-top: 4px;
                       align-items: center;
                       -webkit-column-break-inside: avoid;
                       page-break-inside: avoid;
