@@ -25,8 +25,8 @@ export default function UI() {
         className={css`
           background: rgba(255, 255, 255, 0.2);
           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+          display: ${!user ? "none" : "block"};
         `}
-        //        display: ${user ? "none" : "block"};
       >
         <nav
           className={css`
@@ -39,9 +39,9 @@ export default function UI() {
             }
           `}
         >
-          <AccountsUIWrapper />
           {user ? (
             <>
+              <AccountsUIWrapper />
               <Link to="/">Sell</Link>
               <Link to="/stock">Stock</Link>
               <Link to="/sales">Sales</Link>
@@ -65,6 +65,15 @@ export default function UI() {
             <Route exact path="/" component={PageStats} />
             <Route exact path="/stats" component={PageStats} />
             <Route exact path="/menu" component={PageMenu} />
+            <Route
+              exact
+              path="/signin"
+              component={() => (
+                <div>
+                  <AccountsUIWrapper />
+                </div>
+              )}
+            />
           </>
         )}
       </Switch>

@@ -52,7 +52,7 @@ export default function PageMenu() {
                 -webkit-column-break-inside: avoid;
                 page-break-inside: avoid;
                 break-inside: avoid;
-                border: 1px solid #ffed00;
+                border: 2px solid #ffed00;
                 margin-bottom: 24px;
                 padding: 4px;
               `}
