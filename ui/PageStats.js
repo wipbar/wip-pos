@@ -35,7 +35,7 @@ export default function PageStats() {
     }
     return hours;
   }, [firstSale, sales]);
-  console.log(allHours);
+
   const salesByHour = allHours.map(hour => {
     const hourEnd = endOfHour(hour);
     return [
@@ -46,7 +46,6 @@ export default function PageStats() {
       ),
     ];
   });
-  console.log(salesByHour);
 
   const mostSold = useMemo(
     () =>
@@ -64,6 +63,7 @@ export default function PageStats() {
     const total = hourSales.reduce(
       (m, hourSale) =>
         hourSale.products.filter(({ _id, tags }) => {
+          return true;
           const product = products.find(product => product._id == _id);
           if (product) return product.tags && product.tags.includes("beer");
           return tags && tags.includes("beer");
@@ -96,6 +96,7 @@ export default function PageStats() {
                 height: ${(hourSales.reduce(
                   (m, hourSale) =>
                     hourSale.products.filter(({ _id, tags }) => {
+                      return true;
                       const product = products.find(
                         product => product._id == _id,
                       );
