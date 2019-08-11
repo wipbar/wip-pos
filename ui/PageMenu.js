@@ -91,7 +91,7 @@ export default function PageMenu() {
                         <small>{product.brandName}</small>
                       </small>
                       <br />
-                      {product.name}
+                      <b>{product.name}</b>
                     </div>
                     <div
                       className={css`
