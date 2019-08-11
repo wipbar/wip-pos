@@ -60,22 +60,23 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
+  const mostSalesInAnHour = salesByHour.reduce((m, [, hourSales]) => {
+    const total = hourSales.reduce(
+      (m, hourSale) => hourSale.products.length + m,
+      0,
+    );
+    if (total > m) m = total;
+    return m;
+  }, 0);
   return (
     <>
       <div
         className={css`
           display: flex;
           max-width: 100%;
-          height: ${1 +
-            salesByHour.reduce((m, [, hourSales]) => {
-              const total = hourSales.reduce(
-                (m, hourSale) => hourSale.products.length + m,
-                0,
-              );
-              if (total > m) m = total;
-              return m;
-            }, 0)}em;
+          height: 10em;
           align-items: flex-end;
+          margin-bottom: 1em;
         `}
       >
         {salesByHour.map(([hour, hourSales]) => {
@@ -87,11 +88,12 @@ export default function PageStats() {
                 text-align: center;
                 font-size: 0.8em;
                 background-color: red;
-                height: ${1 +
-                  hourSales.reduce(
-                    (m, hourSale) => hourSale.products.length + m,
-                    0,
-                  )}em;
+                height: ${(hourSales.reduce(
+                  (m, hourSale) => hourSale.products.length + m,
+                  0,
+                ) /
+                  mostSalesInAnHour) *
+                  10}em;
               `}
             >
               {getHours(hour)}
@@ -99,6 +101,7 @@ export default function PageStats() {
           );
         })}
       </div>
+      <hr />
       Most sold:
       <ul>
         {mostSold.map(([productId, count]) => {
