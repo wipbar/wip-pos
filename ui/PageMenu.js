@@ -106,7 +106,7 @@ export default function PageMenu() {
                         justify-content: space-between;
                       `}
                     >
-                      <small>{brandName}</small>
+                      <span>{brandName}</span>
                       <small>
                         <small>HAX</small>
                       </small>
