@@ -34,8 +34,9 @@ export default function PageMenu() {
   return (
     <div
       className={css`
-        columns: 4;
+        columns: 3;
         padding: 16px;
+        font-size: 1.2em;
       `}
     >
       {productsGroupedByTags.map(([tags, products], i) => {
