@@ -99,7 +99,7 @@ export default function PageMenu() {
                       break-inside: avoid;
                     `}
                   >
-                    <div
+                    <small
                       className={css`
                         flex: 1;
                         display: flex;
@@ -107,10 +107,8 @@ export default function PageMenu() {
                       `}
                     >
                       <span>{brandName}</span>
-                      <small>
-                        <small>HAX</small>
-                      </small>
-                    </div>
+                      <small>HAX</small>
+                    </small>
                     {products.map(product => (
                       <div
                         key={product._id}
@@ -121,26 +119,30 @@ export default function PageMenu() {
                           border-top: rgba(255, 255, 255, 0.3) 1px solid;
                         `}
                       >
-                        <big>
-                          <b>{product.name}</b>{" "}
+                        <span>
+                          <span
+                            className={css`
+                              font-weight: 500;
+                            `}
+                          >
+                            {product.name}
+                          </span>{" "}
                           <small>
-                            <small>
-                              {[
-                                product.unitSize && product.sizeUnit
-                                  ? `${product.unitSize}${product.sizeUnit}`
-                                  : null,
-                                product.abv ? `${product.abv}%` : null,
-                              ]
-                                .filter(Boolean)
-                                .map((thing, i) => (
-                                  <>
-                                    {i > 0 ? ", " : null}
-                                    <small key={thing}>{thing}</small>
-                                  </>
-                                ))}
-                            </small>
+                            {[
+                              product.unitSize && product.sizeUnit
+                                ? `${product.unitSize}${product.sizeUnit}`
+                                : null,
+                              product.abv ? `${product.abv}%` : null,
+                            ]
+                              .filter(Boolean)
+                              .map((thing, i) => (
+                                <>
+                                  {i > 0 ? ", " : null}
+                                  <small key={thing}>{thing}</small>
+                                </>
+                              ))}
                           </small>
-                        </big>
+                        </span>
                         <b>{product.salePrice}</b>
                       </div>
                     ))}
