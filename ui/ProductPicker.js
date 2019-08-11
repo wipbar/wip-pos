@@ -9,6 +9,11 @@ const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
 
 export default function ProductPicker(props) {
+  const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
+  const toggleOnlyMenuItems = useCallback(
+    () => setShowOnlyMenuItems(!showOnlyMenuItems),
+    [showOnlyMenuItems],
+  );
   const [activeFilters, setActiveFilters] = useState([]);
   const [pickedProductIds, setPickedProductIds] = useSession(
     "pickedProductIds",
@@ -33,15 +38,12 @@ export default function ProductPicker(props) {
     Products.find({ removedAt: { $exists: false } }).fetch(),
   );
   const toggleTag = useCallback(
-    tag => {
-      if (activeFilters.includes(tag.trim()))
-        setActiveFilters(
-          removeItem(activeFilters, activeFilters.indexOf(tag.trim())),
-        );
-      else {
-        setActiveFilters([...activeFilters, tag.trim()]);
-      }
-    },
+    tag =>
+      setActiveFilters(
+        activeFilters.includes(tag.trim())
+          ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
+          : setActiveFilters([...activeFilters, tag.trim()]),
+      ),
     [activeFilters],
   );
   const allTags = [
@@ -55,6 +57,32 @@ export default function ProductPicker(props) {
 
   return (
     <div {...props}>
+      <div
+        className={css`
+          text-align: center;
+          padding-top: 1em;
+        `}
+      >
+        <label
+          className={css`
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 0 6px;
+            border-radius: 4px;
+            margin-right: 2px;
+            margin-bottom: 4px;
+            font-size: 1.5em;
+          `}
+        >
+          <input
+            type="checkbox"
+            onChange={toggleOnlyMenuItems}
+            checked={showOnlyMenuItems}
+          />{" "}
+          show only items on the menu
+        </label>
+      </div>
       <div
         className={css`
           display: flex;
@@ -101,14 +129,8 @@ export default function ProductPicker(props) {
         {[...products]
           .sort((a, b) =>
             activeFilters.length
-              ? (
-                  (a.tags ? "!!!!" : "") +
-                  (a.brandName || "ZZZZZZZZZ") +
-                  a.name
-                ).localeCompare(
-                  (b.tags ? "!!!!" : "") +
-                    (b.brandName || "ZZZZZZZZZ") +
-                    b.name,
+              ? ((a.tags ? "!!!!" : "") + a.name).localeCompare(
+                  (b.tags ? "!!!!" : "") + b.name,
                 )
               : ((a.brandName || "ZZZZZZZZZ") + a.name).localeCompare(
                   (b.brandName || "ZZZZZZZZZ") + b.name,
@@ -124,6 +146,10 @@ export default function ProductPicker(props) {
                 .map(tag => tag.trim())
                 .includes(filter.trim()),
             );
+          })
+          .filter(product => {
+            if (showOnlyMenuItems) return product.isOnMenu;
+            return true;
           })
           .map(product => (
             <button
