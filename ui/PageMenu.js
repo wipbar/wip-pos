@@ -82,6 +82,9 @@ export default function PageMenu() {
                       background: rgba(255, 255, 255, 0.1);
                       margin-bottom: 4px;
                       align-items: center;
+                      -webkit-column-break-inside: avoid;
+                      page-break-inside: avoid;
+                      break-inside: avoid;
                     `}
                   >
                     <div
