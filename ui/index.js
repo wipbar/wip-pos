@@ -21,37 +21,36 @@ export default function UI() {
         height: 100%;
       `}
     >
-      {user ? (
-        <div
+      <div
+        className={css`
+          background: rgba(255, 255, 255, 0.2);
+          border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+          display: ${user ? "none" : "block"};
+        `}
+      >
+        <nav
           className={css`
-            background: rgba(255, 255, 255, 0.2);
-            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            > a,
+            > span {
+              padding: 1em 2em;
+            }
           `}
         >
-          <nav
-            className={css`
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              > a,
-              > span {
-                padding: 1em 2em;
-              }
-            `}
-          >
-            <AccountsUIWrapper />
-            {user ? (
-              <>
-                <Link to="/">Sell</Link>
-                <Link to="/stock">Stock</Link>
-                <Link to="/sales">Sales</Link>
-              </>
-            ) : null}
-            <Link to="/stats">Stats</Link>
-            <Link to="/menu">Menu</Link>
-          </nav>
-        </div>
-      ) : null}
+          <AccountsUIWrapper />
+          {user ? (
+            <>
+              <Link to="/">Sell</Link>
+              <Link to="/stock">Stock</Link>
+              <Link to="/sales">Sales</Link>
+            </>
+          ) : null}
+          <Link to="/stats">Stats</Link>
+          <Link to="/menu">Menu</Link>
+        </nav>
+      </div>
       <Switch>
         {user ? (
           <>
