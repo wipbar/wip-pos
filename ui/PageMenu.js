@@ -121,7 +121,16 @@ export default function PageMenu() {
                           border-top: rgba(255, 255, 255, 0.3) 1px solid;
                         `}
                       >
-                        <big>{product.name}</big>
+                        <big>
+                          <b>{product.name}</b>{" "}
+                          <small>
+                            <small>
+                              <small>{`${product.unitSize}${
+                                product.sizeUnit
+                              }`}</small>
+                            </small>
+                          </small>
+                        </big>
                         <b>{product.salePrice}</b>
                       </div>
                     ))}
