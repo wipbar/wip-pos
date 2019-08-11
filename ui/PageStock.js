@@ -158,6 +158,7 @@ export default function PageStock() {
       <table>
         <thead>
           <tr>
+            <th>&nbsp;</th>
             {columns.map(column => (
               <th key={column}>{column}</th>
             ))}
