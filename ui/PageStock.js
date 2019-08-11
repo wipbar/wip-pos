@@ -162,7 +162,7 @@ export default function PageStock() {
           </tr>
         </tbody>
       </table>
-      {products && products.length && (
+      {products && products.length ? (
         <table>
           <thead>
             <tr>
@@ -181,7 +181,7 @@ export default function PageStock() {
             ))}
           </tbody>
         </table>
-      )}
+      ) : null}
     </>
   );
 }
