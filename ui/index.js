@@ -25,8 +25,8 @@ export default function UI() {
         className={css`
           background: rgba(255, 255, 255, 0.2);
           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-          display: ${user ? "none" : "block"};
         `}
+        //        display: ${user ? "none" : "block"};
       >
         <nav
           className={css`
