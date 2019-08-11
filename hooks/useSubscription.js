@@ -1,5 +1,6 @@
+import { Meteor } from "meteor/meteor";
 import { Tracker } from "meteor/tracker";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function useSubscription(pubName, ...subOpts) {
   const [loading, setLoading] = useState(true);

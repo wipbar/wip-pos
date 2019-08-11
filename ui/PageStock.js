@@ -112,7 +112,7 @@ function StockProductItem({ product, columns }) {
 }
 
 export default function PageStock() {
-  useSubscription("products");
+  const productsLoading = useSubscription("products");
   const products = useTracker(() =>
     Products.find(
       { removedAt: { $exists: false } },
@@ -122,20 +122,26 @@ export default function PageStock() {
   const [addProduct] = useMethod("Products.addProduct");
   const columns = useMemo(
     () =>
-      [
-        ...products.reduce((m, product) => {
-          Object.keys(product).map(key => m.add(key));
-          return m;
-        }, new Set(["tags"])),
-      ].filter(
-        name =>
-          !["_id", "buyPrice", "shopPrices", "createdAt", "removedAt"].includes(
-            name,
+      productsLoading
+        ? []
+        : [
+            ...products.reduce((m, product) => {
+              Object.keys(product).map(key => m.add(key));
+              return m;
+            }, new Set(["tags"])),
+          ].filter(
+            name =>
+              ![
+                "_id",
+                "buyPrice",
+                "shopPrices",
+                "createdAt",
+                "removedAt",
+              ].includes(name),
           ),
-      ),
-    [products],
+    [products, productsLoading],
   );
-
+  if (productsLoading) return "Loading...";
   return (
     <>
       <table>
