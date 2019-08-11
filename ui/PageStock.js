@@ -29,7 +29,7 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
               name={fieldName}
               placeholder={fieldName}
               defaultValue={initialValues ? initialValues[fieldName] : ""}
-              required={!["buyPrice", "tags"].includes(fieldName)}
+              required={!["buyPrice", "tags", "abv"].includes(fieldName)}
               className={css`
                 width: 100%;
               `}
