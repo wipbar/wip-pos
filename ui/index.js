@@ -26,6 +26,7 @@ export default function UI() {
           background: rgba(255, 255, 255, 0.2);
           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
           display: ${!user ? "none" : "block"};
+          min-height: 72px;
         `}
       >
         <nav
@@ -35,7 +36,7 @@ export default function UI() {
             align-items: center;
             > a,
             > span {
-              padding: 1em 2em;
+              padding: 0.5em 1em;
             }
           `}
         >
