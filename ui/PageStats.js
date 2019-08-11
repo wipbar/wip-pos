@@ -63,9 +63,11 @@ export default function PageStats() {
   const mostSalesInAnHour = salesByHour.reduce((m, [, hourSales]) => {
     const total = hourSales.reduce(
       (m, hourSale) =>
-        hourSale.products.filter(
-          product => product.tags && product.tags.includes("beer"),
-        ).length + m,
+        hourSale.products.filter(({ _id, tags }) => {
+          const product = products.find(product => product._id == _id);
+          if (product) return product.tags && product.tags.includes("beer");
+          return tags && tags.includes("beer");
+        }).length + m,
       0,
     );
     if (total > m) m = total;
@@ -93,9 +95,14 @@ export default function PageStats() {
                 background-color: red;
                 height: ${(hourSales.reduce(
                   (m, hourSale) =>
-                    hourSale.products.filter(
-                      product => product.tags && product.tags.includes("beer"),
-                    ).length + m,
+                    hourSale.products.filter(({ _id, tags }) => {
+                      const product = products.find(
+                        product => product._id == _id,
+                      );
+                      if (product)
+                        return product.tags && product.tags.includes("beer");
+                      return tags && tags.includes("beer");
+                    }).length + m,
                   0,
                 ) /
                   mostSalesInAnHour) *
