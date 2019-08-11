@@ -34,7 +34,7 @@ export default function PageMenu() {
   return (
     <div
       className={css`
-        columns: 3;
+        columns: 4;
         padding: 16px;
         font-size: 1.24em;
         height: 100%;
