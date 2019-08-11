@@ -36,7 +36,7 @@ export default function PageMenu() {
       className={css`
         columns: 3;
         padding: 16px;
-        font-size: 1.2em;
+        font-size: 1.1em;
       `}
     >
       {productsGroupedByTags.map(([tags, products], i) => {
@@ -58,7 +58,7 @@ export default function PageMenu() {
                   : undefined
               }
             >
-              {tags}
+              {tags.split(",").join(", ")}
             </h2>
             <ul
               className={css`
@@ -74,7 +74,7 @@ export default function PageMenu() {
                     margin: 0;
                     padding: 4px 6px;
                     display: flex;
-                    background: rgba(255, 255, 255, 0.4);
+                    background: rgba(255, 255, 255, 0.1);
                     margin-bottom: 4px;
                     align-items: center;
                   `}
@@ -84,7 +84,9 @@ export default function PageMenu() {
                       flex: 1;
                     `}
                   >
-                    <small>{product.brandName}</small>
+                    <small>
+                      <small>{product.brandName}</small>
+                    </small>
                     <br />
                     {product.name}
                   </div>
@@ -92,10 +94,16 @@ export default function PageMenu() {
                     className={css`
                       margin-left: 5px;
                       font-size: 1.1em;
+                      text-align: center;
                     `}
                   >
-                    {product.salePrice}
-                    <br />
+                    <div
+                      className={css`
+                        margin-bottom: -12px;
+                      `}
+                    >
+                      <b>{product.salePrice}</b>
+                    </div>
                     <small>
                       <small>HAX</small>
                     </small>
