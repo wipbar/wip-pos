@@ -155,15 +155,25 @@ export default function PageMenu() {
                   ))}
                 </ul>
               </div>
-              <pre
-                className={css`
-                  font-size: 0.79em;
-                  opacity: 0.5;
-                  line-height: 1;
-                `}
-              >
-                {i === randomIndex ? "SE68kX2mkjWWgSdxZCpm9gZ7JPvbZ6cM" : null}
-              </pre>
+              {i === randomIndex ? (
+                <div
+                  className={css`
+                    display: flex;
+                    justify-content: center;
+                  `}
+                >
+                  <pre
+                    className={css`
+                      font-size: 0.79em;
+                      opacity: 0.5;
+                      line-height: 1;
+                      letter-spacing: -2px;
+                    `}
+                  >
+                    SE68kX2mkjWWgSdxZCpm9gZ7JPvbZ6cM
+                  </pre>
+                </div>
+              ) : null}
             </>
           );
         })}
