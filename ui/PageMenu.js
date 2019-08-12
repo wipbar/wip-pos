@@ -164,8 +164,8 @@ export default function PageMenu() {
                 >
                   <pre
                     className={css`
-                      font-size: 0.79em;
-                      opacity: 0.5;
+                      font-size: 0.7em;
+                      opacity: 0.7;
                       line-height: 1;
                       letter-spacing: -2px;
                     `}
