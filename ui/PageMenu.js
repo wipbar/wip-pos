@@ -31,6 +31,10 @@ export default function PageMenu() {
       return memo;
     }, []),
   );
+  const randomIndex = Math.floor(
+    Math.random() * (productsGroupedByTags.length - 1),
+  );
+  console.log(randomIndex);
   return (
     <div
       className={css`
@@ -44,7 +48,7 @@ export default function PageMenu() {
       {productsGroupedByTags
         .sort((a, b) => a[0].localeCompare(b[0]))
         //        .sort((a, b) => b[1].length - a[1].length)
-        .map(([tags, products]) => {
+        .map(([tags, products], i) => {
           const productsByBrandName = Object.entries(
             products.reduce((m, product) => {
               if (m[product.brandName]) {
@@ -57,99 +61,110 @@ export default function PageMenu() {
           ).sort((a, b) => b[1].length - a[1].length);
 
           return (
-            <div
-              key={tags}
-              className={css`
-                -webkit-column-break-inside: avoid;
-                page-break-inside: avoid;
-                break-inside: avoid;
-                border: 3px solid #ffed00;
-                margin-bottom: 24px;
-                padding: 4px;
-              `}
-            >
-              <h3
+            <>
+              <div
+                key={tags}
                 className={css`
-                  margin: 0;
-                  padding: 8px;
+                  -webkit-column-break-inside: avoid;
+                  page-break-inside: avoid;
+                  break-inside: avoid;
+                  border: 3px solid #ffed00;
+                  margin-bottom: 24px;
+                  padding: 4px;
                 `}
               >
-                {tags.split(",").join(", ")}
-              </h3>
-              <ul
-                className={css`
-                  margin: 0;
-                  padding: 0;
-                  list-style: none;
-                `}
-              >
-                {productsByBrandName.map(([brandName, products]) => (
-                  <li
-                    key={brandName}
-                    className={css`
-                      margin: 0;
-                      padding: 4px 6px;
-                      display: flex;
-                      flex-direction: column;
-                      background: rgba(255, 255, 255, 0.1);
-                      margin-top: 4px;
-                      align-items: stretch;
-                      -webkit-column-break-inside: avoid;
-                      page-break-inside: avoid;
-                      break-inside: avoid;
-                    `}
-                  >
-                    <small
+                <h3
+                  className={css`
+                    margin: 0;
+                    padding: 8px;
+                  `}
+                >
+                  {tags.split(",").join(", ")}
+                </h3>
+                <ul
+                  className={css`
+                    margin: 0;
+                    padding: 0;
+                    list-style: none;
+                  `}
+                >
+                  {productsByBrandName.map(([brandName, products]) => (
+                    <li
+                      key={brandName}
                       className={css`
-                        flex: 1;
+                        margin: 0;
+                        padding: 4px 6px;
                         display: flex;
-                        justify-content: space-between;
+                        flex-direction: column;
+                        background: rgba(255, 255, 255, 0.1);
+                        margin-top: 4px;
+                        align-items: stretch;
+                        -webkit-column-break-inside: avoid;
+                        page-break-inside: avoid;
+                        break-inside: avoid;
                       `}
                     >
-                      <span>{brandName}</span>
-                      <small>HAX</small>
-                    </small>
-                    {products.map(product => (
-                      <div
-                        key={product._id}
+                      <small
                         className={css`
                           flex: 1;
                           display: flex;
                           justify-content: space-between;
-                          border-top: rgba(255, 255, 255, 0.3) 1px solid;
                         `}
                       >
-                        <span>
-                          <span
-                            className={css`
-                              font-weight: 500;
-                            `}
-                          >
-                            {product.name}
-                          </span>{" "}
-                          <small>
-                            {[
-                              product.unitSize && product.sizeUnit
-                                ? `${product.unitSize}${product.sizeUnit}`
-                                : null,
-                              product.abv ? `${product.abv}%` : null,
-                            ]
-                              .filter(Boolean)
-                              .map((thing, i) => (
-                                <>
-                                  {i > 0 ? ", " : null}
-                                  <small key={thing}>{thing}</small>
-                                </>
-                              ))}
-                          </small>
-                        </span>
-                        <b>{product.salePrice}</b>
-                      </div>
-                    ))}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                        <span>{brandName}</span>
+                        <small>HAX</small>
+                      </small>
+                      {products.map(product => (
+                        <div
+                          key={product._id}
+                          className={css`
+                            flex: 1;
+                            display: flex;
+                            justify-content: space-between;
+                            border-top: rgba(255, 255, 255, 0.3) 1px solid;
+                          `}
+                        >
+                          <span>
+                            <span
+                              className={css`
+                                font-weight: 500;
+                              `}
+                            >
+                              {product.name}
+                            </span>{" "}
+                            <small>
+                              {[
+                                product.unitSize && product.sizeUnit
+                                  ? `${product.unitSize}${product.sizeUnit}`
+                                  : null,
+                                product.abv ? `${product.abv}%` : null,
+                              ]
+                                .filter(Boolean)
+                                .map((thing, i) => (
+                                  <>
+                                    {i > 0 ? ", " : null}
+                                    <small key={thing}>{thing}</small>
+                                  </>
+                                ))}
+                            </small>
+                          </span>
+                          <b>{product.salePrice}</b>
+                        </div>
+                      ))}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <pre
+                className={css`
+                  font-size: 0.79em;
+                  opacity: 0.5;
+                  line-height: 1;
+                `}
+              >
+                {i === randomIndex ? "SE68kX2mkjWWgSdxZCpm9gZ7JPvbZ6cM" : null}
+              </pre>
+            </>
           );
         })}
     </div>
