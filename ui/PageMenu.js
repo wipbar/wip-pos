@@ -40,7 +40,7 @@ export default function PageMenu() {
       className={css`
         columns: 4;
         padding: 16px;
-        font-size: 1.15em;
+        font-size: 1.25em;
         /*height: 100%;
         max-height: 100%;*/
         font-family: monospace;
