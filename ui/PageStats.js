@@ -262,7 +262,7 @@ export default function PageStats() {
                           flex-direction: column-reverse;
                         `}
                       >
-                        {[mate, beer, others].map((productSales, i) => (
+                        {[mate, beer].map((productSales, i) => (
                           <div
                             key={["mate", "beer", "others"][i]}
                             className={css`
