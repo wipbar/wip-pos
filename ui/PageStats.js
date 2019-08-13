@@ -249,7 +249,7 @@ export default function PageStats() {
                         text-align: center;
                         border-top: 1px solid rgba(255, 255, 255, 0.4);
                         border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-                        padding-top: calc(100% / 24);
+                        padding-top: calc(100% / 25);
                         position: relative;
                       `}
                     >
