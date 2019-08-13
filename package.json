@@ -19,6 +19,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-meteor-hooks": "^0.3.1",
+    "recharts": "^1.7.0",
     "simpl-schema": "^1.5.5"
   },
   "meteor": {

@@ -8,6 +8,16 @@ import {
 } from "date-fns";
 import { css } from "emotion";
 import React, { useMemo } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  Legend,
+  YAxis,
+} from "recharts";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import useSubscription from "../hooks/useSubscription";
@@ -64,66 +74,53 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
-  const mostSalesInAnHour = useMemo(
+
+  const data = useMemo(
     () =>
-      salesByHour.reduce((m, [, hourSales]) => {
-        const total = hourSales.reduce(
-          (m, hourSale) =>
-            hourSale.products.filter(({ _id, tags }) => {
-              return true;
-              const product = products.find(product => product._id == _id);
-              if (product) return product.tags && product.tags.includes("beer");
-              return tags && tags.includes("beer");
-            }).length + m,
-          0,
-        );
-        if (total > m) m = total;
-        return m;
-      }, 0),
+      salesByHour.map(([hour, hourSales]) => {
+        return {
+          hour: getHours(hour),
+          beer: hourSales.reduce(
+            (m, hourSale) =>
+              hourSale.products.filter(({ _id, tags }) => {
+                const product = products.find(product => product._id == _id);
+                if (product)
+                  return product.tags && product.tags.includes("beer");
+                return tags && tags.includes("beer");
+              }).length + m,
+            0,
+          ),
+          mate: hourSales.reduce(
+            (m, hourSale) =>
+              hourSale.products.filter(({ _id, brandName }) => {
+                const product = products.find(product => product._id == _id);
+                if (product)
+                  return (
+                    product.brandName &&
+                    product.brandName.toLowerCase().includes("mate")
+                  );
+                return brandName && brandName.toLowerCase().includes("mate");
+              }).length + m,
+            0,
+          ),
+        };
+      }),
     [products, salesByHour],
   );
+
   return (
     <>
-      <div
-        className={css`
-          display: flex;
-          max-width: 100%;
-          height: 10em;
-          align-items: flex-end;
-          margin-bottom: 1em;
-        `}
-      >
-        {salesByHour.map(([hour, hourSales]) => {
-          return (
-            <div
-              key={hour}
-              className={css`
-                flex: 1;
-                text-align: center;
-                font-size: 0.8em;
-                background-color: red;
-                height: ${(hourSales.reduce(
-                  (m, hourSale) =>
-                    hourSale.products.filter(({ _id, tags }) => {
-                      return true;
-                      const product = products.find(
-                        product => product._id == _id,
-                      );
-                      if (product)
-                        return product.tags && product.tags.includes("beer");
-                      return tags && tags.includes("beer");
-                    }).length + m,
-                  0,
-                ) /
-                  mostSalesInAnHour) *
-                  10}em;
-              `}
-            >
-              {getHours(hour)}
-            </div>
-          );
-        })}
-      </div>
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart data={data}>
+          <Legend verticalAlign="top" height={36} />
+          <XAxis dataKey="hour" interval={2} />
+          <YAxis />
+          <CartesianGrid strokeDasharray="3 3" />
+          <Tooltip />
+          <Area type="monotone" dataKey="mate" stroke="yellow" fill="yellow" />
+          <Area type="monotone" dataKey="beer" stroke="red" fill="red" />
+        </AreaChart>
+      </ResponsiveContainer>
       <hr />
       Most sold:
       <ul>
