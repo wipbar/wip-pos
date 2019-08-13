@@ -126,15 +126,21 @@ export default function PageMenu() {
                           `}
                         >
                           <span>
-                            <span
+                            <div
                               className={css`
                                 font-weight: 500;
                               `}
                             >
                               {product.name}
-                            </span>{" "}
-                            <small>
+                            </div>
+                            <small
+                              className={css`
+                                margin-top: -0.5em;
+                                display: block;
+                              `}
+                            >
                               {[
+                                product.description || null,
                                 product.unitSize && product.sizeUnit
                                   ? `${product.unitSize}${product.sizeUnit}`
                                   : null,
