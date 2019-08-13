@@ -92,14 +92,13 @@ export default function PageStats() {
           ),
           mate: hourSales.reduce(
             (m, hourSale) =>
-              hourSale.products.filter(({ _id, brandName }) => {
+              hourSale.products.filter(({ _id, name }) => {
                 const product = products.find(product => product._id == _id);
                 if (product)
                   return (
-                    product.brandName &&
-                    product.brandName.toLowerCase().includes("mate")
+                    product.name && product.name.toLowerCase().includes("mate")
                   );
-                return brandName && brandName.toLowerCase().includes("mate");
+                return name && name.toLowerCase().includes("mate");
               }).length + m,
             0,
           ),
