@@ -117,8 +117,20 @@ export default function PageStats() {
           <YAxis />
           <CartesianGrid strokeDasharray="3 3" />
           <Tooltip />
-          <Area type="monotone" dataKey="mate" stroke="yellow" fill="yellow" />
-          <Area type="monotone" dataKey="beer" stroke="red" fill="red" />
+          <Area
+            type="monotone"
+            dataKey="beer"
+            stackId="1"
+            stroke="red"
+            fill="red"
+          />
+          <Area
+            type="monotone"
+            dataKey="mate"
+            stackId="1"
+            stroke="yellow"
+            fill="yellow"
+          />
         </AreaChart>
       </ResponsiveContainer>
       <hr />
