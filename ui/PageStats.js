@@ -231,10 +231,10 @@ export default function PageStats() {
                             product => product._id == _id,
                           );
                           if (product)
-                            return (
+                            return !(
                               product.tags && product.tags.includes("beer")
                             );
-                          return tags && tags.includes("beer");
+                          return !tags && tags.includes("beer");
                         }).length + m,
                     0,
                   );
