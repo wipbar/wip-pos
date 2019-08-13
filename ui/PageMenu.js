@@ -43,6 +43,7 @@ export default function PageMenu() {
         font-size: 1.15em;
         /*height: 100%;
         max-height: 100%;*/
+        font-family: monospace;
       `}
     >
       {productsGroupedByTags

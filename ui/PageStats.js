@@ -159,7 +159,11 @@ export default function PageStats() {
   );
   console.log(mostSoldProductsPerHour);
   return (
-    <>
+    <div
+      className={css`
+        font-family: monospace;
+      `}
+    >
       {salesByDayAndHour &&
       salesByDayAndHour.length &&
       salesByDayAndHour[0] &&
@@ -325,6 +329,6 @@ export default function PageStats() {
           );
         })}
       </ul>
-    </>
+    </div>
   );
 }
