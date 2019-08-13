@@ -290,29 +290,31 @@ export default function PageStats() {
           </tbody>
         </table>
       ) : null}
-      <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={data}>
-          <Legend verticalAlign="top" height={36} />
-          <XAxis dataKey="hour" interval={2} />
-          <YAxis />
-          <CartesianGrid strokeDasharray="3 3" />
-          <Tooltip />
-          <Area
-            type="monotone"
-            dataKey="beer"
-            stackId="1"
-            stroke="red"
-            fill="red"
-          />
-          <Area
-            type="monotone"
-            dataKey="mate"
-            stackId="1"
-            stroke="yellow"
-            fill="yellow"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      {false && (
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data}>
+            <Legend verticalAlign="top" height={36} />
+            <XAxis dataKey="hour" interval={2} />
+            <YAxis />
+            <CartesianGrid strokeDasharray="3 3" />
+            <Tooltip />
+            <Area
+              type="monotone"
+              dataKey="beer"
+              stackId="1"
+              stroke="red"
+              fill="red"
+            />
+            <Area
+              type="monotone"
+              dataKey="mate"
+              stackId="1"
+              stroke="yellow"
+              fill="yellow"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      )}
       <hr />
       Most sold:
       <ul>
