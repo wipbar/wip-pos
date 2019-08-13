@@ -44,6 +44,7 @@ export default function PageMenu() {
         /*height: 100%;
         max-height: 100%;*/
         font-family: monospace;
+        letter-spacing: -1px;
       `}
     >
       {productsGroupedByTags
