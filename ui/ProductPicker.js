@@ -33,7 +33,7 @@ export default function ProductPicker(props) {
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
-  useSubscription("products");
+  const productsLoading = useSubscription("products");
   const products = useTracker(() =>
     Products.find({ removedAt: { $exists: false } }).fetch(),
   );
@@ -54,7 +54,7 @@ export default function ProductPicker(props) {
       return memo;
     }, new Set()),
   ];
-
+  if (productsLoading) return "Loading...";
   return (
     <div {...props}>
       <div

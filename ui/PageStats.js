@@ -26,9 +26,9 @@ import useSubscription from "../hooks/useSubscription";
 import useTracker from "../hooks/useTracker";
 
 export default function PageStats() {
-  useSubscription("sales");
+  const salesLoading = useSubscription("sales");
+  const productsLoading = useSubscription("products");
   const sales = useTracker(() => Sales.find().fetch());
-  useSubscription("products");
   const products = useTracker(() =>
     Products.find({ removedAt: { $exists: false } }).fetch(),
   );
@@ -157,7 +157,7 @@ export default function PageStats() {
       }),
     [products, salesByHour],
   );
-  console.log(mostSoldProductsPerHour);
+  if (salesLoading || productsLoading) return "Loading...";
   return (
     <div
       className={css`

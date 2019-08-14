@@ -1,6 +1,5 @@
 import { css } from "emotion";
 import React from "react";
-import useSession from "../hooks/useSession";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 

@@ -1,8 +1,8 @@
-import React from "react";
-import Products from "../api/products";
-import useTracker from "../hooks/useTracker";
-import useSubscription from "../hooks/useSubscription";
 import { css } from "emotion";
+import React, { useMemo } from "react";
+import Products from "../api/products";
+import useSubscription from "../hooks/useSubscription";
+import useTracker from "../hooks/useTracker";
 
 export default function PageMenu() {
   const productsLoading = useSubscription("products");
@@ -12,29 +12,32 @@ export default function PageMenu() {
       { sort: { brandName: 1, name: 1 } },
     ).fetch(),
   );
-  console.log(products, productsLoading);
-  if (productsLoading) return "Loading...";
-  const productsGroupedByTags = Object.entries(
-    products.reduce((memo, product) => {
-      const key = product.tags
-        ? product.tags
-            .split(",")
-            .map(tag => tag.trim())
-            .sort()
-            .join(",")
-        : "other";
-      if (memo[key]) {
-        memo[key].push(product);
-      } else {
-        memo[key] = [product];
-      }
-      return memo;
-    }, []),
+  const productsGroupedByTags = useMemo(
+    () =>
+      Object.entries(
+        products.reduce((memo, product) => {
+          const key = product.tags
+            ? product.tags
+                .split(",")
+                .map(tag => tag.trim())
+                .sort()
+                .join(",")
+            : "other";
+          if (memo[key]) {
+            memo[key].push(product);
+          } else {
+            memo[key] = [product];
+          }
+          return memo;
+        }, []),
+      ),
+    [products],
   );
   const randomIndex = Math.floor(
     Math.random() * (productsGroupedByTags.length - 1),
   );
-  console.log(randomIndex);
+
+  if (productsLoading) return "Loading...";
   return (
     <div
       className={css`
