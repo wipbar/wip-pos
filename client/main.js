@@ -9,7 +9,7 @@ import { Bornhack } from "../api/accounts";
 
 console.log({ Bornhack });
 
-Accounts.ui.config({ requestPermissions: { bornhack: [] } });
+Accounts.ui.config({ requestPermissions: { bornhack: ["read"] } });
 
 const browserHistory = createBrowserHistory();
 Meteor.startup(() =>

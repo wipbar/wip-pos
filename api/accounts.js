@@ -6,8 +6,10 @@ import { OAuth } from "meteor/oauth";
 import { _ } from "meteor/underscore";
 import { HTTP } from "meteor/http";
 
-Accounts.config({ forbidClientAccountCreation: true });
+require("tls").DEFAULT_ECDH_CURVE = "auto";
 
+Accounts.config({ forbidClientAccountCreation: true });
+const service = "bornhack";
 export const Bornhack = {};
 if (Meteor.isClient) {
   // Request Bornhack credentials for the user
@@ -22,9 +24,7 @@ if (Meteor.isClient) {
       options = {};
     }
 
-    var config = ServiceConfiguration.configurations.findOne({
-      service: "bornhack",
-    });
+    const config = ServiceConfiguration.configurations.findOne({ service });
     if (!config) {
       credentialRequestCompleteCallback &&
         credentialRequestCompleteCallback(
@@ -32,41 +32,39 @@ if (Meteor.isClient) {
         );
       return;
     }
-    var credentialToken = Random.secret();
+    const credentialToken = Random.secret();
 
-    // var scope = (options && options.requestPermissions) || ["user:email"];
-    // var flatScope = _.map(scope, encodeURIComponent).join("+");
+    // const scope = (options && options.requestPermissions) || ["user:email"];
+    // const flatScope = _.map(scope, encodeURIComponent).join("+");
 
-    var loginStyle = OAuth._loginStyle("bornhack", config, options);
-    var loginUrl =
-      "https://wwwstaging.bornhack.org/o/authorize" +
-      "?client_id=" +
-      config.clientId +
+    const loginStyle = OAuth._loginStyle(service, config, options);
+    const loginUrl =
+      "https://wwwstaging.bornhack.org/o/authorize/" +
+      `?client_id=${config.clientId}` +
       "&response_type=code" +
-      //"&scope=" +
-      //flatScope +
-      //      "&redirect_uri=" +
-      //      OAuth._redirectUri("bornhack", config) +
-      "&state=" +
-      OAuth._stateParam(
+      // `&scope=${flatScope}` +
+      `&redirect_uri=${OAuth._redirectUri(service, config)}` +
+      `&state=${OAuth._stateParam(
         loginStyle,
         credentialToken,
         options && options.redirectUrl,
-      );
+      )}`;
 
     OAuth.launchLogin({
-      loginService: "bornhack",
-      loginStyle: loginStyle,
-      loginUrl: loginUrl,
-      credentialRequestCompleteCallback: credentialRequestCompleteCallback,
-      credentialToken: credentialToken,
+      loginService: service,
+      loginStyle,
+      loginUrl,
+      credentialRequestCompleteCallback,
+      credentialToken,
       popupOptions: { width: 900, height: 450 },
     });
   };
 } else {
-  OAuth.registerService("bornhack", 2, null, (query) => {
+  OAuth.registerService(service, 2, null, (query) => {
     const accessToken = getAccessToken(query);
-    const { id, email, login, name } = getIdentity(accessToken);
+    const identity = getIdentity(accessToken);
+    console.log(identity);
+    const { id, email, login, name } = identity;
     const emails = getEmails(accessToken);
     const primaryEmail = _.findWhere(emails, { primary: true });
 
@@ -81,37 +79,31 @@ if (Meteor.isClient) {
       options: { profile: { name } },
     };
   });
-  // http://developer.bornhack.com/v3/#user-agent-required
-  var userAgent = "Meteor";
-  if (Meteor.release) userAgent += "/" + Meteor.release;
-  var getAccessToken = (query) => {
-    var config = ServiceConfiguration.configurations.findOne({
-      service: "bornhack",
-    });
+  const getAccessToken = ({ code, state }) => {
+    const config = ServiceConfiguration.configurations.findOne({ service });
     if (!config) throw new ServiceConfiguration.ConfigError();
 
-    var response;
+    let response;
     try {
-      response = HTTP.post("https://wwwstaging.bornhack.org/o/token", {
+      response = HTTP.post("https://wwwstaging.bornhack.org/o/token/", {
         headers: {
-          Accept: "application/json",
-          "User-Agent": userAgent,
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         },
         params: {
-          code: query.code,
+          code,
+          grant_type: "authorization_code",
           client_id: config.clientId,
           client_secret: OAuth.openSecret(config.secret),
-          redirect_uri: OAuth._redirectUri("bornhack", config),
-          state: query.state,
+          redirect_uri: OAuth._redirectUri(service, config),
+          state,
         },
       });
-    } catch (err) {
-      console.log(err);
+    } catch ({ message, response }) {
       throw _.extend(
         new Error(
-          "Failed to complete OAuth handshake with Bornhack. " + err.message,
+          "Failed to complete OAuth handshake with Bornhack. " + message,
         ),
-        { response: err.response },
+        { response },
       );
     }
     if (response.data.error) {
@@ -125,36 +117,33 @@ if (Meteor.isClient) {
     }
   };
 
-  const getIdentity = (accessToken) => {
+  const getIdentity = (access_token) => {
     try {
-      return HTTP.get("https://api.bornhack.com/user", {
-        headers: { "User-Agent": userAgent }, // http://developer.bornhack.com/v3/#user-agent-required
-        params: { access_token: accessToken },
+      return HTTP.get("https://wwwstaging.bornhack.org/profile/email/", {
+        params: { access_token },
       }).data;
-    } catch (err) {
+    } catch ({ message, response }) {
       throw _.extend(
-        new Error("Failed to fetch identity from Bornhack. " + err.message),
-        { response: err.response },
+        new Error("Failed to fetch identity from Bornhack. " + message),
+        { response },
       );
     }
   };
 
-  const getEmails = (accessToken) => {
+  const getEmails = (access_token) => {
     try {
       return HTTP.get("https://api.bornhack.com/user/emails", {
-        headers: { "User-Agent": userAgent }, // http://developer.bornhack.com/v3/#user-agent-required
-        params: { access_token: accessToken },
+        params: { access_token },
       }).data;
     } catch (err) {
       return [];
     }
   };
 
-  Bornhack.retrieveCredential = (credentialToken, credentialSecret) => {
-    return OAuth.retrieveCredential(credentialToken, credentialSecret);
-  };
+  Bornhack.retrieveCredential = (credentialToken, credentialSecret) =>
+    OAuth.retrieveCredential(credentialToken, credentialSecret);
   ServiceConfiguration.configurations.upsert(
-    { service: "bornhack" },
+    { service },
     {
       $set: {
         loginStyle: "popup",
@@ -165,8 +154,7 @@ if (Meteor.isClient) {
   );
 }
 
-// based on accounts-bornhack/bornhack.js
-Accounts.oauth.registerService("bornhack");
+Accounts.oauth.registerService(service);
 
 if (Meteor.isClient) {
   const loginWithBornhack = (options, callback) => {
@@ -176,15 +164,14 @@ if (Meteor.isClient) {
       options = null;
     }
 
-    var credentialRequestCompleteCallback = Accounts.oauth.credentialRequestCompleteHandler(
-      callback,
+    Bornhack.requestCredential(
+      options,
+      Accounts.oauth.credentialRequestCompleteHandler(callback),
     );
-    Bornhack.requestCredential(options, credentialRequestCompleteCallback);
   };
-  Accounts.registerClientLoginFunction("bornhack", loginWithBornhack);
-  Meteor.loginWithBornhack = (...args) => {
-    return Accounts.applyLoginFunction("bornhack", ...args);
-  };
+  Accounts.registerClientLoginFunction(service, loginWithBornhack);
+  Meteor.loginWithBornhack = (...args) =>
+    Accounts.applyLoginFunction(service, ...args);
 } else {
   Accounts.addAutopublishFields({
     // not sure whether the bornhack api can be used from the browser,
