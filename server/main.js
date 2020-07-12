@@ -3,16 +3,32 @@ import { Meteor } from "meteor/meteor";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
+import { Bornhack } from "../api/accounts";
+import httpProxy from "http-proxy";
+
+if (Meteor.isDevelopment)
+  Meteor.startup(() => {
+    httpProxy
+      .createProxyServer({
+        ssl: {
+          key: Assets.getText("server.key"),
+          cert: Assets.getText("server.crt"),
+        },
+        target: "http://localhost:3000",
+        ws: true,
+        xfwd: true,
+      })
+      .listen(3100);
+  });
 
 Meteor.publish("products", () => Products.find());
 Meteor.publish("sales", () => Sales.find());
 Meteor.publish("stocks", () => Stocks.find());
 
-Accounts.config({ forbidClientAccountCreation: true });
 Meteor.startup(() => {
   const products = Products.find({ removedAt: { $exists: false } }).fetch();
   false &&
-    products.forEach(product => {
+    products.forEach((product) => {
       if (
         !product.tags &&
         product.brandName &&

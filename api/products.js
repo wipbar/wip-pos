@@ -2,7 +2,7 @@ import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 
 const Products = new Mongo.Collection("products");
-const addProduct = product => Products.insert(product);
+const addProduct = (product) => Products.insert(product);
 if (Meteor.isServer)
   Meteor.startup(() => {
     if (Products.find().count() === 0) {
@@ -31,7 +31,7 @@ Meteor.methods({
       abv: +newProduct.abv.trim(),
       tags: newProduct.tags
         .split(",")
-        .map(tag => tag.trim())
+        .map((tag) => tag.trim())
         .join(","),
       shopPrices: newProduct.buyPrice
         ? [{ buyPrice: +newProduct.buyPrice.trim(), timestamp: new Date() }]

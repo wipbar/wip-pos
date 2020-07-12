@@ -32,32 +32,32 @@ export default function PageStats() {
   const products = useTracker(() =>
     Products.find({ removedAt: { $exists: false } }).fetch(),
   );
-  const [firstSale] = useMemo(
-    () => (sales ? [...sales].sort((a, b) => a.timestamp - b.timestamp) : []),
-    [sales],
-  );
+  const [firstSale, lastSale] = useMemo(() => {
+    const salesByTimestamp = sales
+      ? [...sales].sort((a, b) => a.timestamp - b.timestamp)
+      : [];
+    return [salesByTimestamp[0], salesByTimestamp[salesByTimestamp.length - 1]];
+  }, [sales]);
   const currentDate = new Date();
   const allHours = useMemo(() => {
     let hours = [];
     if (firstSale) {
       const from = startOfHour(setHours(firstSale.timestamp, 6));
-      const to = endOfHour(setHours(currentDate, 5));
+      const to = endOfHour(setHours(lastSale.timeStamp || currentDate, 5));
       for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
         hours.push(i);
       }
     }
     return hours;
-  }, [firstSale, currentDate]);
+  }, [firstSale, lastSale, currentDate]);
   const allDays = useMemo(() => {
     let days = [[]];
     if (firstSale) {
       const from = startOfHour(setHours(firstSale.timestamp, 6));
-      const to = endOfHour(currentDate);
-      console.log({ from, to });
+      const to = endOfHour(lastSale.timeStamp || currentDate);
       let dayI = 0;
       let hourI = 0;
       for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
-        console.log({ dayI, hourI });
         days[dayI].push(i);
         hourI++;
         if (hourI == 24) {
@@ -68,7 +68,7 @@ export default function PageStats() {
       }
     }
     return days;
-  }, [firstSale, currentDate]);
+  }, [firstSale, lastSale, currentDate]);
   let mostSoldProductsPerHour = useMemo(
     () =>
       allHours.reduce((m, hour) => {
@@ -87,10 +87,10 @@ export default function PageStats() {
   );
   const salesByHour = useMemo(
     () =>
-      allHours.map(hour => {
+      allHours.map((hour) => {
         const hourEnd = endOfHour(hour);
         const salesOfHour = sales.filter(
-          sale =>
+          (sale) =>
             isAfter(sale.timestamp, hour) && isBefore(sale.timestamp, hourEnd),
         );
         return [hour, salesOfHour];
@@ -99,13 +99,13 @@ export default function PageStats() {
   );
   const salesByDayAndHour = useMemo(
     () =>
-      allDays.map(hours =>
-        hours.map(hour => {
+      allDays.map((hours) =>
+        hours.map((hour) => {
           const hourEnd = endOfHour(hour);
           return [
             hour,
             sales.filter(
-              sale =>
+              (sale) =>
                 isAfter(sale.timestamp, hour) &&
                 isBefore(sale.timestamp, hourEnd),
             ),
@@ -118,7 +118,7 @@ export default function PageStats() {
     () =>
       Object.entries(
         sales.reduce((m, sale) => {
-          sale.products.forEach(product => {
+          sale.products.forEach((product) => {
             m[product._id] = m[product._id] ? m[product._id] + 1 : 1;
           });
           return m;
@@ -134,7 +134,7 @@ export default function PageStats() {
           beer: hourSales.reduce(
             (m, hourSale) =>
               hourSale.products.filter(({ _id, tags }) => {
-                const product = products.find(product => product._id == _id);
+                const product = products.find((product) => product._id == _id);
                 if (product)
                   return product.tags && product.tags.includes("beer");
                 return tags && tags.includes("beer");
@@ -144,7 +144,7 @@ export default function PageStats() {
           mate: hourSales.reduce(
             (m, hourSale) =>
               hourSale.products.filter(({ _id, name }) => {
-                const product = products.find(product => product._id == _id);
+                const product = products.find((product) => product._id == _id);
                 if (product)
                   return (
                     product.name && product.name.toLowerCase().includes("mate")
@@ -183,7 +183,7 @@ export default function PageStats() {
             </tr>
           </thead>
           <tbody>
-            {salesByDayAndHour.map(hours => (
+            {salesByDayAndHour.map((hours) => (
               <tr key={hours[0][0]}>
                 <th key={format(hours[0][0], "DD")}>
                   {format(hours[0][0], "ddd")}
@@ -193,7 +193,7 @@ export default function PageStats() {
                     (m, hourSale) =>
                       hourSale.products.filter(({ _id, tags }) => {
                         const product = products.find(
-                          product => product._id == _id,
+                          (product) => product._id == _id,
                         );
                         if (product)
                           return product.tags && product.tags.includes("beer");
@@ -205,7 +205,7 @@ export default function PageStats() {
                     (m, hourSale) =>
                       hourSale.products.filter(({ _id, name }) => {
                         const product = products.find(
-                          product => product._id == _id,
+                          (product) => product._id == _id,
                         );
                         if (product)
                           return (
@@ -221,7 +221,7 @@ export default function PageStats() {
                       hourSale.products
                         .filter(({ _id, name }) => {
                           const product = products.find(
-                            product => product._id == _id,
+                            (product) => product._id == _id,
                           );
                           if (product)
                             return !(
@@ -232,7 +232,7 @@ export default function PageStats() {
                         })
                         .filter(({ _id, tags }) => {
                           const product = products.find(
-                            product => product._id == _id,
+                            (product) => product._id == _id,
                           );
                           if (product)
                             return !(
@@ -272,7 +272,7 @@ export default function PageStats() {
                             className={css`
                               height: ${(productSales /
                                 mostSoldProductsPerHour) *
-                                100}%;
+                              100}%;
                               background-color: ${[
                                 "yellow",
                                 "red",

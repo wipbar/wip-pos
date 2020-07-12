@@ -24,3 +24,9 @@ aldeed:simple-schema
 aldeed:collection2@3.0.0
 mdg:validated-method
 accounts-base
+oauth
+http
+service-configuration
+accounts-oauth
+tarang:ssl
+oauth2

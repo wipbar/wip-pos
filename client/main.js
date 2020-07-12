@@ -5,11 +5,13 @@ import React from "react";
 import { render } from "react-dom";
 import { Router } from "react-router";
 import UI from "../ui";
+import { Bornhack } from "../api/accounts";
 
-Accounts.ui.config({ passwordSignupFields: "USERNAME_ONLY" });
+console.log({ Bornhack });
+
+Accounts.ui.config({ requestPermissions: { bornhack: [] } });
 
 const browserHistory = createBrowserHistory();
-Accounts.config({ forbidClientAccountCreation: true });
 Meteor.startup(() =>
   render(
     <Router history={browserHistory}>
