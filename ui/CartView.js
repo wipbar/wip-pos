@@ -4,7 +4,7 @@ import Products from "../api/products";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import useTracker from "../hooks/useTracker";
+import { useTracker } from "meteor/react-meteor-data";
 
 function CartViewProductsItem({ product, onRemoveClick }) {
   return (

@@ -1,14 +1,13 @@
 import { css } from "emotion";
 import React from "react";
-import { Route, Switch } from "react-router";
-import { Link } from "react-router-dom";
+import { Link, Route, Switch, useRouteMatch } from "react-router-dom";
 import useCurrentUser from "../hooks/useCurrentUser";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import App from "./App";
-import PageSales from "./PageSales";
-import PageStock from "./PageStock";
-import PageStats from "./PageStats";
 import PageMenu from "./PageMenu";
+import PageSales from "./PageSales";
+import PageStats from "./PageStats";
+import PageStock from "./PageStock";
 
 export default function UI() {
   const user = useCurrentUser();

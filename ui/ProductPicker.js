@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Products from "../api/products";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import useTracker from "../hooks/useTracker";
+import { useTracker } from "meteor/react-meteor-data";
 
 const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
@@ -38,7 +38,7 @@ export default function ProductPicker(props) {
     Products.find({ removedAt: { $exists: false } }).fetch(),
   );
   const toggleTag = useCallback(
-    tag =>
+    (tag) =>
       setActiveFilters(
         activeFilters.includes(tag.trim())
           ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
@@ -49,7 +49,7 @@ export default function ProductPicker(props) {
   const allTags = [
     ...products.reduce((memo, product) => {
       if (product.tags) {
-        product.tags.split(",").forEach(tag => memo.add(tag.trim()));
+        product.tags.split(",").forEach((tag) => memo.add(tag.trim()));
       }
       return memo;
     }, new Set()),
@@ -93,7 +93,7 @@ export default function ProductPicker(props) {
           flex-wrap: wrap;
         `}
       >
-        {allTags.map(tag => (
+        {allTags.map((tag) => (
           <label
             key={tag}
             className={css`
@@ -136,23 +136,23 @@ export default function ProductPicker(props) {
                   (b.brandName || "ZZZZZZZZZ") + b.name,
                 ),
           )
-          .filter(product => {
+          .filter((product) => {
             if (!activeFilters.length) return true;
             if (!product.tags) return true;
 
-            return activeFilters.every(filter =>
+            return activeFilters.every((filter) =>
               product.tags
                 .split(",")
-                .map(tag => tag.trim())
+                .map((tag) => tag.trim())
                 .includes(filter.trim()),
             );
           })
-          .filter(product => (showOnlyMenuItems ? product.isOnMenu : true))
-          .map(product => (
+          .filter((product) => (showOnlyMenuItems ? product.isOnMenu : true))
+          .map((product) => (
             <button
               key={product._id}
               onClick={() =>
-                setPickedProductIds(pickedProductIds => [
+                setPickedProductIds((pickedProductIds) => [
                   ...pickedProductIds,
                   product._id,
                 ])
@@ -199,7 +199,7 @@ export default function ProductPicker(props) {
                         {product.sizeUnit}
                       </i>{" "}
                       {product.tags &&
-                        product.tags.split(",").map(tag => (
+                        product.tags.split(",").map((tag) => (
                           <span
                             key={tag}
                             className={css`

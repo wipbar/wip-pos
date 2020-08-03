@@ -1,7 +1,7 @@
 import React from "react";
 import Sales from "../api/sales";
 import useSubscription from "../hooks/useSubscription";
-import useTracker from "../hooks/useTracker";
+import { useTracker } from "meteor/react-meteor-data";
 
 export default function PageSales() {
   useSubscription("sales");

@@ -2,7 +2,7 @@ import { css } from "emotion";
 import React, { useMemo } from "react";
 import Products from "../api/products";
 import useSubscription from "../hooks/useSubscription";
-import useTracker from "../hooks/useTracker";
+import { useTracker } from "meteor/react-meteor-data";
 
 export default function PageMenu() {
   const productsLoading = useSubscription("products");
@@ -19,7 +19,7 @@ export default function PageMenu() {
           const key = product.tags
             ? product.tags
                 .split(",")
-                .map(tag => tag.trim())
+                .map((tag) => tag.trim())
                 .sort()
                 .join(",")
             : "other";
@@ -119,7 +119,7 @@ export default function PageMenu() {
                         <span>{brandName}</span>
                         <small>HAX</small>
                       </small>
-                      {products.map(product => (
+                      {products.map((product) => (
                         <div
                           key={product._id}
                           className={css`

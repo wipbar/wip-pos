@@ -2,8 +2,9 @@ import React, { useMemo, useState } from "react";
 import Products from "../api/products";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
-import useTracker from "../hooks/useTracker";
+import { useTracker } from "meteor/react-meteor-data";
 import { css } from "emotion";
+import { useRouteMatch } from "react-router";
 
 const fieldNames = [
   "brandName",
@@ -22,8 +23,10 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
   return (
     <>
       {columns
-        .filter(fieldName => (initialValues ? fieldName !== "buyPrice" : true))
-        .map(fieldName => (
+        .filter((fieldName) =>
+          initialValues ? fieldName !== "buyPrice" : true,
+        )
+        .map((fieldName) => (
           <td key={fieldName}>
             <input
               form={formId}
@@ -42,7 +45,7 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
       <td>
         <form
           id={formId}
-          onSubmit={async e => {
+          onSubmit={async (e) => {
             e.preventDefault();
             const newProduct = [...e.currentTarget.elements]
               .filter(({ name }) => fieldNames.includes(name))
@@ -98,14 +101,14 @@ function StockProductItem({ product, columns }) {
         <ProductForm
           columns={columns}
           initialValues={product}
-          onSubmit={async newProduct => {
+          onSubmit={async (newProduct) => {
             await editProduct(product._id, newProduct);
             setIsEditing(false);
           }}
         />
       ) : (
         <>
-          {columns.map(column => (
+          {columns.map((column) => (
             <th key={column}>{product[column]}</th>
           ))}
         </>
@@ -126,6 +129,8 @@ function StockProductItem({ product, columns }) {
 }
 
 export default function PageStock() {
+  console.log("PageStock");
+  console.log(useRouteMatch());
   const productsLoading = useSubscription("products");
   const products = useTracker(() =>
     Products.find(
@@ -140,11 +145,11 @@ export default function PageStock() {
         ? []
         : [
             ...products.reduce((m, product) => {
-              Object.keys(product).map(key => m.add(key));
+              Object.keys(product).map((key) => m.add(key));
               return m;
             }, new Set(["tags", "brandName", "name", "salePrice", "unitSize", "sizeUnit", "abv", "description"])),
           ].filter(
-            name =>
+            (name) =>
               ![
                 "_id",
                 "buyPrice",
@@ -162,7 +167,7 @@ export default function PageStock() {
       <table>
         <thead>
           <tr>
-            {columns.map(column => (
+            {columns.map((column) => (
               <th key={column}>{column}</th>
             ))}
             <th>buyPrice</th>
@@ -172,7 +177,7 @@ export default function PageStock() {
           <tr>
             <ProductForm
               columns={[...columns, "buyPrice"]}
-              onSubmit={newProduct => addProduct(newProduct)}
+              onSubmit={(newProduct) => addProduct(newProduct)}
             />
           </tr>
         </tbody>
@@ -182,13 +187,13 @@ export default function PageStock() {
           <thead>
             <tr>
               <th>&nbsp;</th>
-              {columns.map(column => (
+              {columns.map((column) => (
                 <th key={column}>{column}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {products.map(product => (
+            {products.map((product) => (
               <StockProductItem
                 key={product._id}
                 columns={columns}

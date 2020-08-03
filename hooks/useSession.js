@@ -1,6 +1,6 @@
 import { Session } from "meteor/session";
 import { useCallback, useEffect } from "react";
-import useTracker from "./useTracker";
+import { useTracker } from "meteor/react-meteor-data";
 
 export default function useSession(sessionName, defaultValue) {
   const currentValue = useTracker(() => Session.get(sessionName), [
@@ -12,7 +12,7 @@ export default function useSession(sessionName, defaultValue) {
     }
   }, [currentValue, defaultValue, sessionName]);
   const setValue = useCallback(
-    value =>
+    (value) =>
       Session.set(
         sessionName,
         typeof value === "function" ? value(currentValue) : value,

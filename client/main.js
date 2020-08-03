@@ -3,7 +3,7 @@ import { Accounts } from "meteor/accounts-base";
 import { Meteor } from "meteor/meteor";
 import React from "react";
 import { render } from "react-dom";
-import { Router } from "react-router";
+import { BrowserRouter as Router } from "react-router-dom";
 import "../api/accounts";
 import UI from "../ui";
 
