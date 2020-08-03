@@ -39,7 +39,7 @@ if (Meteor.isClient) {
 
     const loginStyle = OAuth._loginStyle(service, config, options);
     const loginUrl =
-      "https://wwwstaging.bornhack.org/o/authorize/" +
+      "https://bornhack.dk/o/authorize/" +
       `?client_id=${config.clientId}` +
       "&response_type=code" +
       // `&scope=${flatScope}` +
@@ -63,20 +63,20 @@ if (Meteor.isClient) {
   OAuth.registerService(service, 2, null, (query) => {
     const accessToken = getAccessToken(query);
     const identity = getIdentity(accessToken);
-    console.log(identity);
-    const { id, email, login, name } = identity;
-    const emails = getEmails(accessToken);
-    const primaryEmail = _.findWhere(emails, { primary: true });
 
     return {
       serviceData: {
-        id,
         accessToken: OAuth.sealSecret(accessToken),
-        email: email || (primaryEmail && primaryEmail.email) || "",
-        username: login,
-        emails,
+        id: identity.user.username,
       },
-      options: { profile: { name } },
+      options: {
+        profile: {
+          name: identity.profile.public_credit_name,
+          profile: identity.profile,
+          user: identity.user,
+          teams: identity.teams,
+        },
+      },
     };
   });
   const getAccessToken = ({ code, state }) => {
@@ -85,7 +85,7 @@ if (Meteor.isClient) {
 
     let response;
     try {
-      response = HTTP.post("https://wwwstaging.bornhack.org/o/token/", {
+      response = HTTP.post("https://bornhack.dk/o/token/", {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         },
@@ -119,24 +119,14 @@ if (Meteor.isClient) {
 
   const getIdentity = (access_token) => {
     try {
-      return HTTP.get("https://wwwstaging.bornhack.org/profile/email/", {
-        params: { access_token },
+      return HTTP.get("https://bornhack.dk/profile/api/", {
+        headers: { Authorization: `Bearer ${access_token}` },
       }).data;
     } catch ({ message, response }) {
       throw _.extend(
         new Error("Failed to fetch identity from Bornhack. " + message),
         { response },
       );
-    }
-  };
-
-  const getEmails = (access_token) => {
-    try {
-      return HTTP.get("https://api.bornhack.com/user/emails", {
-        params: { access_token },
-      }).data;
-    } catch (err) {
-      return [];
     }
   };
 

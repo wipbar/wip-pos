@@ -4,10 +4,8 @@ import { Meteor } from "meteor/meteor";
 import React from "react";
 import { render } from "react-dom";
 import { Router } from "react-router";
+import "../api/accounts";
 import UI from "../ui";
-import { Bornhack } from "../api/accounts";
-
-console.log({ Bornhack });
 
 Accounts.ui.config({ requestPermissions: { bornhack: ["read"] } });
 
