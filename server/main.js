@@ -3,23 +3,7 @@ import { Meteor } from "meteor/meteor";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
-import { Bornhack } from "../api/accounts";
-import httpProxy from "http-proxy";
-
-if (Meteor.isDevelopment)
-  Meteor.startup(() => {
-    httpProxy
-      .createProxyServer({
-        ssl: {
-          key: Assets.getText("server.key"),
-          cert: Assets.getText("server.crt"),
-        },
-        target: "http://localhost:3000",
-        ws: true,
-        xfwd: true,
-      })
-      .listen(3100);
-  });
+import "../api/accounts";
 
 Meteor.publish("products", () => Products.find());
 Meteor.publish("sales", () => Sales.find());

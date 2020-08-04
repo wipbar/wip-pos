@@ -25,11 +25,7 @@ export default function useMethod(method, { transform } = {}) {
           return state;
       }
     },
-    {
-      isLoading: false,
-      data: null,
-      error: null,
-    },
+    { isLoading: false, data: null, error: null },
   );
 
   const call = useCallback(
