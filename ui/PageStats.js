@@ -43,7 +43,7 @@ export default function PageStats() {
     let hours = [];
     if (firstSale) {
       const from = startOfHour(setHours(firstSale.timestamp, 6));
-      const to = endOfHour(setHours(lastSale.timeStamp || currentDate, 5));
+      const to = endOfHour(setHours(lastSale.timestamp || currentDate, 5));
       for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
         hours.push(i);
       }
@@ -54,7 +54,7 @@ export default function PageStats() {
     let days = [[]];
     if (firstSale) {
       const from = startOfHour(setHours(firstSale.timestamp, 6));
-      const to = endOfHour(lastSale.timeStamp || currentDate);
+      const to = endOfHour(lastSale.timestamp || currentDate);
       let dayI = 0;
       let hourI = 0;
       for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
