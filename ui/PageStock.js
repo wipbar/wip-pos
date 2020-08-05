@@ -129,8 +129,6 @@ function StockProductItem({ product, columns }) {
 }
 
 export default function PageStock() {
-  console.log("PageStock");
-  console.log(useRouteMatch());
   const productsLoading = useSubscription("products");
   const products = useTracker(() =>
     Products.find(
