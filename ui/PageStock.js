@@ -1,10 +1,9 @@
+import { css } from "emotion";
+import { useTracker } from "meteor/react-meteor-data";
 import React, { useMemo, useState } from "react";
 import Products from "../api/products";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
-import { useTracker } from "meteor/react-meteor-data";
-import { css } from "emotion";
-import { useRouteMatch } from "react-router";
 
 const fieldNames = [
   "brandName",
@@ -91,7 +90,10 @@ function StockProductItem({ product, columns }) {
         <Button
           type="button"
           onClick={() =>
-            editProduct(product._id, { isOnMenu: !product.isOnMenu })
+            editProduct({
+              productId: product._id,
+              data: { isOnMenu: !product.isOnMenu },
+            })
           }
         >
           {product.isOnMenu ? "Remove from menu" : "Add to menu"}
@@ -120,7 +122,10 @@ function StockProductItem({ product, columns }) {
         </Button>
       </td>
       <td>
-        <Button type="button" onClick={() => removeProduct(product._id)}>
+        <Button
+          type="button"
+          onClick={() => removeProduct({ productId: product._id })}
+        >
           remove
         </Button>
       </td>
@@ -175,7 +180,7 @@ export default function PageStock() {
           <tr>
             <ProductForm
               columns={[...columns, "buyPrice"]}
-              onSubmit={(newProduct) => addProduct(newProduct)}
+              onSubmit={(newProduct) => addProduct({ data: newProduct })}
             />
           </tr>
         </tbody>

@@ -19,30 +19,30 @@ if (Meteor.isServer)
 export default Products;
 
 Meteor.methods({
-  "Products.addProduct"(newProduct) {
+  "Products.addProduct"({ data }) {
     if (!this.userId) throw new Meteor.Error("log in please");
     return Products.insert({
       createdAt: new Date(),
-      brandName: newProduct.brandName.trim(),
-      name: newProduct.name.trim(),
-      salePrice: +newProduct.salePrice.trim(),
-      unitSize: +newProduct.unitSize.trim(),
-      sizeUnit: newProduct.sizeUnit.trim(),
-      abv: +newProduct.abv.trim(),
-      tags: newProduct.tags
+      brandName: data.brandName.trim(),
+      name: data.name.trim(),
+      salePrice: +data.salePrice.trim(),
+      unitSize: +data.unitSize.trim(),
+      sizeUnit: data.sizeUnit.trim(),
+      abv: +data.abv.trim(),
+      tags: data.tags
         .split(",")
         .map((tag) => tag.trim())
         .join(","),
-      shopPrices: newProduct.buyPrice
-        ? [{ buyPrice: +newProduct.buyPrice.trim(), timestamp: new Date() }]
+      shopPrices: data.buyPrice
+        ? [{ buyPrice: +data.buyPrice.trim(), timestamp: new Date() }]
         : undefined,
     });
   },
-  "Products.editProduct"(id, { buyPrice, ...updatedProduct }) {
+  "Products.editProduct"({ productId, data: { buyPrice, ...updatedProduct } }) {
     if (!this.userId) throw new Meteor.Error("log in please");
-    const oldProduct = Products.findOne({ _id: id });
+    const oldProduct = Products.findOne({ _id: productId });
     return Products.update(
-      { _id: id },
+      { _id: productId },
       {
         $set: {
           ...updatedProduct,
@@ -56,7 +56,7 @@ Meteor.methods({
       },
     );
   },
-  "Products.removeProduct"(productId) {
+  "Products.removeProduct"({ productId }) {
     if (!this.userId) throw new Meteor.Error("log in please");
     if (productId)
       return Products.update(

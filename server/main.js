@@ -1,13 +1,15 @@
 import { Accounts } from "meteor/accounts-base";
 import { Meteor } from "meteor/meteor";
+import "../api/accounts";
+import Locations from "../api/locations";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
-import "../api/accounts";
 
 Meteor.publish("products", () => Products.find());
 Meteor.publish("sales", () => Sales.find());
 Meteor.publish("stocks", () => Stocks.find());
+Meteor.publish("locations", () => Locations.find());
 
 Meteor.startup(() => {
   const products = Products.find({ removedAt: { $exists: false } }).fetch();

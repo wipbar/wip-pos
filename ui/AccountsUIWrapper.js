@@ -9,5 +9,5 @@ export default function AccountsUIWrapper() {
     viewRef.current = Blaze.render(Template.loginButtons, containerRef.current);
     return () => Blaze.remove(viewRef.current);
   });
-  return <span ref={containerRef} />;
+  return <div ref={containerRef} />;
 }

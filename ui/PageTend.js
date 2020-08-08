@@ -1,9 +1,18 @@
 import { css } from "emotion";
-import React from "react";
+import React, { useEffect } from "react";
+import useCurrentLocation from "../hooks/useCurrentLocation";
+import useSession from "../hooks/useSession";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 
-export default function App() {
+export default function PageTend() {
+  const { error, loading, location } = useCurrentLocation(true);
+  const [, setTitle] = useSession("DocumentTitle");
+  useEffect(() => {
+    if (location) setTitle(`${location.name} - Sell`);
+  }, [location, setTitle]);
+  if (loading) return "Loading...";
+  if (error) return error;
   return (
     <div
       className={css`

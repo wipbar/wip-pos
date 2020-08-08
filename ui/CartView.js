@@ -5,6 +5,7 @@ import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
 import { useTracker } from "meteor/react-meteor-data";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 function CartViewProductsItem({ product, onRemoveClick }) {
   return (
@@ -80,6 +81,7 @@ const removeItem = (items, i) =>
   items.slice(0, i - 1).concat(items.slice(i, items.length));
 
 export default function CartView() {
+  const { locationSlug } = useParams();
   const loading = useSubscription("products");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const products = useTracker(() =>
@@ -207,7 +209,10 @@ export default function CartView() {
                 width: 100%;
               `}
               onClick={async () => {
-                await doSellProducts({ productIds: pickedProductIds });
+                await doSellProducts({
+                  locationSlug,
+                  productIds: pickedProductIds,
+                });
                 setPickedProductIds([]);
                 setConfirmOpen(false);
               }}

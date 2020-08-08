@@ -171,3 +171,20 @@ if (Meteor.isClient) {
     forOtherUsers: ["services.bornhack.username"],
   });
 }
+
+export const isUserInTeam = (userOrId, inTeam) => {
+  if (!userOrId || !inTeam) return false;
+  const user = Meteor.users.findOne(
+    typeof userOrId === "string" ? userOrId : userOrId._id,
+  );
+  console.log(user);
+  return !!(
+    user &&
+    user.profile &&
+    user.profile.teams &&
+    user.profile.teams.find(
+      ({ team, camp }) =>
+        team.toLowerCase() === inTeam.toLowerCase() && camp === "BornHack 2020",
+    )
+  );
+};

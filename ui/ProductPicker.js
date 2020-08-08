@@ -8,6 +8,78 @@ import { useTracker } from "meteor/react-meteor-data";
 const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
 
+const stringToColour2 = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++)
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+
+  let colour = "#";
+  for (let i = 0; i < 3; i++)
+    colour += ("00" + ((hash >> (i * 8)) & 0xff).toString(16)).substr(-2);
+
+  return colour;
+};
+
+function stringToColour(inputString) {
+  var sum = 0;
+
+  for (var i in inputString) sum += inputString.charCodeAt(i);
+
+  let r = ~~(
+    ("0." +
+      Math.sin(sum + 1)
+        .toString()
+        .substr(6)) *
+    256
+  );
+  let g = ~~(
+    ("0." +
+      Math.sin(sum + 2)
+        .toString()
+        .substr(6)) *
+    256
+  );
+  let b = ~~(
+    ("0." +
+      Math.sin(sum + 3)
+        .toString()
+        .substr(6)) *
+    256
+  );
+
+  var hex = "#";
+
+  hex += ("00" + r.toString(16)).substr(-2, 2).toUpperCase();
+  hex += ("00" + g.toString(16)).substr(-2, 2).toUpperCase();
+  hex += ("00" + b.toString(16)).substr(-2, 2).toUpperCase();
+
+  return hex;
+}
+
+function getCorrectTextColor(hex) {
+  const threshold = 170; /* about half of 256. Lower threshold equals more dark text on dark background  */
+
+  function cutHex(h) {
+    return h.charAt(0) == "#" ? h.substring(1, 7) : h;
+  }
+  function hexToR(h) {
+    return parseInt(cutHex(h).substring(0, 2), 16);
+  }
+  function hexToG(h) {
+    return parseInt(cutHex(h).substring(2, 4), 16);
+  }
+  function hexToB(h) {
+    return parseInt(cutHex(h).substring(4, 6), 16);
+  }
+
+  const hRed = hexToR(hex);
+  const hGreen = hexToG(hex);
+  const hBlue = hexToB(hex);
+
+  const cBrightness = (hRed * 299 + hGreen * 587 + hBlue * 114) / 1000;
+  return cBrightness > threshold ? "#000000" : "#ffffff";
+}
+
 export default function ProductPicker(props) {
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
   const toggleOnlyMenuItems = useCallback(
@@ -42,7 +114,7 @@ export default function ProductPicker(props) {
       setActiveFilters(
         activeFilters.includes(tag.trim())
           ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
-          : setActiveFilters([...activeFilters, tag.trim()]),
+          : [...activeFilters, tag.trim()],
       ),
     [activeFilters],
   );
@@ -65,7 +137,8 @@ export default function ProductPicker(props) {
       >
         <label
           className={css`
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             background: rgba(255, 255, 255, 0.4);
             color: white;
             padding: 0 6px;
@@ -79,7 +152,10 @@ export default function ProductPicker(props) {
             type="checkbox"
             onChange={toggleOnlyMenuItems}
             checked={showOnlyMenuItems}
-          />{" "}
+            className={css`
+              margin-right: 4px;
+            `}
+          />
           show only items on the menu
         </label>
       </div>
@@ -97,9 +173,10 @@ export default function ProductPicker(props) {
           <label
             key={tag}
             className={css`
-              display: inline-block;
-              background: rgba(255, 255, 255, 0.4);
-              color: white;
+              display: inline-flex;
+              align-items: center;
+              background: ${stringToColour(tag) || `rgba(255, 255, 255, 0.4)`};
+              color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
               padding: 0 6px;
               border-radius: 4px;
               margin-right: 2px;
@@ -111,7 +188,10 @@ export default function ProductPicker(props) {
               type="checkbox"
               checked={activeFilters.includes(tag.trim())}
               onChange={() => toggleTag(tag)}
-            />{" "}
+              className={css`
+                margin-right: 4px;
+              `}
+            />
             {tag}
           </label>
         ))}
@@ -204,8 +284,11 @@ export default function ProductPicker(props) {
                             key={tag}
                             className={css`
                               display: inline-block;
-                              background: rgba(0, 0, 0, 0.4);
-                              color: white;
+                              background: ${stringToColour(tag) ||
+                              `rgba(0, 0, 0, 0.4)`};
+                              color: ${getCorrectTextColor(
+                                stringToColour(tag),
+                              ) || "white"};
                               padding: 0 3px;
                               border-radius: 4px;
                               margin-left: 2px;
