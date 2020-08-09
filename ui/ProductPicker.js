@@ -93,7 +93,7 @@ export default function ProductPicker(props) {
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
-  const { data: products, loading: productsLoading } = useMongoFetch(
+  const { data: products } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const toggleTag = useCallback(
@@ -113,7 +113,7 @@ export default function ProductPicker(props) {
       return memo;
     }, new Set()),
   ];
-  if (productsLoading) return "Loading...";
+
   return (
     <div {...props}>
       <div

@@ -91,7 +91,7 @@ function Button(props) {
   );
 }
 
-function StockProductItem({ product, columns }) {
+function StockProductItem({ product, columns, className }) {
   const { data: locations } = useMongoFetch(Locations);
 
   const [editProduct] = useMethod("Products.editProduct");
@@ -100,51 +100,55 @@ function StockProductItem({ product, columns }) {
   const { location } = useCurrentLocation();
   const isAdmin = useTracker(() => isUserAdmin(Meteor.user()));
   return (
-    <tr>
-      <td>
-        <Button
-          type="button"
-          onClick={() =>
-            editProduct({
-              productId: product._id,
-              data:
-                product.locationIds &&
-                product.locationIds.includes(location._id)
-                  ? {
-                      locationIds: product.locationIds.filter(
-                        (id) => id !== location._id,
-                      ),
-                    }
-                  : {
-                      locationIds: [
-                        ...(product.locationIds || []),
-                        location._id,
-                      ],
-                    },
-            })
-          }
-        >
-          {location &&
-            (product.locationIds && product.locationIds.includes(location._id)
-              ? `Remove from ${location.name} menu`
-              : `Add to ${location.name} menu`)}
-        </Button>
-        {product.locationIds &&
-        product.locationIds.filter((id) => !location || id !== location._id)
-          .length ? (
-          <small>
-            <br />
-            Used by:{" "}
-            {product.locationIds
-              .filter((id) => !location || id !== location._id)
-              .map((id) => locations.find(({ _id }) => id === _id))
-              .filter(Boolean)
-              .map(({ slug, name }) => (
-                <span key={slug}>{name}</span>
-              ))}
-          </small>
-        ) : null}
-      </td>
+    <tr className={className}>
+      {!isEditing ? (
+        <td>
+          <Button
+            type="button"
+            onClick={() =>
+              editProduct({
+                productId: product._id,
+                data:
+                  product.locationIds &&
+                  product.locationIds.includes(location._id)
+                    ? {
+                        locationIds: product.locationIds.filter(
+                          (id) => id !== location._id,
+                        ),
+                      }
+                    : {
+                        locationIds: [
+                          ...(product.locationIds || []),
+                          location._id,
+                        ],
+                      },
+              })
+            }
+          >
+            {location &&
+              (product.locationIds && product.locationIds.includes(location._id)
+                ? `Remove from ${location.name} menu`
+                : `Add to ${location.name} menu`)}
+          </Button>
+          {product.locationIds &&
+          product.locationIds.filter((id) => !location || id !== location._id)
+            .length ? (
+            <small>
+              <br />
+              Used by:{" "}
+              {product.locationIds
+                .filter((id) => !location || id !== location._id)
+                .map((id) => locations.find(({ _id }) => id === _id))
+                .filter(Boolean)
+                .map(({ slug, name }) => (
+                  <span key={slug}>{name}</span>
+                ))}
+            </small>
+          ) : null}
+        </td>
+      ) : (
+        <td />
+      )}
       {isEditing ? (
         <ProductForm
           columns={columns}
@@ -228,7 +232,7 @@ export default function PageStock() {
             ...products.reduce((m, product) => {
               Object.keys(product).map((key) => m.add(key));
               return m;
-            }, new Set(["tags", "brandName", "name", "salePrice", "unitSize", "sizeUnit", "abv", "description"])),
+            }, new Set(["brandName", "name", "salePrice", "unitSize", "sizeUnit", "abv", "description", "tags"])),
           ].filter(
             (name) =>
               ![
@@ -265,7 +269,11 @@ export default function PageStock() {
         </tbody>
       </table>
       {products && products.length ? (
-        <table>
+        <table
+          className={css`
+            border-collapse: collapse;
+          `}
+        >
           <thead>
             <tr>
               <th>&nbsp;</th>
@@ -275,11 +283,16 @@ export default function PageStock() {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
+            {products.map((product, i) => (
               <StockProductItem
                 key={product._id}
                 columns={columns}
                 product={product}
+                className={css`
+                  background: ${(i + 1) % 2
+                    ? "rgba(255,255,0,0.2)"
+                    : "rgba(0,0,0,0)"};
+                `}
               />
             ))}
           </tbody>

@@ -43,9 +43,17 @@ export default function UI() {
   const [, setTitle] = useSession("DocumentTitle");
   useEffect(() => {
     if (currentLocation && pageSlug) {
-      setTitle(`${currentLocation.name} - ${pageSlug}`.toUpperCase());
-    } else if (currentLocation) {
-      setTitle(`${currentLocation.name}`.toUpperCase());
+      setTitle(
+        `${
+          locationSlug && currentLocation ? currentLocation.name : "WIP POS"
+        } - ${pageSlug}`.toUpperCase(),
+      );
+    } else {
+      setTitle(
+        `${
+          locationSlug && currentLocation ? currentLocation.name : "WIP POS"
+        }`.toUpperCase(),
+      );
     }
   }, [currentLocation, setTitle, pageSlug]);
   if (!currentLocation) return null;
@@ -68,23 +76,32 @@ export default function UI() {
             }
           `}
         >
-          <AccountsUIWrapper />
+          {user && userLocations.length > 1 ? (
+            <select
+              onChange={(event) =>
+                history.push("/" + event.target.value + "/" + pageSlug)
+              }
+              value={locationSlug}
+            >
+              {userLocations.map(({ name, slug }) => (
+                <option key={slug} value={slug}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <big>
+              <span
+                className={css`
+                  color: white;
+                `}
+              >
+                {locationSlug ? currentLocation.name : "WIP POS"}
+              </span>
+            </big>
+          )}
           {user && isUserInTeam(user, currentLocation.teamName) ? (
             <>
-              {userLocations.length > 1 ? (
-                <select
-                  onChange={(event) =>
-                    history.push("/" + event.target.value + "/" + pageSlug)
-                  }
-                  value={locationSlug}
-                >
-                  {userLocations.map(({ name, slug }) => (
-                    <option key={slug} value={slug}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              ) : null}
               <Link to={`/${locationSlug}/tend`}>Tend</Link>
               <Link to={`/${locationSlug}/stock`}>Stock</Link>
               <Link to={`/${locationSlug}/sales`}>Sales</Link>
@@ -96,6 +113,7 @@ export default function UI() {
               <Link to={`/${locationSlug}/menu`}>Menu</Link>
             </>
           ) : null}
+          <AccountsUIWrapper />
         </nav>
       </div>
       <Switch>
@@ -121,6 +139,9 @@ export default function UI() {
                     padding: 0;
                     margin: 0;
                     list-style: none;
+                    display: flex;
+                    font-size: 3em;
+                    justify-content: space-evenly;
                   `}
                 >
                   {locations.map((location) => (
