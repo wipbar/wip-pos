@@ -6,7 +6,6 @@ const Camps = new Mongo.Collection("camps");
 const addCamp = (camps) => Camps.insert(camps);
 if (Meteor.isServer) {
   Meteor.startup(() => {
-    Camps.remove({});
     if (Camps.find().count() === 0) {
       console.log("Seeding camps");
       addCamp({
