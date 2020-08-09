@@ -144,7 +144,7 @@ export default function ProductPicker(props) {
             `}
           />
           show only items on the menu
-        </label>
+        </label>{" "}
         <label
           className={css`
             display: inline-flex;
