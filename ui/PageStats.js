@@ -49,7 +49,6 @@ export default function PageStats() {
     Sales.find({ timestamp: { $gt: from, $lt: to } }),
     [from, to],
   );
-  console.log(sales);
   const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
