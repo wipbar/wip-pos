@@ -85,7 +85,7 @@ export default function UI() {
                   ))}
                 </select>
               ) : null}
-              <Link to={`/${locationSlug}/tend`}>Sell</Link>
+              <Link to={`/${locationSlug}/tend`}>Tend</Link>
               <Link to={`/${locationSlug}/stock`}>Stock</Link>
               <Link to={`/${locationSlug}/sales`}>Sales</Link>
             </>
