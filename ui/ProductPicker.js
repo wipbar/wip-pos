@@ -230,13 +230,12 @@ export default function ProductPicker(props) {
                 .includes(filter.trim()),
             );
           })
-          .filter((product) => {
-            console.log(product, location._id);
-            return showOnlyMenuItems
+          .filter((product) =>
+            showOnlyMenuItems
               ? product.locationIds &&
-                  product.locationIds.includes(location._id)
-              : true;
-          })
+                product.locationIds.includes(location._id)
+              : true,
+          )
           .map((product) => (
             <button
               key={product._id}

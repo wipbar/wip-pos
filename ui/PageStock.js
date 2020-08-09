@@ -93,7 +93,7 @@ function Button(props) {
 
 function StockProductItem({ product, columns }) {
   const locationsLoading = useSubscription("locations");
-  const locations = useMongoFetch(Locations.find()) || [];
+  const locations = useMongoFetch(Locations.find());
 
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
@@ -239,6 +239,7 @@ export default function PageStock() {
                 "shopPrices",
                 "createdAt",
                 "removedAt",
+                "updatedAt",
                 "locationIds",
               ].includes(name),
           ),

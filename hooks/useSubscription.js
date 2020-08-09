@@ -16,11 +16,12 @@ export default function useSubscription(pubName, ...subOpts) {
 
   useEffect(() => {
     stopComp();
-    Tracker.autorun(currentComp => {
+    Tracker.autorun((currentComp) => {
       comp = currentComp;
-
-      handle = Meteor.subscribe(pubName, ...subOpts);
-      setLoading(!handle.ready());
+      if (pubName) {
+        handle = Meteor.subscribe(pubName, ...subOpts);
+        setLoading(!handle.ready());
+      }
     });
     return stopComp;
   }, [pubName, ...subOpts]);

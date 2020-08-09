@@ -22,7 +22,6 @@ export default function PageMenu() {
     ),
     [location._id],
   );
-  console.log(location, products);
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(

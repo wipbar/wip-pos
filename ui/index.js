@@ -28,7 +28,8 @@ export default function UI() {
   const { params: { locationSlug, 0: pageSlug } = {} } =
     useRouteMatch("/:locationSlug/*") || {};
   const user = useCurrentUser();
-  const locations = useMongoFetch(Locations.find()) || [];
+  console.log("???", useMongoFetch(Locations));
+  const locations = useMongoFetch(Locations.find());
   const userLocations = locations.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );

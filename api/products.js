@@ -51,7 +51,7 @@ Meteor.methods({
     });
   },
   "Products.editProduct"({ productId, data: { buyPrice, ...updatedProduct } }) {
-    if (!this.userId) throw new Meteor.Error("log in please");
+    assertUserInAnyTeam(this.userId);
     const oldProduct = Products.findOne({ _id: productId });
     return Products.update(productId, {
       $set: {

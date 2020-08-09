@@ -10,14 +10,13 @@ import useSubscription from "../hooks/useSubscription";
 export default function PageSales() {
   const { location } = useCurrentLocation();
   const salesLoading = useSubscription("sales");
-  const sales =
-    useMongoFetch(
-      Sales.find(
-        { locationId: location && location._id },
-        { sort: { timestamp: -1 } },
-      ),
-      [location],
-    ) || [];
+  const sales = useMongoFetch(
+    Sales.find(
+      { locationId: location && location._id },
+      { sort: { timestamp: -1 } },
+    ),
+    [location],
+  );
   const salesByDay = useMemo(
     () =>
       Object.entries(

@@ -187,7 +187,6 @@ export const isUserAdmin = (userOrId) => {
     return true;
 };
 export const isUserInTeam = (userOrId, inTeam) => {
-  console.log({ userOrId, inTeam });
   if (!userOrId || !inTeam) return false;
   if (isUserAdmin(userOrId)) return true;
   const user = Meteor.users.findOne(

@@ -1,10 +1,10 @@
-import { useTracker } from "meteor/react-meteor-data";
 import React from "react";
 import { useRouteMatch } from "react-router-dom";
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
 import AccountsUIWrapper from "../ui/AccountsUIWrapper";
 import useCurrentUser from "./useCurrentUser";
+import useMongoFetch from "./useMongoFetch";
 import useSubscription from "./useSubscription";
 
 export default function useCurrentLocation(authorized) {
@@ -12,7 +12,9 @@ export default function useCurrentLocation(authorized) {
   const { params: { locationSlug } = {} } =
     useRouteMatch("/:locationSlug") || {};
 
-  const location = useTracker(() => Locations.findOne({ slug: locationSlug }));
+  const [location] = useMongoFetch(Locations.find({ slug: locationSlug }), [
+    locationSlug,
+  ]);
   const user = useCurrentUser();
   const error =
     !loading &&
