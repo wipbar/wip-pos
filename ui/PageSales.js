@@ -52,13 +52,20 @@ export default function PageSales() {
                 `}
               >
                 {format(day, "DD/MM/YYYY")}{" "}
-                {salesOfDay.reduce((memo, { amount }) => memo + amount, 0)}
+                <code>
+                  <b>
+                    {salesOfDay.reduce((memo, { amount }) => memo + amount, 0)}
+                  </b>
+                </code>
                 <small>{salesOfDay[0].currency}</small>
               </summary>
               <ul>
                 {salesOfDay.map(({ products, ...sale }) => (
                   <li key={sale._id}>
-                    {format(sale.timestamp, "HH:mm:ss")} {sale.amount}
+                    {format(sale.timestamp, "HH:mm:ss")}{" "}
+                    <code>
+                      <b>{sale.amount}</b>
+                    </code>
                     <small>{sale.currency}</small>
                     <ul>
                       {products.map((product, i) => (
