@@ -82,6 +82,9 @@ export default function UI() {
                 history.push("/" + event.target.value + "/" + pageSlug)
               }
               value={locationSlug}
+              className={css`
+                font-size: larger;
+              `}
             >
               {userLocations.map(({ name, slug }) => (
                 <option key={slug} value={slug}>
