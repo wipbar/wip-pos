@@ -157,7 +157,10 @@ export default function PageMenu() {
                                 product.unitSize && product.sizeUnit
                                   ? `${product.unitSize}${product.sizeUnit}`
                                   : null,
-                                product.abv ? `${product.abv}%` : null,
+                                typeof product.abv === "number" ||
+                                (typeof product.abv === "string" && product.abv)
+                                  ? `${product.abv}%`
+                                  : null,
                               ]
                                 .filter(Boolean)
                                 .map((thing, i) => (

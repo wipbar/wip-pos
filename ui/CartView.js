@@ -156,9 +156,7 @@ export default function CartView() {
             <div>
               <button
                 type="button"
-                onClick={() => {
-                  setConfirmOpen(true);
-                }}
+                onClick={() => setConfirmOpen(true)}
                 className={css`
                   display: block;
                   background-color: #ffed00;
@@ -196,7 +194,22 @@ export default function CartView() {
               text-align: center;
             `}
           >
-            please confirm tending {haxTotal} HAX
+            please confirm tending{" "}
+            <code>
+              <b>{haxTotal}</b>
+            </code>
+            <small>
+              <small>HAX</small>
+            </small>{" "}
+            for
+            <ul>
+              {pickedProductIds.map((id, i) => (
+                <li key={i + id}>
+                  {products.find(({ _id }) => _id === id).name}{" "}
+                  {products.find(({ _id }) => _id === id).brandName}
+                </li>
+              ))}
+            </ul>
             <br />
             <button
               type="button"

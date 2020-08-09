@@ -8,7 +8,7 @@ import useSession from "../hooks/useSession";
 const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
 
-function stringToColour(inputString) {
+function stringToColour(inputString, alpha = 1) {
   var sum = 0;
 
   for (var i in inputString) sum += inputString.charCodeAt(i);
@@ -35,45 +35,44 @@ function stringToColour(inputString) {
     256
   );
 
-  var hex = "#";
-
-  hex += ("00" + r.toString(16)).substr(-2, 2).toUpperCase();
-  hex += ("00" + g.toString(16)).substr(-2, 2).toUpperCase();
-  hex += ("00" + b.toString(16)).substr(-2, 2).toUpperCase();
-
-  return hex;
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 function getCorrectTextColor(hex) {
   const threshold = 170; /* about half of 256. Lower threshold equals more dark text on dark background  */
-
-  function cutHex(h) {
-    return h.charAt(0) == "#" ? h.substring(1, 7) : h;
-  }
-  function hexToR(h) {
-    return parseInt(cutHex(h).substring(0, 2), 16);
-  }
-  function hexToG(h) {
-    return parseInt(cutHex(h).substring(2, 4), 16);
-  }
-  function hexToB(h) {
-    return parseInt(cutHex(h).substring(4, 6), 16);
+  let hRed, hGreen, hBlue;
+  if (hex.startsWith("rgba(")) {
+    const [, vals] = hex.match(/^rgba\((.+)\)$/);
+    if (vals) {
+      [hRed, hGreen, hBlue] = vals.split(",");
+    }
+  } else {
+    hRed = hexToR(hex);
+    hGreen = hexToG(hex);
+    hBlue = hexToB(hex);
   }
 
-  const hRed = hexToR(hex);
-  const hGreen = hexToG(hex);
-  const hBlue = hexToB(hex);
+  const cutHex = (h) => (h.charAt(0) == "#" ? h.substring(1, 7) : h);
+  const hexToR = (h) => parseInt(cutHex(h).substring(0, 2), 16);
+  const hexToG = (h) => parseInt(cutHex(h).substring(2, 4), 16);
+  const hexToB = (h) => parseInt(cutHex(h).substring(4, 6), 16);
 
-  const cBrightness = (hRed * 299 + hGreen * 587 + hBlue * 114) / 1000;
-  return cBrightness > threshold ? "#000000" : "#ffffff";
+  return (hRed * 299 + hGreen * 587 + hBlue * 114) / 1000 > threshold
+    ? "#000000"
+    : "#ffffff";
 }
 
 export default function ProductPicker(props) {
   const { location } = useCurrentLocation();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
+  const [showItemDetails, setShowItemDetails] = useState(true);
   const toggleOnlyMenuItems = useCallback(
     () => setShowOnlyMenuItems(!showOnlyMenuItems),
     [showOnlyMenuItems],
+  );
+  const toggleItemDetails = useCallback(
+    () => setShowItemDetails(!showItemDetails),
+    [showItemDetails],
   );
   const [activeFilters, setActiveFilters] = useState([]);
   const [pickedProductIds, setPickedProductIds] = useSession(
@@ -145,6 +144,29 @@ export default function ProductPicker(props) {
             `}
           />
           show only items on the menu
+        </label>
+        <label
+          className={css`
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 0 6px;
+            border-radius: 4px;
+            margin-right: 2px;
+            margin-bottom: 4px;
+            font-size: 1.5em;
+          `}
+        >
+          <input
+            type="checkbox"
+            onChange={toggleItemDetails}
+            checked={showItemDetails}
+            className={css`
+              margin-right: 4px;
+            `}
+          />
+          show item details
         </label>
       </div>
       <div
@@ -235,7 +257,9 @@ export default function ProductPicker(props) {
                   width: 32%;
                 }
                 width: 24%;
-                background: rgba(255, 255, 255, 1);
+                background: ${stringToColour(product.brandName, 0.4) ||
+                "rgba(255, 255, 255, 1)"};
+                color: white;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -264,44 +288,53 @@ export default function ProductPicker(props) {
                   <b>
                     <big>{product.name}</big>
                   </b>
-                  <br />
-                  <small>
-                    <small>
-                      <i>
-                        {product.unitSize}
-                        {product.sizeUnit}
-                      </i>{" "}
-                      {product.tags &&
-                        product.tags.split(",").map((tag) => (
-                          <span
-                            key={tag}
-                            className={css`
-                              display: inline-block;
-                              background: ${stringToColour(tag) ||
-                              `rgba(0, 0, 0, 0.4)`};
-                              color: ${getCorrectTextColor(
-                                stringToColour(tag),
-                              ) || "white"};
-                              padding: 0 3px;
-                              border-radius: 4px;
-                              margin-left: 2px;
-                            `}
-                          >
-                            {tag.trim()}
-                          </span>
-                        ))}
-                    </small>
-                  </small>
+                  {showItemDetails && (
+                    <>
+                      <br />
+                      <small>
+                        <small>
+                          <i>
+                            {product.unitSize}
+                            {product.sizeUnit}
+                          </i>{" "}
+                          {product.tags &&
+                            product.tags.split(",").map((tag) => (
+                              <span
+                                key={tag}
+                                className={css`
+                                  display: inline-block;
+                                  background: ${stringToColour(tag) ||
+                                  `rgba(0, 0, 0, 0.4)`};
+                                  color: ${getCorrectTextColor(
+                                    stringToColour(tag),
+                                  ) || "white"};
+                                  padding: 0 3px;
+                                  border-radius: 4px;
+                                  margin-left: 2px;
+                                `}
+                              >
+                                {tag.trim()}
+                              </span>
+                            ))}
+                        </small>
+                      </small>
+                    </>
+                  )}
                 </div>
               </div>
-              <div
-                className={css`
-                  margin-top: 6px;
-                  opacity: 0.5;
-                `}
-              >
-                <b>{product.salePrice} HAX</b>
-              </div>
+              {showItemDetails && (
+                <div
+                  className={css`
+                    margin-top: 6px;
+                    opacity: 0.75;
+                  `}
+                >
+                  <code>
+                    <b>{product.salePrice}</b>
+                  </code>
+                  <small>HAX</small>
+                </div>
+              )}
             </button>
           ))}
         <div
