@@ -6,6 +6,7 @@ import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
 import { useTracker } from "meteor/react-meteor-data";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import useMongoFetch from "../hooks/useMongoFetch";
 
 function CartViewProductsItem({ product, onRemoveClick }) {
   return (
@@ -84,8 +85,8 @@ export default function CartView() {
   const { locationSlug } = useParams();
   const loading = useSubscription("products");
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const products = useTracker(() =>
-    Products.find({ removedAt: { $exists: false } }).fetch(),
+  const products = useMongoFetch(
+    Products.find({ removedAt: { $exists: false } }),
   );
   const [pickedProductIds, setPickedProductIds] = useSession(
     "pickedProductIds",

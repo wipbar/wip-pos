@@ -1,17 +1,28 @@
 import { css } from "emotion";
 import React, { useMemo } from "react";
 import Products from "../api/products";
+import useCurrentLocation from "../hooks/useCurrentLocation";
+import useMongoFetch from "../hooks/useMongoFetch";
 import useSubscription from "../hooks/useSubscription";
-import { useTracker } from "meteor/react-meteor-data";
 
 export default function PageMenu() {
+  const {
+    location = {},
+    loading: locationLoading,
+    error,
+  } = useCurrentLocation();
   const productsLoading = useSubscription("products");
-  const products = useTracker(() =>
+  const products = useMongoFetch(
     Products.find(
-      { removedAt: { $exists: false }, isOnMenu: true },
+      {
+        removedAt: { $exists: false },
+        locationIds: { $elemMatch: { $eq: location._id } },
+      },
       { sort: { brandName: 1, name: 1 } },
-    ).fetch(),
+    ),
+    [location._id],
   );
+  console.log(location, products);
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(
@@ -37,7 +48,8 @@ export default function PageMenu() {
     Math.random() * (productsGroupedByTags.length - 1),
   );
 
-  if (productsLoading) return "Loading...";
+  if (productsLoading || locationLoading) return "Loading...";
+  if (error) return error;
   return (
     <div
       className={css`

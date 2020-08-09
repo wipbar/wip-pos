@@ -1,10 +1,14 @@
 import { css } from "emotion";
 import { useTracker } from "meteor/react-meteor-data";
 import React, { useMemo, useState } from "react";
+import { isUserAdmin } from "../api/accounts";
+import Locations from "../api/locations";
 import Products from "../api/products";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
+import useMongoFetch from "../hooks/useMongoFetch";
 import useSubscription from "../hooks/useSubscription";
-
+import { Meteor } from "meteor/meteor";
 const fieldNames = [
   "brandName",
   "name",
@@ -33,7 +37,14 @@ const ProductForm = ({ onSubmit, initialValues, columns }) => {
               placeholder={fieldName}
               defaultValue={initialValues ? initialValues[fieldName] : ""}
               required={
-                !["buyPrice", "tags", "abv", "description"].includes(fieldName)
+                ![
+                  "buyPrice",
+                  "tags",
+                  "abv",
+                  "description",
+                  "unitSize",
+                  "sizeUnit",
+                ].includes(fieldName)
               }
               className={css`
                 width: 100%;
@@ -81,9 +92,14 @@ function Button(props) {
 }
 
 function StockProductItem({ product, columns }) {
+  const locationsLoading = useSubscription("locations");
+  const locations = useMongoFetch(Locations.find()) || [];
+
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
   const [isEditing, setIsEditing] = useState(false);
+  const { location } = useCurrentLocation();
+  const isAdmin = useTracker(() => isUserAdmin(Meteor.user()));
   return (
     <tr>
       <td>
@@ -92,26 +108,77 @@ function StockProductItem({ product, columns }) {
           onClick={() =>
             editProduct({
               productId: product._id,
-              data: { isOnMenu: !product.isOnMenu },
+              data:
+                product.locationIds &&
+                product.locationIds.includes(location._id)
+                  ? {
+                      locationIds: product.locationIds.filter(
+                        (id) => id !== location._id,
+                      ),
+                    }
+                  : {
+                      locationIds: [
+                        ...(product.locationIds || []),
+                        location._id,
+                      ],
+                    },
             })
           }
         >
-          {product.isOnMenu ? "Remove from menu" : "Add to menu"}
+          {location &&
+            (product.locationIds && product.locationIds.includes(location._id)
+              ? `Remove from ${location.name} menu`
+              : `Add to ${location.name} menu`)}
         </Button>
+        {product.locationIds &&
+        product.locationIds.filter((id) => !location || id !== location._id)
+          .length ? (
+          <small>
+            <br />
+            Used by:{" "}
+            {product.locationIds
+              .filter((id) => !location || id !== location._id)
+              .map((id) => locations.find(({ _id }) => id === _id))
+              .filter(Boolean)
+              .map(({ slug, name }) => (
+                <span key={slug}>{name}</span>
+              ))}
+          </small>
+        ) : null}
       </td>
       {isEditing ? (
         <ProductForm
           columns={columns}
           initialValues={product}
           onSubmit={async (newProduct) => {
-            await editProduct(product._id, newProduct);
+            await editProduct({ productId: product._id, data: newProduct });
             setIsEditing(false);
           }}
         />
       ) : (
         <>
           {columns.map((column) => (
-            <th key={column}>{product[column]}</th>
+            <td key={column}>
+              {((value) => {
+                if (typeof value === "number") return <code>{value}</code>;
+                if (Array.isArray(value)) {
+                  return (
+                    <ul>
+                      {value.map((v) => {
+                        if (typeof v === "number")
+                          return (
+                            <li>
+                              <code>{v}</code>
+                            </li>
+                          );
+                        return <li>{v}</li>;
+                      })}
+                    </ul>
+                  );
+                }
+                return <>{value}</>;
+              })(product && product[column])}
+            </td>
           ))}
         </>
       )}
@@ -122,24 +189,37 @@ function StockProductItem({ product, columns }) {
         </Button>
       </td>
       <td>
-        <Button
-          type="button"
-          onClick={() => removeProduct({ productId: product._id })}
-        >
-          remove
-        </Button>
+        {isAdmin && (
+          <Button
+            type="button"
+            onClick={() => {
+              if (product.locationIds && product.locationIds.length) {
+                return window.alert(
+                  "Product must be removed from all locations' menus before it can be removed.",
+                );
+              }
+              window.confirm(
+                `Are you sure you want to remote ${product.name}`,
+              ) && removeProduct({ productId: product._id });
+            }}
+          >
+            remove
+          </Button>
+        )}
       </td>
     </tr>
   );
 }
 
 export default function PageStock() {
+  const [showRemoved, setShowRemoved] = useState(false);
   const productsLoading = useSubscription("products");
-  const products = useTracker(() =>
+  const products = useMongoFetch(
     Products.find(
-      { removedAt: { $exists: false } },
+      { removedAt: { $exists: showRemoved } },
       { sort: { createdAt: -1 } },
-    ).fetch(),
+    ),
+    [showRemoved],
   );
   const [addProduct] = useMethod("Products.addProduct");
   const columns = useMemo(
@@ -159,7 +239,7 @@ export default function PageStock() {
                 "shopPrices",
                 "createdAt",
                 "removedAt",
-                "isOnMenu",
+                "locationIds",
               ].includes(name),
           ),
     [products, productsLoading],

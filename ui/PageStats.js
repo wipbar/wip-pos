@@ -24,13 +24,17 @@ import Products from "../api/products";
 import Sales from "../api/sales";
 import useSubscription from "../hooks/useSubscription";
 import { useTracker } from "meteor/react-meteor-data";
+import useMongoFetch from "../hooks/useMongoFetch";
+import Camps from "../api/camps";
 
 export default function PageStats() {
   const salesLoading = useSubscription("sales");
   const productsLoading = useSubscription("products");
-  const sales = useTracker(() => Sales.find().fetch());
-  const products = useTracker(() =>
-    Products.find({ removedAt: { $exists: false } }).fetch(),
+  const campsLoading = useSubscription("camps");
+  const camps = useMongoFetch(Camps.find());
+  const sales = useMongoFetch(Sales.find());
+  const products = useMongoFetch(
+    Products.find({ removedAt: { $exists: false } }),
   );
   const [firstSale, lastSale] = useMemo(() => {
     const salesByTimestamp = sales

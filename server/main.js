@@ -1,12 +1,14 @@
 import { Accounts } from "meteor/accounts-base";
 import { Meteor } from "meteor/meteor";
 import "../api/accounts";
+import Camps from "../api/camps";
 import Locations from "../api/locations";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
 
 Meteor.publish("products", () => Products.find());
+Meteor.publish("camps", () => Camps.find());
 Meteor.publish("sales", () => Sales.find());
 Meteor.publish("stocks", () => Stocks.find());
 Meteor.publish("locations", () => Locations.find());
@@ -22,12 +24,9 @@ Meteor.startup(() => {
           product.brandName.toLowerCase().includes("ærø") ||
           product.brandName.toLowerCase().includes("pilsner"))
       ) {
-        Products.update(
-          { _id: product._id },
-          { $set: { tags: "beer,bottle" } },
-        );
+        Products.update(product._id, { $set: { tags: "beer,bottle" } });
         if (product.name.toLowerCase().includes("tap:")) {
-          Products.update({ _id: product._id }, { $set: { tags: "beer,tap" } });
+          Products.update(product._id, { $set: { tags: "beer,tap" } });
         }
       }
       if (
@@ -35,10 +34,7 @@ Meteor.startup(() => {
         product.brandName &&
         product.brandName.toLowerCase().includes("naturfrisk")
       ) {
-        Products.update(
-          { _id: product._id },
-          { $set: { tags: "soda,bottle" } },
-        );
+        Products.update(product._id, { $set: { tags: "soda,bottle" } });
       }
     });
   /*

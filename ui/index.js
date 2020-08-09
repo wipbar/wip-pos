@@ -17,39 +17,43 @@ import { useHistory, useRouteMatch } from "react-router-dom";
 import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
 import useSubscription from "../hooks/useSubscription";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useMongoFetch from "../hooks/useMongoFetch";
+import useSession from "../hooks/useSession";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
 export default function UI() {
   let history = useHistory();
   useSubscription("locations");
-  const { params: { locationSlug } = {} } =
-    useRouteMatch("/:locationSlug") || {};
+  const { params: { locationSlug, 0: pageSlug } = {} } =
+    useRouteMatch("/:locationSlug/*") || {};
   const user = useCurrentUser();
-  const locations = useTracker(() => Locations.find().fetch()) || [];
+  const locations = useMongoFetch(Locations.find()) || [];
   const userLocations = locations.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );
-  const currentLocation = useCurrentLocation() || locations[0];
+  const currentLocation = useCurrentLocation()?.location || locations[0];
   useEffect(() => {
     if (userLocations.length === 1 && !locationSlug) {
-      history.push("/" + userLocations[0].slug + "/tend");
+      history.push("/" + userLocations[0].slug + "/");
     }
   }, [history, locationSlug, userLocations]);
+  const [, setTitle] = useSession("DocumentTitle");
+  useEffect(() => {
+    if (currentLocation && pageSlug) {
+      setTitle(`${currentLocation.name} - ${pageSlug}`.toUpperCase());
+    } else if (currentLocation) {
+      setTitle(`${currentLocation.name}`.toUpperCase());
+    }
+  }, [currentLocation, setTitle, pageSlug]);
   if (!currentLocation) return null;
   return (
-    <div
-      className={css`
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      `}
-    >
+    <div>
       <div
         className={css`
           background: rgba(255, 255, 255, 0.2);
           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-          display: ${!(user || !locationSlug) ? "none" : "block"};
+          display: ${!user || !locationSlug ? "none" : "block"};
         `}
       >
         <nav
@@ -64,12 +68,12 @@ export default function UI() {
           `}
         >
           <AccountsUIWrapper />
-          {user ? (
+          {user && isUserInTeam(user, currentLocation.teamName) ? (
             <>
               {userLocations.length > 1 ? (
                 <select
                   onChange={(event) =>
-                    history.push("/" + event.target.value + "/tend")
+                    history.push("/" + event.target.value + "/" + pageSlug)
                   }
                   value={locationSlug}
                 >
@@ -85,8 +89,12 @@ export default function UI() {
               <Link to={`/${locationSlug}/sales`}>Sales</Link>
             </>
           ) : null}
-          <Link to={`/${locationSlug}/stats`}>Stats</Link>
-          <Link to={`/${locationSlug}/menu`}>Menu</Link>
+          {locationSlug ? (
+            <>
+              <Link to={`/${locationSlug}/stats`}>Stats</Link>
+              <Link to={`/${locationSlug}/menu`}>Menu</Link>
+            </>
+          ) : null}
         </nav>
       </div>
       <Switch>
@@ -100,6 +108,32 @@ export default function UI() {
         <Route exact path="/:locationSlug/sales" component={PageSales} />
         <Route exact path="/:locationSlug/stats" component={PageStats} />
         <Route exact path="/:locationSlug/menu" component={PageMenu} />
+        <Route
+          exact
+          path="/"
+          component={() => {
+            return (
+              <center>
+                <ul>
+                  {locations.map((location) => (
+                    <li
+                      key={location._id}
+                      className={css`
+                        margin-bottom: 16px;
+                      `}
+                    >
+                      {location.name}
+                      <br />
+                      <Link to={`/${location.slug}/stats`}>Stats</Link>
+                      <br />
+                      <Link to={`/${location.slug}/menu`}>Menu</Link>
+                    </li>
+                  ))}
+                </ul>
+              </center>
+            );
+          }}
+        />
         <Route
           exact
           path="/signin"

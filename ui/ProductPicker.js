@@ -4,6 +4,8 @@ import Products from "../api/products";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
 import { useTracker } from "meteor/react-meteor-data";
+import useCurrentLocation from "../hooks/useCurrentLocation";
+import useMongoFetch from "../hooks/useMongoFetch";
 
 const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
@@ -81,6 +83,7 @@ function getCorrectTextColor(hex) {
 }
 
 export default function ProductPicker(props) {
+  const { location } = useCurrentLocation();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
   const toggleOnlyMenuItems = useCallback(
     () => setShowOnlyMenuItems(!showOnlyMenuItems),
@@ -106,8 +109,8 @@ export default function ProductPicker(props) {
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
   const productsLoading = useSubscription("products");
-  const products = useTracker(() =>
-    Products.find({ removedAt: { $exists: false } }).fetch(),
+  const products = useMongoFetch(
+    Products.find({ removedAt: { $exists: false } }),
   );
   const toggleTag = useCallback(
     (tag) =>
@@ -227,7 +230,13 @@ export default function ProductPicker(props) {
                 .includes(filter.trim()),
             );
           })
-          .filter((product) => (showOnlyMenuItems ? product.isOnMenu : true))
+          .filter((product) => {
+            console.log(product, location._id);
+            return showOnlyMenuItems
+              ? product.locationIds &&
+                  product.locationIds.includes(location._id)
+              : true;
+          })
           .map((product) => (
             <button
               key={product._id}

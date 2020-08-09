@@ -5,6 +5,7 @@ import { ServiceConfiguration } from "meteor/service-configuration";
 import { OAuth } from "meteor/oauth";
 import { _ } from "meteor/underscore";
 import { HTTP } from "meteor/http";
+import Locations from "./locations";
 
 require("tls").DEFAULT_ECDH_CURVE = "auto";
 
@@ -171,13 +172,27 @@ if (Meteor.isClient) {
     forOtherUsers: ["services.bornhack.username"],
   });
 }
-
-export const isUserInTeam = (userOrId, inTeam) => {
-  if (!userOrId || !inTeam) return false;
+export const isUserAdmin = (userOrId) => {
+  if (!userOrId) return false;
   const user = Meteor.users.findOne(
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
-  console.log(user);
+  if (
+    user &&
+    user.profile &&
+    user.profile.user &&
+    user.profile.user.username &&
+    user.profile.user.username === "klarstrup"
+  )
+    return true;
+};
+export const isUserInTeam = (userOrId, inTeam) => {
+  console.log({ userOrId, inTeam });
+  if (!userOrId || !inTeam) return false;
+  if (isUserAdmin(userOrId)) return true;
+  const user = Meteor.users.findOne(
+    typeof userOrId === "string" ? userOrId : userOrId._id,
+  );
   return !!(
     user &&
     user.profile &&
@@ -187,4 +202,17 @@ export const isUserInTeam = (userOrId, inTeam) => {
         team.toLowerCase() === inTeam.toLowerCase() && camp === "BornHack 2020",
     )
   );
+};
+export const assertUserInAnyTeam = (userOrId) => {
+  if (
+    !Locations.find()
+      .fetch()
+      .some(({ teamName }) => isUserInTeam(userOrId, teamName))
+  )
+    throw new Meteor.Error(`You are not a member of an active team`);
+};
+
+export const assertUserInTeam = (userOrId, inTeam) => {
+  if (!isUserInTeam(userOrId, inTeam))
+    throw new Meteor.Error(`You are not a member of ${inTeam} Team`);
 };

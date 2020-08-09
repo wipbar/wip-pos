@@ -1,5 +1,7 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
+import { assertUserInAnyTeam, assertUserInTeam } from "./accounts";
+import Locations from "./locations";
 
 const Products = new Mongo.Collection("products");
 const addProduct = (product) => Products.insert(product);
@@ -14,55 +16,60 @@ if (Meteor.isServer)
         shopPrices: [{ buyPrice: 10, timestamp: new Date() }],
       });
     }
+    if (Products.find({ isOnMenu: { $exists: 1 } }).count()) {
+      console.log("Migrating isOnMenu to locationIds.");
+      const products = Products.find({ isOnMenu: { $exists: 1 } }).fetch();
+      products.forEach(({ _id }) =>
+        Products.update(_id, {
+          $set: { locationIds: [Locations.findOne({ slug: "bar" })._id] },
+          $unset: { isOnMenu: "" },
+        }),
+      );
+    }
   });
 
 export default Products;
 
 Meteor.methods({
   "Products.addProduct"({ data }) {
-    if (!this.userId) throw new Meteor.Error("log in please");
+    assertUserInAnyTeam(this.userId);
     return Products.insert({
       createdAt: new Date(),
       brandName: data.brandName.trim(),
       name: data.name.trim(),
-      salePrice: +data.salePrice.trim(),
-      unitSize: +data.unitSize.trim(),
+      salePrice: Number(data.salePrice.trim()),
+      unitSize: Number(data.unitSize.trim()),
       sizeUnit: data.sizeUnit.trim(),
-      abv: +data.abv.trim(),
+      abv: Number(data.abv.trim()),
       tags: data.tags
         .split(",")
         .map((tag) => tag.trim())
         .join(","),
       shopPrices: data.buyPrice
-        ? [{ buyPrice: +data.buyPrice.trim(), timestamp: new Date() }]
+        ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: new Date() }]
         : undefined,
     });
   },
   "Products.editProduct"({ productId, data: { buyPrice, ...updatedProduct } }) {
     if (!this.userId) throw new Meteor.Error("log in please");
     const oldProduct = Products.findOne({ _id: productId });
-    return Products.update(
-      { _id: productId },
-      {
-        $set: {
-          ...updatedProduct,
-          shopPrices:
-            buyPrice && buyPrice.trim()
-              ? (oldProduct.shopPrices || []).concat([
-                  { buyPrice: +buyPrice.trim(), timestamp: new Date() },
-                ])
-              : undefined,
-        },
+    return Products.update(productId, {
+      $set: {
+        ...updatedProduct,
+        shopPrices:
+          buyPrice && buyPrice.trim()
+            ? (oldProduct.shopPrices || []).concat([
+                { buyPrice: +buyPrice.trim(), timestamp: new Date() },
+              ])
+            : undefined,
+        updatedAt: new Date(),
       },
-    );
+    });
   },
   "Products.removeProduct"({ productId }) {
     if (!this.userId) throw new Meteor.Error("log in please");
     if (productId)
-      return Products.update(
-        { _id: productId },
-        { $set: { removedAt: new Date() } },
-      );
+      return Products.update(productId, { $set: { removedAt: new Date() } });
   },
 });
 
