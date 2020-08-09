@@ -1,5 +1,6 @@
 import {
   addHours,
+  differenceInDays,
   endOfHour,
   format,
   getHours,
@@ -9,20 +10,9 @@ import {
   min,
   setHours,
   startOfHour,
-  subDays,
 } from "date-fns";
 import { css } from "emotion";
 import React, { useMemo } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
@@ -43,8 +33,9 @@ export default function PageStats() {
     ),
   );
   const to = endOfHour(
-    min(setHours(currentCamp?.end, rolloverOffset - 1), currentDate),
+    min(setHours(currentCamp?.end, rolloverOffset), currentDate),
   );
+
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ timestamp: { $gt: from, $lt: to } }),
     [from, to],
@@ -52,13 +43,21 @@ export default function PageStats() {
   const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
-
+  const earliestSale = useMemo(
+    () => Math.min(...sales.map((sale) => getHours(sale.timestamp))),
+    [sales],
+  );
+  const latestSale = useMemo(
+    () => Math.max(...sales.map((sale) => getHours(sale.timestamp))),
+    [sales],
+  );
+  console.log(earliestSale, latestSale);
   const allHours = useMemo(() => {
     let hours = [];
     for (let i = from; isBefore(i, to); i = addHours(i, 1)) hours.push(i);
 
     return hours;
-  }, [currentCamp, currentDate]);
+  }, [from, to]);
   const allDays = useMemo(() => {
     let days = [[]];
     let dayI = 0;
@@ -73,7 +72,7 @@ export default function PageStats() {
       }
     }
     return days;
-  }, [currentCamp, currentDate]);
+  }, [from, to]);
   let mostSoldProductsPerHour = useMemo(
     () =>
       allHours.reduce((m, hour) => {
@@ -88,18 +87,6 @@ export default function PageStats() {
           ? numberOfProductsSoldThisHour
           : m;
       }, 0),
-    [allHours, sales],
-  );
-  const salesByHour = useMemo(
-    () =>
-      allHours.map((hour) => {
-        const hourEnd = endOfHour(hour);
-        const salesOfHour = sales.filter(
-          (sale) =>
-            isAfter(sale.timestamp, hour) && isBefore(sale.timestamp, hourEnd),
-        );
-        return [hour, salesOfHour];
-      }),
     [allHours, sales],
   );
   const salesByDayAndHour = useMemo(
@@ -117,6 +104,7 @@ export default function PageStats() {
           ];
         }),
       ),
+    //.filter((hours) => hours.length),
     [allDays, sales],
   );
   const mostSold = useMemo(
@@ -131,48 +119,17 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
-  const data = useMemo(
-    () =>
-      salesByHour.map(([hour, hourSales]) => {
-        return {
-          hour: getHours(hour),
-          beer: hourSales.reduce(
-            (m, hourSale) =>
-              hourSale.products.filter(({ _id, tags }) => {
-                const product = products.find((product) => product._id == _id);
-                if (product)
-                  return product.tags && product.tags.includes("beer");
-                return tags && tags.includes("beer");
-              }).length + m,
-            0,
-          ),
-          mate: hourSales.reduce(
-            (m, hourSale) =>
-              hourSale.products.filter(({ _id, name }) => {
-                const product = products.find((product) => product._id == _id);
-                if (product)
-                  return (
-                    product.name && product.name.toLowerCase().includes("mate")
-                  );
-                return name && name.toLowerCase().includes("mate");
-              }).length + m,
-            0,
-          ),
-        };
-      }),
-    [products, salesByHour],
-  );
+  const showHour = (hour) => getHours(hour) >= 13 || getHours(hour) <= 3;
   if (salesLoading || productsLoading || campsLoading) return "Loading...";
   return (
     <div
       className={css`
+        padding-top: 8px;
         font-family: monospace;
+        display: flex;
       `}
     >
-      {salesByDayAndHour &&
-      salesByDayAndHour.length &&
-      salesByDayAndHour[0] &&
-      salesByDayAndHour[0].length ? (
+      {salesByDayAndHour?.some?.((d) => d.some(({ length }) => length)) ? (
         <table
           className={css`
             border-collapse: collapse;
@@ -182,160 +139,164 @@ export default function PageStats() {
           <thead>
             <tr>
               <th />
-              {salesByDayAndHour[0].map(([hour]) => (
-                <th key={hour}>{format(hour, "HH")}</th>
-              ))}
+              {salesByDayAndHour[0].map(([hour]) =>
+                showHour(hour) ? (
+                  <th key={hour}>{format(hour, "HH")}</th>
+                ) : null,
+              )}
             </tr>
           </thead>
           <tbody>
-            {salesByDayAndHour.map((hours) => (
-              <tr key={hours[0][0]}>
-                <th key={format(hours[0][0], "DD")}>
-                  {format(hours[0][0], "ddd")}
-                </th>
-                {hours.map(([hour, hourSales]) => {
-                  const beer = hourSales.reduce(
-                    (m, hourSale) =>
-                      hourSale.products.filter(({ _id, tags }) => {
-                        const product = products.find(
-                          (product) => product._id == _id,
-                        );
-                        if (product)
-                          return product.tags && product.tags.includes("beer");
-                        return tags && tags.includes("beer");
-                      }).length + m,
-                    0,
-                  );
-                  const mate = hourSales.reduce(
-                    (m, hourSale) =>
-                      hourSale.products.filter(({ _id, name }) => {
-                        const product = products.find(
-                          (product) => product._id == _id,
-                        );
-                        if (product)
-                          return (
-                            product.name &&
-                            product.name.toLowerCase().includes("mate")
-                          );
-                        return name && name.toLowerCase().includes("mate");
-                      }).length + m,
-                    0,
-                  );
-                  const others = hourSales.reduce(
-                    (m, hourSale) =>
-                      hourSale.products
-                        .filter(({ _id, name }) => {
+            {salesByDayAndHour.map((hours) =>
+              hours.length ? (
+                <tr key={hours[0][0]}>
+                  <th key={format(hours[0][0], "DD")}>
+                    <div style={{ marginBottom: "-5px" }}>
+                      <small>
+                        DAY
+                        <br />
+                      </small>
+                    </div>
+                    <big>
+                      {((diff) =>
+                        diff === 0 ? (
+                          <big>
+                            <big style={{ lineHeight: 0 }}>{diff}</big>
+                          </big>
+                        ) : diff > 0 ? (
+                          String(diff).padStart(2, "0")
+                        ) : (
+                          diff
+                        ))(
+                        differenceInDays(
+                          hours[0][0],
+                          setHours(currentCamp.start, rolloverOffset),
+                        ) + 1,
+                      )}
+                    </big>
+                  </th>
+                  {hours.map(([hour, hourSales]) => {
+                    if (!showHour(hour)) return null;
+                    const beer = hourSales.reduce(
+                      (m, hourSale) =>
+                        hourSale.products.filter(({ _id, tags }) => {
                           const product = products.find(
                             (product) => product._id == _id,
                           );
-                          if (product)
-                            return !(
-                              product.name &&
-                              product.name.toLowerCase().includes("mate")
-                            );
-                          return !name && name.toLowerCase().includes("mate");
-                        })
-                        .filter(({ _id, tags }) => {
-                          const product = products.find(
-                            (product) => product._id == _id,
-                          );
-                          if (product)
-                            return !(
-                              product.tags && product.tags.includes("beer")
-                            );
-                          return !tags && tags.includes("beer");
+                          if (product) return product.tags?.includes("beer");
+                          return tags?.includes("beer");
                         }).length + m,
-                    0,
-                  );
-                  return (
-                    <td
-                      key={hour}
-                      className={css`
-                        text-align: center;
-                        border-top: 1px solid rgba(255, 255, 255, 0.4);
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-                        padding-top: calc(100% / 25);
-                        position: relative;
-                      `}
-                    >
-                      <div
+                      0,
+                    );
+                    const mate = hourSales.reduce(
+                      (m, hourSale) =>
+                        hourSale.products.filter(({ _id, name }) => {
+                          const product = products.find(
+                            (product) => product._id == _id,
+                          );
+                          if (product)
+                            return product.name?.toLowerCase().includes("mate");
+                          return name?.toLowerCase().includes("mate");
+                        }).length + m,
+                      0,
+                    );
+                    const others = hourSales.reduce(
+                      (m, hourSale) =>
+                        hourSale.products
+                          .filter(({ _id, name }) => {
+                            const product = products.find(
+                              (product) => product._id == _id,
+                            );
+                            if (product)
+                              return !product.name
+                                ?.toLowerCase()
+                                .includes("mate");
+                            return !name?.toLowerCase().includes("mate");
+                          })
+                          .filter(({ _id, tags }) => {
+                            const product = products.find(
+                              (product) => product._id == _id,
+                            );
+                            if (product) return !product.tags?.includes("beer");
+                            return !tags?.includes("beer");
+                          }).length + m,
+                      0,
+                    );
+                    return (
+                      <td
+                        key={hour}
                         className={css`
-                          position: absolute;
-                          height: 100%;
-                          width: 100%;
-                          bottom: 0;
-                          left: 0;
-                          right: 0;
-                          top: 0;
-                          display: flex;
-                          flex-direction: column-reverse;
+                          text-align: center;
+                          border-top: 1px solid rgba(255, 255, 255, 0.4);
+                          border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+                          padding-top: calc(100% / 25);
+                          position: relative;
                         `}
                       >
-                        {[mate, beer].map((productSales, i) => (
-                          <div
-                            key={["mate", "beer", "others"][i]}
-                            className={css`
-                              height: ${(productSales /
-                                mostSoldProductsPerHour) *
-                              100}%;
-                              background-color: ${[
-                                "yellow",
-                                "red",
-                                "lightgray",
-                              ][i]};
-                            `}
-                          />
-                        ))}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+                        <div
+                          className={css`
+                            position: absolute;
+                            height: 100%;
+                            width: 100%;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            top: 0;
+                            display: flex;
+                            flex-direction: column-reverse;
+                          `}
+                        >
+                          {[mate, beer].map((productSales, i) => (
+                            <div
+                              key={["mate", "beer", "others"][i]}
+                              className={css`
+                                height: ${(productSales /
+                                  mostSoldProductsPerHour) *
+                                100}%;
+                                background-color: ${[
+                                  "yellow",
+                                  "red",
+                                  "lightgray",
+                                ][i]};
+                              `}
+                            />
+                          ))}
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ) : null,
+            )}
           </tbody>
         </table>
       ) : null}
-      {false && (
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={data}>
-            <Legend verticalAlign="top" height={36} />
-            <XAxis dataKey="hour" interval={2} />
-            <YAxis />
-            <CartesianGrid strokeDasharray="3 3" />
-            <Tooltip />
-            <Area
-              type="monotone"
-              dataKey="beer"
-              stackId="1"
-              stroke="red"
-              fill="red"
-            />
-            <Area
-              type="monotone"
-              dataKey="mate"
-              stackId="1"
-              stroke="yellow"
-              fill="yellow"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      )}
-      <hr />
-      Most sold @ {currentCamp.name}:
-      <ul>
-        {mostSold.map(([productId, count]) => {
-          const product = products.find(({ _id }) => _id == productId);
-          if (!product) return null;
-          return (
-            <li key={productId}>
-              <big>{count}x </big>
-              {product.brandName ? <>{product.brandName} - </> : null}
-              {product.name}({product.unitSize}
-              {product.sizeUnit})
-            </li>
-          );
-        })}
-      </ul>
+      <div
+        className={css`
+          padding-left: 32px;
+        `}
+      >
+        Most sold @ {currentCamp.name}:
+        <ul>
+          {mostSold.map(([productId, count]) => {
+            const product = products.find(({ _id }) => _id == productId);
+            if (!product) return null;
+            return (
+              <li
+                key={productId}
+                className={css`
+                  white-space: nowrap;
+                `}
+              >
+                <big>{count}x </big>
+                {product.brandName ? <>{product.brandName} - </> : null}
+                {product.name}({product.unitSize}
+                {product.sizeUnit})
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 }

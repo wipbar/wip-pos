@@ -8,8 +8,8 @@ export default function useSubscription(pubName, ...subOpts) {
   let handle = null;
 
   const stopComp = () => {
-    comp && comp.stop();
-    handle && handle.stop();
+    comp?.stop();
+    handle?.stop();
     comp = null;
     handle = null;
   };

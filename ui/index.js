@@ -45,17 +45,15 @@ export default function UI() {
     if (currentLocation && pageSlug) {
       setTitle(
         `${
-          locationSlug && currentLocation ? currentLocation.name : "WIP POS"
+          (locationSlug && currentLocation?.name) || "WIP POS"
         } - ${pageSlug}`.toUpperCase(),
       );
     } else {
       setTitle(
-        `${
-          locationSlug && currentLocation ? currentLocation.name : "WIP POS"
-        }`.toUpperCase(),
+        `${(locationSlug && currentLocation?.name) || "WIP POS"}`.toUpperCase(),
       );
     }
-  }, [currentLocation, setTitle, pageSlug]);
+  }, [currentLocation, setTitle, pageSlug, locationSlug]);
   if (!currentLocation) return null;
   return (
     <div>

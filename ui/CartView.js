@@ -110,7 +110,7 @@ export default function CartView() {
         border-left: 1px solid rgba(255, 255, 255, 0.4);
       `}
     >
-      {pickedProductIds && pickedProductIds.length ? (
+      {pickedProductIds?.length ? (
         <>
           <ul
             className={css`

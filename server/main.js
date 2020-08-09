@@ -19,10 +19,9 @@ Meteor.startup(() => {
     products.forEach((product) => {
       if (
         !product.tags &&
-        product.brandName &&
-        (product.brandName.toLowerCase().includes("bryg") ||
-          product.brandName.toLowerCase().includes("ærø") ||
-          product.brandName.toLowerCase().includes("pilsner"))
+        (product.brandName?.toLowerCase().includes("bryg") ||
+          product.brandName?.toLowerCase().includes("ærø") ||
+          product.brandName?.toLowerCase().includes("pilsner"))
       ) {
         Products.update(product._id, { $set: { tags: "beer,bottle" } });
         if (product.name.toLowerCase().includes("tap:")) {
@@ -31,8 +30,7 @@ Meteor.startup(() => {
       }
       if (
         !product.tags &&
-        product.brandName &&
-        product.brandName.toLowerCase().includes("naturfrisk")
+        product.brandName?.toLowerCase().includes("naturfrisk")
       ) {
         Products.update(product._id, { $set: { tags: "soda,bottle" } });
       }

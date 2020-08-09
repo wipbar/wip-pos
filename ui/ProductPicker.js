@@ -83,12 +83,7 @@ export default function ProductPicker(props) {
     activeFilters,
   );
   useEffect(() => {
-    if (
-      pickedProductIds &&
-      pickedProductIds.length == 0 &&
-      prevPickedProductIds &&
-      prevPickedProductIds.length > 0
-    ) {
+    if (pickedProductIds?.length == 0 && prevPickedProductIds?.length > 0) {
       setActiveFilters([]);
     }
     setPrevPickedProductIds(pickedProductIds);
@@ -239,8 +234,7 @@ export default function ProductPicker(props) {
           })
           .filter((product) =>
             showOnlyMenuItems
-              ? product.locationIds &&
-                product.locationIds.includes(location._id)
+              ? product.locationIds?.includes(location._id)
               : true,
           )
           .map((product) => (
@@ -297,25 +291,24 @@ export default function ProductPicker(props) {
                             {product.unitSize}
                             {product.sizeUnit}
                           </i>{" "}
-                          {product.tags &&
-                            product.tags.split(",").map((tag) => (
-                              <span
-                                key={tag}
-                                className={css`
-                                  display: inline-block;
-                                  background: ${stringToColour(tag) ||
-                                  `rgba(0, 0, 0, 0.4)`};
-                                  color: ${getCorrectTextColor(
-                                    stringToColour(tag),
-                                  ) || "white"};
-                                  padding: 0 3px;
-                                  border-radius: 4px;
-                                  margin-left: 2px;
-                                `}
-                              >
-                                {tag.trim()}
-                              </span>
-                            ))}
+                          {product.tags?.split(",").map((tag) => (
+                            <span
+                              key={tag}
+                              className={css`
+                                display: inline-block;
+                                background: ${stringToColour(tag) ||
+                                `rgba(0, 0, 0, 0.4)`};
+                                color: ${getCorrectTextColor(
+                                  stringToColour(tag),
+                                ) || "white"};
+                                padding: 0 3px;
+                                border-radius: 4px;
+                                margin-left: 2px;
+                              `}
+                            >
+                              {tag.trim()}
+                            </span>
+                          ))}
                         </small>
                       </small>
                     </>

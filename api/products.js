@@ -56,12 +56,11 @@ Meteor.methods({
     return Products.update(productId, {
       $set: {
         ...updatedProduct,
-        shopPrices:
-          buyPrice && buyPrice.trim()
-            ? (oldProduct.shopPrices || []).concat([
-                { buyPrice: +buyPrice.trim(), timestamp: new Date() },
-              ])
-            : undefined,
+        shopPrices: buyPrice?.trim()
+          ? (oldProduct.shopPrices || []).concat([
+              { buyPrice: +buyPrice.trim(), timestamp: new Date() },
+            ])
+          : undefined,
         updatedAt: new Date(),
       },
     });

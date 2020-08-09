@@ -48,7 +48,7 @@ if (Meteor.isClient) {
       `&state=${OAuth._stateParam(
         loginStyle,
         credentialToken,
-        options && options.redirectUrl,
+        options?.redirectUrl,
       )}`;
 
     OAuth.launchLogin({
@@ -177,14 +177,7 @@ export const isUserAdmin = (userOrId) => {
   const user = Meteor.users.findOne(
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
-  if (
-    user &&
-    user.profile &&
-    user.profile.user &&
-    user.profile.user.username &&
-    user.profile.user.username === "klarstrup"
-  )
-    return true;
+  if (user?.profile?.user?.username === "klarstrup") return true;
 };
 export const isUserInTeam = (userOrId, inTeam) => {
   if (!userOrId || !inTeam) return false;
@@ -192,14 +185,9 @@ export const isUserInTeam = (userOrId, inTeam) => {
   const user = Meteor.users.findOne(
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
-  return !!(
-    user &&
-    user.profile &&
-    user.profile.teams &&
-    user.profile.teams.find(
-      ({ team, camp }) =>
-        team.toLowerCase() === inTeam.toLowerCase() && camp === "BornHack 2020",
-    )
+  return !!user?.profile?.teams?.find(
+    ({ team, camp }) =>
+      team.toLowerCase() === inTeam.toLowerCase() && camp === "BornHack 2020",
   );
 };
 export const assertUserInAnyTeam = (userOrId) => {

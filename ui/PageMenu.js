@@ -24,13 +24,12 @@ export default function PageMenu() {
     () =>
       Object.entries(
         products.reduce((memo, product) => {
-          const key = product.tags
-            ? product.tags
-                .split(",")
-                .map((tag) => tag.trim())
-                .sort()
-                .join(",")
-            : "other";
+          const key =
+            product.tags
+              ?.split(",")
+              .map((tag) => tag.trim())
+              .sort()
+              .join(",") || "other";
           if (memo[key]) {
             memo[key].push(product);
           } else {

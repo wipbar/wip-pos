@@ -108,36 +108,31 @@ function StockProductItem({ product, columns, className }) {
             onClick={() =>
               editProduct({
                 productId: product._id,
-                data:
-                  product.locationIds &&
-                  product.locationIds.includes(location._id)
-                    ? {
-                        locationIds: product.locationIds.filter(
-                          (id) => id !== location._id,
-                        ),
-                      }
-                    : {
-                        locationIds: [
-                          ...(product.locationIds || []),
-                          location._id,
-                        ],
-                      },
+                data: product.locationIds?.includes(location?._id)
+                  ? {
+                      locationIds: product.locationIds.filter(
+                        (id) => id !== location?._id,
+                      ),
+                    }
+                  : {
+                      locationIds: [
+                        ...(product.locationIds || []),
+                        location?._id,
+                      ],
+                    },
               })
             }
           >
-            {location &&
-              (product.locationIds && product.locationIds.includes(location._id)
-                ? `Remove from ${location.name} menu`
-                : `Add to ${location.name} menu`)}
+            {product.locationIds?.includes(location?._id)
+              ? `Remove from ${location.name} menu`
+              : `Add to ${location.name} menu`}
           </Button>
-          {product.locationIds &&
-          product.locationIds.filter((id) => !location || id !== location._id)
-            .length ? (
+          {product.locationIds?.filter((id) => id !== location?._id).length ? (
             <small>
               <br />
               Used by:{" "}
               {product.locationIds
-                .filter((id) => !location || id !== location._id)
+                .filter((id) => id !== location?._id)
                 .map((id) => locations.find(({ _id }) => id === _id))
                 .filter(Boolean)
                 .map(({ slug, name }) => (
@@ -180,7 +175,7 @@ function StockProductItem({ product, columns, className }) {
                   );
                 }
                 return <>{value}</>;
-              })(product && product[column])}
+              })(product?.[column])}
             </td>
           ))}
         </>
@@ -196,7 +191,7 @@ function StockProductItem({ product, columns, className }) {
           <Button
             type="button"
             onClick={() => {
-              if (product.locationIds && product.locationIds.length) {
+              if (product.locationIds?.length) {
                 return window.alert(
                   "Product must be removed from all locations' menus before it can be removed.",
                 );
@@ -268,7 +263,7 @@ export default function PageStock() {
           </tr>
         </tbody>
       </table>
-      {products && products.length ? (
+      {products?.length ? (
         <table
           className={css`
             border-collapse: collapse;
