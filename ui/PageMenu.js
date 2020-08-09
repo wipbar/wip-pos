@@ -3,7 +3,6 @@ import React, { useMemo } from "react";
 import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
-import useSubscription from "../hooks/useSubscription";
 
 export default function PageMenu() {
   const {
@@ -11,8 +10,7 @@ export default function PageMenu() {
     loading: locationLoading,
     error,
   } = useCurrentLocation();
-  const productsLoading = useSubscription("products");
-  const products = useMongoFetch(
+  const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find(
       {
         removedAt: { $exists: false },
@@ -163,10 +161,10 @@ export default function PageMenu() {
                               ]
                                 .filter(Boolean)
                                 .map((thing, i) => (
-                                  <>
+                                  <React.Fragment key={thing}>
                                     {i > 0 ? ", " : null}
                                     <small key={thing}>{thing}</small>
-                                  </>
+                                  </React.Fragment>
                                 ))}
                             </small>
                           </span>

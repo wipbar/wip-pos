@@ -83,9 +83,8 @@ const removeItem = (items, i) =>
 
 export default function CartView() {
   const { locationSlug } = useParams();
-  const loading = useSubscription("products");
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const products = useMongoFetch(
+  const { data: products, loading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const [pickedProductIds, setPickedProductIds] = useSession(

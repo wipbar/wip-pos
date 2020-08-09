@@ -1,4 +1,5 @@
 import { css } from "emotion";
+import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
 import React, { useMemo, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
@@ -7,8 +8,7 @@ import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
-import useSubscription from "../hooks/useSubscription";
-import { Meteor } from "meteor/meteor";
+
 const fieldNames = [
   "brandName",
   "name",
@@ -92,8 +92,7 @@ function Button(props) {
 }
 
 function StockProductItem({ product, columns }) {
-  const locationsLoading = useSubscription("locations");
-  const locations = useMongoFetch(Locations.find());
+  const { data: locations } = useMongoFetch(Locations);
 
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
@@ -164,14 +163,14 @@ function StockProductItem({ product, columns }) {
                 if (Array.isArray(value)) {
                   return (
                     <ul>
-                      {value.map((v) => {
+                      {value.map((v, i) => {
                         if (typeof v === "number")
                           return (
-                            <li>
+                            <li key={i}>
                               <code>{v}</code>
                             </li>
                           );
-                        return <li>{v}</li>;
+                        return <li key={i}>{v}</li>;
                       })}
                     </ul>
                   );
@@ -213,8 +212,7 @@ function StockProductItem({ product, columns }) {
 
 export default function PageStock() {
   const [showRemoved, setShowRemoved] = useState(false);
-  const productsLoading = useSubscription("products");
-  const products = useMongoFetch(
+  const { data: products, loading } = useMongoFetch(
     Products.find(
       { removedAt: { $exists: showRemoved } },
       { sort: { createdAt: -1 } },
@@ -224,7 +222,7 @@ export default function PageStock() {
   const [addProduct] = useMethod("Products.addProduct");
   const columns = useMemo(
     () =>
-      productsLoading
+      loading
         ? []
         : [
             ...products.reduce((m, product) => {
@@ -243,9 +241,9 @@ export default function PageStock() {
                 "locationIds",
               ].includes(name),
           ),
-    [products, productsLoading],
+    [products, loading],
   );
-  if (productsLoading) return "Loading...";
+  if (loading) return "Loading...";
   return (
     <>
       <table>

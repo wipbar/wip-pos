@@ -5,16 +5,15 @@ import Locations from "../api/locations";
 import AccountsUIWrapper from "../ui/AccountsUIWrapper";
 import useCurrentUser from "./useCurrentUser";
 import useMongoFetch from "./useMongoFetch";
-import useSubscription from "./useSubscription";
 
 export default function useCurrentLocation(authorized) {
-  const loading = useSubscription("locations");
   const { params: { locationSlug } = {} } =
     useRouteMatch("/:locationSlug") || {};
 
-  const [location] = useMongoFetch(Locations.find({ slug: locationSlug }), [
-    locationSlug,
-  ]);
+  const {
+    data: [location],
+    loading,
+  } = useMongoFetch(Locations.find({ slug: locationSlug }), [locationSlug]);
   const user = useCurrentUser();
   const error =
     !loading &&

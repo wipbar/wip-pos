@@ -5,8 +5,11 @@ import {
   getHours,
   isAfter,
   isBefore,
+  isPast,
+  min,
   setHours,
   startOfHour,
+  subDays,
 } from "date-fns";
 import { css } from "emotion";
 import React, { useMemo } from "react";
@@ -20,59 +23,58 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
-import useSubscription from "../hooks/useSubscription";
-import { useTracker } from "meteor/react-meteor-data";
 import useMongoFetch from "../hooks/useMongoFetch";
-import Camps from "../api/camps";
+
+const rolloverOffset = 4;
 
 export default function PageStats() {
-  const salesLoading = useSubscription("sales");
-  const productsLoading = useSubscription("products");
-  const campsLoading = useSubscription("camps");
-  const camps = useMongoFetch(Camps.find());
-  const sales = useMongoFetch(Sales.find());
-  const products = useMongoFetch(
+  const currentDate = new Date();
+  const {
+    data: [currentCamp],
+    loading: campsLoading,
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const from = startOfHour(
+    setHours(
+      isPast(currentCamp?.start) ? currentCamp?.start : currentCamp?.buildup,
+      rolloverOffset,
+    ),
+  );
+  const to = endOfHour(
+    min(setHours(currentCamp?.end, rolloverOffset - 1), currentDate),
+  );
+  const { data: sales, loading: salesLoading } = useMongoFetch(
+    Sales.find({ timestamp: { $gt: from, $lt: to } }),
+    [from, to],
+  );
+  console.log(sales);
+  const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
-  const [firstSale, lastSale] = useMemo(() => {
-    const salesByTimestamp = sales
-      ? [...sales].sort((a, b) => a.timestamp - b.timestamp)
-      : [];
-    return [salesByTimestamp[0], salesByTimestamp[salesByTimestamp.length - 1]];
-  }, [sales]);
-  const currentDate = new Date();
+
   const allHours = useMemo(() => {
     let hours = [];
-    if (firstSale) {
-      const from = startOfHour(setHours(firstSale.timestamp, 6));
-      const to = endOfHour(setHours(lastSale.timestamp || currentDate, 5));
-      for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
-        hours.push(i);
-      }
-    }
+    for (let i = from; isBefore(i, to); i = addHours(i, 1)) hours.push(i);
+
     return hours;
-  }, [firstSale, lastSale, currentDate]);
+  }, [currentCamp, currentDate]);
   const allDays = useMemo(() => {
     let days = [[]];
-    if (firstSale) {
-      const from = startOfHour(setHours(firstSale.timestamp, 6));
-      const to = endOfHour(lastSale.timestamp || currentDate);
-      let dayI = 0;
-      let hourI = 0;
-      for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
-        days[dayI].push(i);
-        hourI++;
-        if (hourI == 24) {
-          hourI = 0;
-          dayI++;
-          days[dayI] = [];
-        }
+    let dayI = 0;
+    let hourI = 0;
+    for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
+      days[dayI].push(i);
+      hourI++;
+      if (hourI == 24) {
+        hourI = 0;
+        dayI++;
+        days[dayI] = [];
       }
     }
     return days;
-  }, [firstSale, lastSale, currentDate]);
+  }, [currentCamp, currentDate]);
   let mostSoldProductsPerHour = useMemo(
     () =>
       allHours.reduce((m, hour) => {
@@ -161,7 +163,7 @@ export default function PageStats() {
       }),
     [products, salesByHour],
   );
-  if (salesLoading || productsLoading) return "Loading...";
+  if (salesLoading || productsLoading || campsLoading) return "Loading...";
   return (
     <div
       className={css`
@@ -320,7 +322,7 @@ export default function PageStats() {
         </ResponsiveContainer>
       )}
       <hr />
-      Most sold:
+      Most sold @ {currentCamp.name}:
       <ul>
         {mostSold.map(([productId, count]) => {
           const product = products.find(({ _id }) => _id == productId);

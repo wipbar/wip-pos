@@ -1,26 +1,12 @@
 import { css } from "emotion";
 import React, { useCallback, useEffect, useState } from "react";
 import Products from "../api/products";
-import useSession from "../hooks/useSession";
-import useSubscription from "../hooks/useSubscription";
-import { useTracker } from "meteor/react-meteor-data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useSession from "../hooks/useSession";
 
 const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
-
-const stringToColour2 = (str) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++)
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-
-  let colour = "#";
-  for (let i = 0; i < 3; i++)
-    colour += ("00" + ((hash >> (i * 8)) & 0xff).toString(16)).substr(-2);
-
-  return colour;
-};
 
 function stringToColour(inputString) {
   var sum = 0;
@@ -108,8 +94,7 @@ export default function ProductPicker(props) {
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
-  const productsLoading = useSubscription("products");
-  const products = useMongoFetch(
+  const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const toggleTag = useCallback(

@@ -1,41 +1,42 @@
 import { css } from "emotion";
-import { useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
 import React, { useEffect } from "react";
-import { Link, Route, Switch } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Switch,
+  useHistory,
+  useRouteMatch,
+} from "react-router-dom";
+import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
+import useMongoFetch from "../hooks/useMongoFetch";
+import useSession from "../hooks/useSession";
 import AccountsUIWrapper from "./AccountsUIWrapper";
-import PageTend from "./PageTend";
 import PageMenu from "./PageMenu";
 import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
-import { useHistory, useRouteMatch } from "react-router-dom";
-import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
-import useSubscription from "../hooks/useSubscription";
-import useCurrentLocation from "../hooks/useCurrentLocation";
-import useMongoFetch from "../hooks/useMongoFetch";
-import useSession from "../hooks/useSession";
+import PageTend from "./PageTend";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
 export default function UI() {
   let history = useHistory();
-  useSubscription("locations");
   const { params: { locationSlug, 0: pageSlug } = {} } =
     useRouteMatch("/:locationSlug/*") || {};
   const user = useCurrentUser();
-  console.log("???", useMongoFetch(Locations));
-  const locations = useMongoFetch(Locations.find());
+  const { data: locations } = useMongoFetch(Locations);
   const userLocations = locations.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );
   const currentLocation = useCurrentLocation()?.location || locations[0];
   useEffect(() => {
-    if (userLocations.length === 1 && !locationSlug) {
+    if (userLocations.length && !locationSlug) {
       history.push("/" + userLocations[0].slug + "/");
     }
   }, [history, locationSlug, userLocations]);
@@ -54,7 +55,6 @@ export default function UI() {
         className={css`
           background: rgba(255, 255, 255, 0.2);
           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-          display: ${!user || !locationSlug ? "none" : "block"};
         `}
       >
         <nav
@@ -115,7 +115,14 @@ export default function UI() {
           component={() => {
             return (
               <center>
-                <ul>
+                <br />
+                <ul
+                  className={css`
+                    padding: 0;
+                    margin: 0;
+                    list-style: none;
+                  `}
+                >
                   {locations.map((location) => (
                     <li
                       key={location._id}
