@@ -20,16 +20,12 @@ export default function PageMenu() {
     ),
     [location._id],
   );
+  console.log(products);
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(
         products.reduce((memo, product) => {
-          const key =
-            product.tags
-              ?.split(",")
-              .map((tag) => tag.trim())
-              .sort()
-              .join(",") || "other";
+          const key = [...(product.tags || [])].sort()?.join(",") || "other";
           if (memo[key]) {
             memo[key].push(product);
           } else {
@@ -72,7 +68,7 @@ export default function PageMenu() {
               return m;
             }, {}),
           ).sort((a, b) => b[1].length - a[1].length);
-
+          console.log(tags);
           return (
             <>
               <div
@@ -92,7 +88,7 @@ export default function PageMenu() {
                     padding: 8px;
                   `}
                 >
-                  {tags.split(",").join(", ")}
+                  {tags?.join?.(", ") || tags}
                 </h3>
                 <ul
                   className={css`

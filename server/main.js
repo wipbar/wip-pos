@@ -6,7 +6,7 @@ import Locations from "../api/locations";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
-
+import "./metrics";
 Meteor.publish("products", () => Products.find());
 Meteor.publish("camps", () => Camps.find());
 Meteor.publish("sales", () => Sales.find());

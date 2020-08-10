@@ -97,6 +97,7 @@ if (Meteor.isClient) {
           client_secret: OAuth.openSecret(config.secret),
           redirect_uri: OAuth._redirectUri(service, config),
           state,
+          scope: "read",
         },
       });
     } catch ({ message, response }) {

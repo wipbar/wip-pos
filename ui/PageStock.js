@@ -8,6 +8,7 @@ import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
+import PageStockItem from "./PageStockItem";
 
 const fieldNames = [
   "brandName",
@@ -124,8 +125,8 @@ function StockProductItem({ product, columns, className }) {
             }
           >
             {product.locationIds?.includes(location?._id)
-              ? `Remove from ${location.name} menu`
-              : `Add to ${location.name} menu`}
+              ? "Remove from menu"
+              : "Add to menu"}
           </Button>
           {product.locationIds?.filter((id) => id !== location?._id).length ? (
             <small>
@@ -210,14 +211,23 @@ function StockProductItem({ product, columns, className }) {
 }
 
 export default function PageStock() {
+  const { location } = useCurrentLocation();
   const [showRemoved, setShowRemoved] = useState(false);
+  const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
+
   const { data: products, loading } = useMongoFetch(
     Products.find(
-      { removedAt: { $exists: showRemoved } },
+      {
+        removedAt: { $exists: showRemoved },
+        ...(showOnlyMenuItems
+          ? { locationIds: { $elemMatch: { $eq: location._id } } }
+          : undefined),
+      },
       { sort: { createdAt: -1 } },
     ),
-    [showRemoved],
+    [showOnlyMenuItems, showRemoved, location],
   );
+
   const [addProduct] = useMethod("Products.addProduct");
   const columns = useMemo(
     () =>
@@ -245,6 +255,15 @@ export default function PageStock() {
   if (loading) return "Loading...";
   return (
     <>
+      <label>
+        <input
+          type="checkbox"
+          onChange={() => setShowOnlyMenuItems(!showOnlyMenuItems)}
+          checked={showOnlyMenuItems}
+        />
+        show only items on the menu
+      </label>
+      <PageStockItem />
       <table>
         <thead>
           <tr>

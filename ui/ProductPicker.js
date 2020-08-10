@@ -102,9 +102,8 @@ export default function ProductPicker(props) {
   );
   const allTags = [
     ...products.reduce((memo, product) => {
-      if (product.tags) {
-        product.tags.split(",").forEach((tag) => memo.add(tag.trim()));
-      }
+      product.tags?.forEach((tag) => memo.add(tag.trim()));
+
       return memo;
     }, new Set()),
   ];
@@ -226,10 +225,7 @@ export default function ProductPicker(props) {
             if (!product.tags) return true;
 
             return activeFilters.every((filter) =>
-              product.tags
-                .split(",")
-                .map((tag) => tag.trim())
-                .includes(filter.trim()),
+              product.tags.map((tag) => tag.trim()).includes(filter.trim()),
             );
           })
           .filter((product) =>
@@ -291,7 +287,7 @@ export default function ProductPicker(props) {
                             {product.unitSize}
                             {product.sizeUnit}
                           </i>{" "}
-                          {product.tags?.split(",").map((tag) => (
+                          {product.tags?.map((tag) => (
                             <span
                               key={tag}
                               className={css`

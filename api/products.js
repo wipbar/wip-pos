@@ -1,6 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import { assertUserInAnyTeam, assertUserInTeam } from "./accounts";
+import { assertUserInAnyTeam } from "./accounts";
 import Locations from "./locations";
 
 const Products = new Mongo.Collection("products");
@@ -26,6 +26,18 @@ if (Meteor.isServer)
         }),
       );
     }
+    const stringTagsProductsQuery = {
+      tags: { $type: "string", $not: { $type: "array" } },
+    };
+    if (Products.find(stringTagsProductsQuery).count()) {
+      const products = Products.find(stringTagsProductsQuery).fetch();
+      console.log(
+        `Migrating ${products.length} products from string to array tags.`,
+      );
+      products.forEach(({ _id, tags }) =>
+        Products.update(_id, { $set: { tags: tags ? tags.split(","). : [] } }),
+      );
+    }
   });
 
 export default Products;
@@ -41,10 +53,7 @@ Meteor.methods({
       unitSize: Number(data.unitSize.trim()),
       sizeUnit: data.sizeUnit.trim(),
       abv: Number(data.abv.trim()),
-      tags: data.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .join(","),
+      tags: data.tags.map((tag) => tag.trim().toLowerCase()),
       shopPrices: data.buyPrice
         ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: new Date() }]
         : undefined,
