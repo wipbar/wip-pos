@@ -5,6 +5,7 @@ import useMongoFetch from "../hooks/useMongoFetch";
 import Products from "../api/products";
 import CreatableSelect from "react-select/creatable";
 import { css } from "emotion";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 
 const toOptions = (items) =>
   items.map((item) => ({ label: item, value: item }));
@@ -36,6 +37,7 @@ const Label = ({ label, children }) => (
   </label>
 );
 export default function PageStockItem({ onSubmit, product }) {
+  const { location } = useCurrentLocation();
   const formId = product ? product._id : "newProductForm";
   const [isEditing, setIsEditing] = useState(false);
   const [addProduct] = useMethod("Products.addProduct");
@@ -57,7 +59,16 @@ export default function PageStockItem({ onSubmit, product }) {
     }, new Set()),
   ].filter(Boolean);
 
-  const { handleSubmit, register, control, errors, setValue } = useForm();
+  const {
+    handleSubmit,
+    register,
+    control,
+    reset,
+    errors,
+    formState: { isDirty },
+    setValue,
+  } = useForm();
+
   const onSubmit2 = (data) => {
     console.log(data);
     if (!product) {
@@ -66,7 +77,7 @@ export default function PageStockItem({ onSubmit, product }) {
       editProduct({ productId: product._id, data });
     }
   };
-  console.log(errors);
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit2)}
@@ -83,11 +94,15 @@ export default function PageStockItem({ onSubmit, product }) {
           defaultValue={product?.brandName || ""}
           render={({ onBlur, value }) => (
             <CreatableSelect
-              defaultValue={value || ""}
+              value={value ? { value, label: value } : null}
               isClearable
-              options={toOptions(allBrandNames)}
+              options={toOptions(allBrandNames || [])}
               onBlur={onBlur}
-              onChange={(option) => setValue("brandName", option?.value || "")}
+              onChange={(option) =>
+                setValue("brandName", option?.value || "", {
+                  shouldDirty: true,
+                })
+              }
               className={css`
                 color: black;
               `}
@@ -97,54 +112,116 @@ export default function PageStockItem({ onSubmit, product }) {
         {errors.brandName?.message}
       </Label>
       <Label label="Name">
-        <input type="text" name="name" ref={register({ required: true })} />
+        <input
+          type="text"
+          name="name"
+          defaultValue={product?.name || ""}
+          ref={register({ required: true })}
+        />
       </Label>
       <Label label="Price">
         <input
           type="number"
           name="salePrice"
+          defaultValue={product?.salePrice || ""}
           ref={register({ required: true })}
         />
       </Label>
       <Label label="Unit Size">
-        <input type="number" name="unitSize" ref={register} />
+        <input
+          type="number"
+          name="unitSize"
+          defaultValue={product?.unitSize || ""}
+          ref={register}
+        />
       </Label>
       <Label label="Size Unit">
-        <input type="text" name="sizeUnit" ref={register} />
+        <input
+          type="text"
+          name="sizeUnit"
+          defaultValue={product?.sizeUnit || ""}
+          ref={register}
+        />
       </Label>
       <Label label="Alcohol %">
-        <input type="number" name="abv" step="any" ref={register} />
+        <input
+          type="number"
+          name="abv"
+          step="any"
+          defaultValue={product?.abv || ""}
+          ref={register}
+        />
       </Label>
       <Label label="Description">
-        <input type="text" name="description" ref={register} />
+        <input
+          type="text"
+          name="description"
+          defaultValue={product?.description || ""}
+          ref={register}
+        />
       </Label>
       <Label label="Tags">
         <Controller
           name="tags"
           control={control}
-          defaultValue={product?.tags || []}
+          defaultValue={product?.tags}
           render={({ onBlur, value }) => (
             <CreatableSelect
-              defaultValue={value}
-              options={toOptions(allTags)}
+              value={value ? toOptions(value) : null}
+              options={toOptions(allTags || [])}
               isMulti
               onBlur={onBlur}
               className={css`
                 color: black;
               `}
               onChange={(newValue) =>
-                setValue("tags", newValue?.map(({ value }) => value) || [])
+                setValue("tags", newValue?.map(({ value }) => value) || [], {
+                  shouldDirty: true,
+                })
               }
             />
           )}
         />
       </Label>
-      <input
-        type="submit"
-        className={css`
-          width: 200px;
-        `}
-      />
+      <div>
+        <button
+          disabled={!isDirty}
+          type="submit"
+          className={css`
+            width: 200px;
+          `}
+        >
+          {product ? "Update" : "Create"}
+        </button>
+        <button disabled={!isDirty} type="button" onClick={reset}>
+          Reset
+        </button>
+        {product ? (
+          <button
+            onClick={() =>
+              editProduct({
+                productId: product._id,
+                data: product.locationIds?.includes(location?._id)
+                  ? {
+                      locationIds: product.locationIds.filter(
+                        (id) => id !== location?._id,
+                      ),
+                    }
+                  : {
+                      locationIds: [
+                        ...(product.locationIds || []),
+                        location?._id,
+                      ],
+                    },
+              })
+            }
+          >
+            {product.locationIds?.includes(location?._id)
+              ? "Remove from menu"
+              : "Add to menu"}
+          </button>
+        ) : null}
+      </div>
     </form>
   );
 }

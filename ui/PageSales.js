@@ -8,6 +8,15 @@ import useMongoFetch from "../hooks/useMongoFetch";
 
 const rolloverOffset = 4;
 
+function saveAs(blob, type, name) {
+  const a = window.document.createElement("a");
+  a.href = window.URL.createObjectURL(new Blob([blob], { type }));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 export default function PageSales() {
   const { location } = useCurrentLocation();
   const { data: sales, loading: salesLoading } = useMongoFetch(
@@ -58,6 +67,25 @@ export default function PageSales() {
                   </b>
                 </code>
                 <small>{salesOfDay[0].currency}</small>
+                <small>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      saveAs(
+                        JSON.stringify(
+                          salesOfDay.map(({ timestamp, amount }) => ({
+                            timestamp,
+                            amount,
+                          })),
+                        ),
+                        "application/json;charset=utf-8;",
+                        `${location.slug}-${format(day, "YYYY-MM-DD")}.json`,
+                      )
+                    }
+                  >
+                    Download as JSON
+                  </button>
+                </small>
               </summary>
               <ul>
                 {salesOfDay.map(({ products, ...sale }) => (

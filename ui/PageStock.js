@@ -105,7 +105,6 @@ function StockProductItem({ product, columns, className }) {
       {!isEditing ? (
         <td>
           <Button
-            type="button"
             onClick={() =>
               editProduct({
                 productId: product._id,
@@ -264,55 +263,10 @@ export default function PageStock() {
         show only items on the menu
       </label>
       <PageStockItem />
-      <table>
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column}>{column}</th>
-            ))}
-            <th>buyPrice</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <ProductForm
-              columns={[...columns, "buyPrice"]}
-              onSubmit={(newProduct) => addProduct({ data: newProduct })}
-            />
-          </tr>
-        </tbody>
-      </table>
-      {products?.length ? (
-        <table
-          className={css`
-            border-collapse: collapse;
-            width: 100%;
-          `}
-        >
-          <thead>
-            <tr>
-              <th>&nbsp;</th>
-              {columns.map((column) => (
-                <th key={column}>{column}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product, i) => (
-              <StockProductItem
-                key={product._id}
-                columns={columns}
-                product={product}
-                className={css`
-                  background: ${(i + 1) % 2
-                    ? "rgba(255,255,0,0.1)"
-                    : "rgba(0,0,0,0)"};
-                `}
-              />
-            ))}
-          </tbody>
-        </table>
-      ) : null}
+      <hr />
+      {products.map((product) => (
+        <PageStockItem key={product._id} product={product} />
+      ))}
     </>
   );
 }
