@@ -23,8 +23,8 @@ new client.Gauge({
               .length,
           0,
         );
-        if (count)
-          this.labels(location.name, brandName || "", productName).set(count);
+        //if (count)
+        this.labels(location.name, brandName || "", productName).set(count);
       });
     });
   },

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import useMethod from "../hooks/useMethod";
 import { Controller, useForm } from "react-hook-form";
 import useMongoFetch from "../hooks/useMongoFetch";
@@ -6,8 +6,38 @@ import Products from "../api/products";
 import CreatableSelect from "react-select/creatable";
 import { css } from "emotion";
 
-export default function PageStockItem({ onSubmit, initialValues }) {
-  const formId = initialValues ? initialValues._id : "newProductForm";
+const toOptions = (items) =>
+  items.map((item) => ({ label: item, value: item }));
+
+const Label = ({ label, children }) => (
+  <label
+    className={css`
+      display: flex;
+      width: 400px;
+      align-items: center;
+    `}
+  >
+    <small
+      className={css`
+        flex: 0.4;
+        text-align: right;
+        margin-right: 4px;
+      `}
+    >
+      {label}:
+    </small>
+    <div
+      className={css`
+        flex: 1;
+      `}
+    >
+      {children}
+    </div>
+  </label>
+);
+export default function PageStockItem({ onSubmit, product }) {
+  const formId = product ? product._id : "newProductForm";
+  const [isEditing, setIsEditing] = useState(false);
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
@@ -19,71 +49,102 @@ export default function PageStockItem({ onSubmit, initialValues }) {
       return memo;
     }, new Set()),
   ].filter(Boolean);
+  const allBrandNames = [
+    ...products.reduce((memo, product) => {
+      memo.add(product.brandName);
+
+      return memo;
+    }, new Set()),
+  ].filter(Boolean);
 
   const { handleSubmit, register, control, errors, setValue } = useForm();
-  const onSubmit2 = (values) => console.log(values);
-
+  const onSubmit2 = (data) => {
+    console.log(data);
+    if (!product) {
+      addProduct({ data });
+    } else if (product) {
+      editProduct({ productId: product._id, data });
+    }
+  };
+  console.log(errors);
   return (
-    <form onSubmit={handleSubmit(onSubmit2)}>
-      <input
-        type="text"
-        placeholder="brandName"
-        name="brandName"
-        ref={register({ required: true })}
-      />
-      <input type="number" placeholder="name" name="name" ref={register} />
-      <input
-        type="number"
-        placeholder="salePrice"
-        name="salePrice"
-        ref={register({ required: true })}
-      />
-      <input
-        type="number"
-        placeholder="unitSize"
-        name="unitSize"
-        ref={register}
-      />
-      <input
-        type="text"
-        placeholder="sizeUnit"
-        name="sizeUnit"
-        ref={register}
-      />
-      <input type="number" placeholder="abv" name="abv" ref={register} />
-      <input
-        type="text"
-        placeholder="description"
-        name="description"
-        ref={register}
-      />
-      <label>
-        Tags:{" "}
+    <form
+      onSubmit={handleSubmit(onSubmit2)}
+      className={css`
+        display: flex;
+        flex-direction: column;
+      `}
+    >
+      <Label label="Brand">
         <Controller
-          name="tags"
+          name="brandName"
           control={control}
-          defaultValue={initialValues?.tags || []}
+          rules={{ required: true }}
+          defaultValue={product?.brandName || ""}
           render={({ onBlur, value }) => (
             <CreatableSelect
-              defaultValue={value}
-              options={allTags.map((tag) => ({ value: tag, label: tag }))}
-              isMulti
+              defaultValue={value || ""}
+              isClearable
+              options={toOptions(allBrandNames)}
+              onBlur={onBlur}
+              onChange={(option) => setValue("brandName", option?.value || "")}
               className={css`
                 color: black;
               `}
+            />
+          )}
+        />
+        {errors.brandName?.message}
+      </Label>
+      <Label label="Name">
+        <input type="text" name="name" ref={register({ required: true })} />
+      </Label>
+      <Label label="Price">
+        <input
+          type="number"
+          name="salePrice"
+          ref={register({ required: true })}
+        />
+      </Label>
+      <Label label="Unit Size">
+        <input type="number" name="unitSize" ref={register} />
+      </Label>
+      <Label label="Size Unit">
+        <input type="text" name="sizeUnit" ref={register} />
+      </Label>
+      <Label label="Alcohol %">
+        <input type="number" name="abv" step="any" ref={register} />
+      </Label>
+      <Label label="Description">
+        <input type="text" name="description" ref={register} />
+      </Label>
+      <Label label="Tags">
+        <Controller
+          name="tags"
+          control={control}
+          defaultValue={product?.tags || []}
+          render={({ onBlur, value }) => (
+            <CreatableSelect
+              defaultValue={value}
+              options={toOptions(allTags)}
+              isMulti
               onBlur={onBlur}
+              className={css`
+                color: black;
+              `}
               onChange={(newValue) =>
-                setValue(
-                  "tags",
-                  newValue?.map(({ value }) => value).join(",") || [],
-                )
+                setValue("tags", newValue?.map(({ value }) => value) || [])
               }
             />
-          )} // props contains: onChange, onBlur and value
+          )}
         />
-      </label>
-
-      <input type="submit" />
+      </Label>
+      <input
+        type="submit"
+        className={css`
+          width: 200px;
+        `}
+      />
     </form>
   );
 }

@@ -22,7 +22,7 @@ export default function PageSales() {
         ),
       )
         .map(([date, data]) => [new Date(date), data])
-        .sort((a, b) => a[0] - b[0]),
+        .sort(([a], [b]) => a - b),
     [sales],
   );
 

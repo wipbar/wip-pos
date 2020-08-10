@@ -67,7 +67,7 @@ export default function PageMenu() {
               }
               return m;
             }, {}),
-          ).sort((a, b) => b[1].length - a[1].length);
+          ).sort(([, a], [, b]) => b.length - a.length);
           console.log(tags);
           return (
             <>
