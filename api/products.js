@@ -35,7 +35,7 @@ if (Meteor.isServer)
         `Migrating ${products.length} products from string to array tags.`,
       );
       products.forEach(({ _id, tags }) =>
-        Products.update(_id, { $set: { tags: tags ? tags.split(","). : [] } }),
+        Products.update(_id, { $set: { tags: tags ? tags.split(",") : [] } }),
       );
     }
   });
