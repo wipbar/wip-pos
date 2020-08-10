@@ -147,9 +147,16 @@ export default function PageStats() {
             </tr>
           </thead>
           <tbody>
-            {salesByDayAndHour.map((hours) =>
+            {salesByDayAndHour.map((hours, i) =>
               hours.length ? (
-                <tr key={hours[0][0]}>
+                <tr
+                  key={hours[0][0]}
+                  className={css`
+                    background: ${(i + 1) % 2
+                      ? "rgba(255,255,0,0.1)"
+                      : "rgba(0,0,0,0)"};
+                  `}
+                >
                   <th key={format(hours[0][0], "DD")}>
                     <div style={{ marginBottom: "-5px" }}>
                       <small>

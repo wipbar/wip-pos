@@ -285,7 +285,7 @@ export default function PageStock() {
                 product={product}
                 className={css`
                   background: ${(i + 1) % 2
-                    ? "rgba(255,255,0,0.2)"
+                    ? "rgba(255,255,0,0.1)"
                     : "rgba(0,0,0,0)"};
                 `}
               />
