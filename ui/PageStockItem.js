@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import useMethod from "../hooks/useMethod";
-import { Controller, useForm } from "react-hook-form";
-import useMongoFetch from "../hooks/useMongoFetch";
-import Products from "../api/products";
-import CreatableSelect from "react-select/creatable";
 import { css } from "emotion";
+import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import CreatableSelect from "react-select/creatable";
+import { isUserAdmin } from "../api/accounts";
+import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useCurrentUser from "../hooks/useCurrentUser";
+import useMethod from "../hooks/useMethod";
+import useMongoFetch from "../hooks/useMongoFetch";
 
 const toOptions = (items) =>
   items.map((item) => ({ label: item, value: item }));
@@ -37,6 +39,7 @@ const Label = ({ label, children }) => (
   </label>
 );
 export default function PageStockItem({ onSubmit, product }) {
+  const user = useCurrentUser();
   const { location } = useCurrentLocation();
   const formId = product ? product._id : "newProductForm";
   const [isEditing, setIsEditing] = useState(false);
@@ -65,17 +68,18 @@ export default function PageStockItem({ onSubmit, product }) {
     control,
     reset,
     errors,
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
     setValue,
   } = useForm();
 
-  const onSubmit2 = (data) => {
+  const onSubmit2 = async (data) => {
     console.log(data);
     if (!product) {
-      addProduct({ data });
+      await addProduct({ data });
     } else if (product) {
-      editProduct({ productId: product._id, data });
+      await editProduct({ productId: product._id, data });
     }
+    reset();
   };
 
   return (
@@ -191,7 +195,7 @@ export default function PageStockItem({ onSubmit, product }) {
             width: 200px;
           `}
         >
-          {product ? "Update" : "Create"}
+          {product ? "Update" : "Create"} {isSubmitting ? "..." : ""}
         </button>
         <button disabled={!isDirty} type="button" onClick={reset}>
           Reset
@@ -221,6 +225,11 @@ export default function PageStockItem({ onSubmit, product }) {
               : "Add to menu"}
           </button>
         ) : null}
+        {product && isUserAdmin(user) && (
+          <button onClick={() => removeProduct({ productId: product._id })}>
+            Remove product
+          </button>
+        )}
       </div>
     </form>
   );
