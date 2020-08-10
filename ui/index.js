@@ -16,6 +16,7 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
+import useSubscription from "../hooks/useSubscription";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
 import PageSales from "./PageSales";
@@ -26,6 +27,12 @@ import PageTend from "./PageTend";
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
 export default function UI() {
+  useSubscription("products");
+  useSubscription("camps");
+  useSubscription("sales");
+  useSubscription("stocks");
+  useSubscription("locations");
+
   let history = useHistory();
   const { params: { locationSlug, 0: pageSlug } = {} } =
     useRouteMatch("/:locationSlug/*") || {};
