@@ -4,25 +4,29 @@ import { WebApp } from "meteor/webapp";
 import { MongoInternals } from "meteor/mongo";
 import Sales from "../api/sales";
 import Products from "../api/products";
+import Locations from "../api/locations";
 const client = require("../vendor/prom-client");
 
 new client.Gauge({
-  name: "product_sales",
+  name: "location_product_sales",
   help: "Sale by product",
-  labelNames: ["id"],
+  labelNames: ["locationName", "brandName", "productName"],
   collect() {
-    const sales = Sales.find().fetch();
-    Products.find().forEach(({ _id }) =>
-      this.labels(_id).set(
-        sales.reduce(
+    const locations = Locations.find().fetch();
+    locations.forEach((location) => {
+      const locationSales = Sales.find({ locationId: location._id }).fetch();
+      Products.find().forEach(({ brandName, name: productName, _id }) => {
+        const count = locationSales.reduce(
           (memo, sale) =>
             memo +
             sale.products.filter((saleProduct) => saleProduct._id == _id)
               .length,
           0,
-        ),
-      ),
-    );
+        );
+        if (count)
+          this.labels(location.name, brandName || "", productName).set(count);
+      });
+    });
   },
 });
 client.collectDefaultMetrics();
