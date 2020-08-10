@@ -2,10 +2,30 @@ import { Meteor } from "meteor/meteor";
 import Fiber from "fibers";
 import { WebApp } from "meteor/webapp";
 import { MongoInternals } from "meteor/mongo";
-const client = require("prom-client");
+import Sales from "../api/sales";
+import Products from "../api/products";
+const client = require("../vendor/prom-client");
 
+new client.Gauge({
+  name: "product_sales",
+  help: "Sale by product",
+  labelNames: ["id"],
+  collect() {
+    const sales = Sales.find().fetch();
+    Products.find().forEach(({ _id }) =>
+      this.labels(_id).set(
+        sales.reduce(
+          (memo, sale) =>
+            memo +
+            sale.products.filter((saleProduct) => saleProduct._id == _id)
+              .length,
+          0,
+        ),
+      ),
+    );
+  },
+});
 client.collectDefaultMetrics();
-
 
 WebApp.connectHandlers.use("/metrics", (req, res) =>
   Fiber(async () => {
@@ -13,6 +33,7 @@ WebApp.connectHandlers.use("/metrics", (req, res) =>
       res.setHeader("content-type", "text/plain; version=0.0.4; charset=utf-8");
       return res.end(await client.register.metrics());
     } catch (error) {
+      console.error(error);
       res.setHeader("content-type", "application/json");
       return res.end(JSON.stringify(error));
     }
