@@ -267,6 +267,7 @@ export default function PageStock() {
         <table
           className={css`
             border-collapse: collapse;
+            width: 100%;
           `}
         >
           <thead>
