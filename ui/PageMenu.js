@@ -82,7 +82,7 @@ export default function PageMenu() {
                   border: 3px solid #ffed00;
                   margin: 5px;
                   padding: 4px;
-                  flex: 1;
+                  flex: 32% 0;
                 `}
               >
                 <h3
