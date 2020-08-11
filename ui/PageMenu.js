@@ -46,13 +46,14 @@ export default function PageMenu() {
   return (
     <div
       className={css`
-        columns: ${Math.min(productsGroupedByTags.length, 4)};
+        display: flex;
         padding: 16px;
         font-size: 1.25em;
         /*height: 100%;
         max-height: 100%;*/
         font-family: monospace;
         letter-spacing: -1px;
+        flex-wrap: wrap;
       `}
     >
       {productsGroupedByTags
@@ -79,8 +80,9 @@ export default function PageMenu() {
                   page-break-inside: avoid;
                   break-inside: avoid;
                   border: 3px solid #ffed00;
-                  margin-bottom: 24px;
+                  margin: 5px;
                   padding: 4px;
+                  flex: 1;
                 `}
               >
                 <h3
@@ -174,7 +176,7 @@ export default function PageMenu() {
                   ))}
                 </ul>
               </div>
-              {i === randomIndex ? (
+              {i === randomIndex && false ? (
                 <div
                   className={css`
                     display: flex;
