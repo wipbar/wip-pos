@@ -61,7 +61,7 @@ export default function UI() {
       );
     }
   }, [currentLocation, setTitle, pageSlug, locationSlug]);
-  if (!currentLocation) return null;
+  if (!currentLocation) return "Loading...";
   return (
     <div>
       <div
