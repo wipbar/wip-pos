@@ -49,6 +49,7 @@ Meteor.methods({
       createdAt: new Date(),
       brandName: data.brandName.trim(),
       name: data.name.trim(),
+      description: data.description?.trim(),
       salePrice: data.salePrice && Number(data.salePrice.trim()),
       unitSize: data.unitSize && Number(data.unitSize.trim()),
       sizeUnit: data.sizeUnit.trim(),
