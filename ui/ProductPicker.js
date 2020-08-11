@@ -50,11 +50,15 @@ export default function ProductPicker(props) {
     [activeFilters],
   );
   const allTags = [
-    ...products.reduce((memo, product) => {
-      product.tags?.forEach((tag) => memo.add(tag.trim()));
+    ...products
+      .filter((product) =>
+        showOnlyMenuItems ? product.locationIds?.includes(location._id) : true,
+      )
+      .reduce((memo, product) => {
+        product.tags?.forEach((tag) => memo.add(tag.trim()));
 
-      return memo;
-    }, new Set()),
+        return memo;
+      }, new Set()),
   ];
 
   return (
