@@ -211,12 +211,12 @@ export default function PageStockItem({ onCancel, product }) {
         </button>
       </div>
       <div>
-        {product.locationIds?.filter((id) => id !== location?._id).length ? (
+        {product?.locationIds?.filter((id) => id !== location?._id).length ? (
           <small>
             <br />
             Product is on the menu at:{" "}
-            {product.locationIds
-              .filter((id) => id !== location?._id)
+            {product?.locationIds
+              ?.filter((id) => id !== location?._id)
               .map((id) => locations.find(({ _id }) => id === _id))
               .filter(Boolean)
               .map(({ slug, name }) => (
