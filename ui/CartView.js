@@ -106,7 +106,6 @@ export default function CartView() {
         flex-direction: column;
         max-height: 100%;
         flex: 1;
-        overflow: hidden;
         border-left: 1px solid rgba(255, 255, 255, 0.4);
       `}
     >
@@ -137,10 +136,13 @@ export default function CartView() {
               flex-shrink: 0;
               border-top: 2px solid rgba(255, 255, 255, 0.1);
               display: flex;
+              bottom: 0;
+              position: sticky;
               flex-direction: column;
               align-items: center;
               padding-bottom: 1em;
               box-shadow: #ffed00 0 0 10px 0px;
+              background: black;
             `}
           >
             <big>

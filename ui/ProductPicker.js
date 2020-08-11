@@ -69,52 +69,54 @@ export default function ProductPicker(props) {
           padding-top: 1em;
         `}
       >
-        <label
-          className={css`
-            display: inline-flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.4);
-            color: white;
-            padding: 0 6px;
-            border-radius: 4px;
-            margin-right: 2px;
-            margin-bottom: 4px;
-            font-size: 1.5em;
-          `}
-        >
-          <input
-            type="checkbox"
-            onChange={toggleOnlyMenuItems}
-            checked={showOnlyMenuItems}
+        <small>
+          <label
             className={css`
-              margin-right: 4px;
+              display: inline-flex;
+              align-items: center;
+              background: rgba(255, 255, 255, 0.4);
+              color: white;
+              padding: 0 6px;
+              border-radius: 4px;
+              margin-right: 2px;
+              margin-bottom: 4px;
+              font-size: 1.5em;
             `}
-          />
-          show only items on the menu
-        </label>{" "}
-        <label
-          className={css`
-            display: inline-flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.4);
-            color: white;
-            padding: 0 6px;
-            border-radius: 4px;
-            margin-right: 2px;
-            margin-bottom: 4px;
-            font-size: 1.5em;
-          `}
-        >
-          <input
-            type="checkbox"
-            onChange={toggleItemDetails}
-            checked={showItemDetails}
+          >
+            <input
+              type="checkbox"
+              onChange={toggleOnlyMenuItems}
+              checked={showOnlyMenuItems}
+              className={css`
+                margin-right: 4px;
+              `}
+            />
+            show only items on the menu
+          </label>{" "}
+          <label
             className={css`
-              margin-right: 4px;
+              display: inline-flex;
+              align-items: center;
+              background: rgba(255, 255, 255, 0.4);
+              color: white;
+              padding: 0 6px;
+              border-radius: 4px;
+              margin-right: 2px;
+              margin-bottom: 4px;
+              font-size: 1.5em;
             `}
-          />
-          show item details
-        </label>
+          >
+            <input
+              type="checkbox"
+              onChange={toggleItemDetails}
+              checked={showItemDetails}
+              className={css`
+                margin-right: 4px;
+              `}
+            />
+            show item details
+          </label>
+        </small>
       </div>
       <div
         className={css`
