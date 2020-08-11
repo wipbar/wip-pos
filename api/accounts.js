@@ -138,7 +138,7 @@ if (Meteor.isClient) {
     { service },
     {
       $set: {
-        loginStyle: "popup",
+        loginStyle: "redirect" || "popup",
         clientId: Meteor.settings.BH_CLIENT_ID,
         secret: Meteor.settings.BH_CLIENT_SECRET,
       },
