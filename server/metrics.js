@@ -23,7 +23,7 @@ new client.Gauge({
               .length,
           0,
         );
-        //if (count)
+        // if (count)
         this.labels(location.name, brandName || "", productName).set(count);
       });
     });
