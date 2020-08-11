@@ -42,10 +42,11 @@ export default function PageMenu() {
 
   if (productsLoading || locationLoading) return "Loading...";
   if (error) return error;
+
   return (
     <div
       className={css`
-        columns: 4;
+        columns: ${Math.min(productsGroupedByTags.length, 4)};
         padding: 16px;
         font-size: 1.25em;
         /*height: 100%;
