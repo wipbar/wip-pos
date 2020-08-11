@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
 import { isUserAdmin } from "../api/accounts";
+import Locations from "../api/locations";
 import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
@@ -38,14 +39,11 @@ const Label = ({ label, children }) => (
     </div>
   </label>
 );
-export default function PageStockItem({ onSubmit, product }) {
-  const user = useCurrentUser();
+export default function PageStockItem({ onCancel, product }) {
+  const { data: locations } = useMongoFetch(Locations);
   const { location } = useCurrentLocation();
-  const formId = product ? product._id : "newProductForm";
-  const [isEditing, setIsEditing] = useState(false);
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
-  const [removeProduct] = useMethod("Products.removeProduct");
   const { data: products } = useMongoFetch(Products);
   const allTags = [
     ...products.reduce((memo, product) => {
@@ -71,7 +69,7 @@ export default function PageStockItem({ onSubmit, product }) {
     formState: { isDirty, isSubmitting },
     setValue,
   } = useForm();
-
+  console.log(errors);
   const onSubmit2 = async (data) => {
     console.log(data);
     if (!product) {
@@ -79,6 +77,7 @@ export default function PageStockItem({ onSubmit, product }) {
     } else if (product) {
       await editProduct({ productId: product._id, data });
     }
+    onCancel?.();
     reset();
   };
 
@@ -88,6 +87,7 @@ export default function PageStockItem({ onSubmit, product }) {
       className={css`
         display: flex;
         flex-direction: column;
+        align-content: center;
       `}
     >
       <Label label="Brand">
@@ -187,7 +187,13 @@ export default function PageStockItem({ onSubmit, product }) {
           )}
         />
       </Label>
-      <div>
+      <hr />
+      <div
+        className={css`
+          display: flex;
+          justify-content: space-around;
+        `}
+      >
         <button
           disabled={!isDirty}
           type="submit"
@@ -200,36 +206,24 @@ export default function PageStockItem({ onSubmit, product }) {
         <button disabled={!isDirty} type="button" onClick={reset}>
           Reset
         </button>
-        {product ? (
-          <button
-            onClick={() =>
-              editProduct({
-                productId: product._id,
-                data: product.locationIds?.includes(location?._id)
-                  ? {
-                      locationIds: product.locationIds.filter(
-                        (id) => id !== location?._id,
-                      ),
-                    }
-                  : {
-                      locationIds: [
-                        ...(product.locationIds || []),
-                        location?._id,
-                      ],
-                    },
-              })
-            }
-          >
-            {product.locationIds?.includes(location?._id)
-              ? "Remove from menu"
-              : "Add to menu"}
-          </button>
+        <button type="button" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+      <div>
+        {product.locationIds?.filter((id) => id !== location?._id).length ? (
+          <small>
+            <br />
+            Product is on the menu at:{" "}
+            {product.locationIds
+              .filter((id) => id !== location?._id)
+              .map((id) => locations.find(({ _id }) => id === _id))
+              .filter(Boolean)
+              .map(({ slug, name }) => (
+                <span key={slug}>{name}</span>
+              ))}
+          </small>
         ) : null}
-        {product && isUserAdmin(user) && (
-          <button onClick={() => removeProduct({ productId: product._id })}>
-            Remove product
-          </button>
-        )}
       </div>
     </form>
   );

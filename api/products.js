@@ -49,11 +49,11 @@ Meteor.methods({
       createdAt: new Date(),
       brandName: data.brandName.trim(),
       name: data.name.trim(),
-      salePrice: Number(data.salePrice.trim()),
-      unitSize: Number(data.unitSize.trim()),
+      salePrice: data.salePrice && Number(data.salePrice.trim()),
+      unitSize: data.unitSize && Number(data.unitSize.trim()),
       sizeUnit: data.sizeUnit.trim(),
       abv: Number(data.abv.trim()),
-      tags: data.tags.map((tag) => tag.trim().toLowerCase()),
+      tags: data.tags?.map((tag) => tag.trim().toLowerCase()) || [],
       shopPrices: data.buyPrice
         ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: new Date() }]
         : undefined,

@@ -1,217 +1,57 @@
 import { css } from "emotion";
-import { Meteor } from "meteor/meteor";
-import { useTracker } from "meteor/react-meteor-data";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Locations from "../api/locations";
 import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
+import { getCorrectTextColor, stringToColour } from "../util";
 import PageStockItem from "./PageStockItem";
 
-const fieldNames = [
-  "brandName",
-  "name",
-  "unitSize",
-  "sizeUnit",
-  "abv",
-  "buyPrice",
-  "salePrice",
-  "tags",
-  "description",
-];
-
-const ProductForm = ({ onSubmit, initialValues, columns }) => {
-  const formId = initialValues ? initialValues._id : "newProductForm";
-  return (
-    <>
-      {columns
-        .filter((fieldName) =>
-          initialValues ? fieldName !== "buyPrice" : true,
-        )
-        .map((fieldName) => (
-          <td key={fieldName}>
-            <input
-              form={formId}
-              name={fieldName}
-              placeholder={fieldName}
-              defaultValue={initialValues ? initialValues[fieldName] : ""}
-              required={
-                ![
-                  "buyPrice",
-                  "tags",
-                  "abv",
-                  "description",
-                  "unitSize",
-                  "sizeUnit",
-                ].includes(fieldName)
-              }
-              className={css`
-                width: 100%;
-              `}
-            />
-          </td>
-        ))}
-      <td>
-        <form
-          id={formId}
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const newProduct = [...e.currentTarget.elements]
-              .filter(({ name }) => fieldNames.includes(name))
-              .reduce((m, input) => {
-                m[input.name] = input.value;
-                return m;
-              }, {});
-            //            e.currentTarget.reset();
-            await onSubmit(newProduct);
-          }}
-        >
-          <Button type="submit">{initialValues ? "Update" : "Add"}</Button>
-        </form>
-      </td>
-    </>
-  );
-};
-
-function Button(props) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={
-        css`
-          background-color: #ffed00;
-          color: black;
-        ` +
-        " " +
-        (props.className || "")
-      }
-    />
-  );
-}
-
-function StockProductItem({ product, columns, className }) {
-  const { data: locations } = useMongoFetch(Locations);
-
+const Modal = ({ children, onDismiss }) => (
+  <div
+    onClick={onDismiss}
+    className={css`
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 1);
+      z-index: 665;
+    `}
+  >
+    <div
+      className={css`
+        background: black;
+        padding: 8px 8px;
+        border-radius: 8px;
+        position: relative;
+        z-index: 667;
+      `}
+      onClick={(e) => {
+        //  e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      {children}
+    </div>
+  </div>
+);
+const NEW = Symbol("New");
+export default function PageStock() {
+  const user = useCurrentUser();
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
-  const [isEditing, setIsEditing] = useState(false);
-  const { location } = useCurrentLocation();
-  const isAdmin = useTracker(() => isUserAdmin(Meteor.user()));
-  return (
-    <tr className={className}>
-      {!isEditing ? (
-        <td>
-          <Button
-            onClick={() =>
-              editProduct({
-                productId: product._id,
-                data: product.locationIds?.includes(location?._id)
-                  ? {
-                      locationIds: product.locationIds.filter(
-                        (id) => id !== location?._id,
-                      ),
-                    }
-                  : {
-                      locationIds: [
-                        ...(product.locationIds || []),
-                        location?._id,
-                      ],
-                    },
-              })
-            }
-          >
-            {product.locationIds?.includes(location?._id)
-              ? "Remove from menu"
-              : "Add to menu"}
-          </Button>
-          {product.locationIds?.filter((id) => id !== location?._id).length ? (
-            <small>
-              <br />
-              Used by:{" "}
-              {product.locationIds
-                .filter((id) => id !== location?._id)
-                .map((id) => locations.find(({ _id }) => id === _id))
-                .filter(Boolean)
-                .map(({ slug, name }) => (
-                  <span key={slug}>{name}</span>
-                ))}
-            </small>
-          ) : null}
-        </td>
-      ) : (
-        <td />
-      )}
-      {isEditing ? (
-        <ProductForm
-          columns={columns}
-          initialValues={product}
-          onSubmit={async (newProduct) => {
-            await editProduct({ productId: product._id, data: newProduct });
-            setIsEditing(false);
-          }}
-        />
-      ) : (
-        <>
-          {columns.map((column) => (
-            <td key={column}>
-              {((value) => {
-                if (typeof value === "number") return <code>{value}</code>;
-                if (Array.isArray(value)) {
-                  return (
-                    <ul>
-                      {value.map((v, i) => {
-                        if (typeof v === "number")
-                          return (
-                            <li key={i}>
-                              <code>{v}</code>
-                            </li>
-                          );
-                        return <li key={i}>{v}</li>;
-                      })}
-                    </ul>
-                  );
-                }
-                return <>{value}</>;
-              })(product?.[column])}
-            </td>
-          ))}
-        </>
-      )}
-      {isEditing ? null : <td>&nbsp;</td>}
-      <td>
-        <Button type="button" onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? "cancel" : "edit"}
-        </Button>
-      </td>
-      <td>
-        {isAdmin && (
-          <Button
-            type="button"
-            onClick={() => {
-              if (product.locationIds?.length) {
-                return window.alert(
-                  "Product must be removed from all locations' menus before it can be removed.",
-                );
-              }
-              window.confirm(
-                `Are you sure you want to remote ${product.name}`,
-              ) && removeProduct({ productId: product._id });
-            }}
-          >
-            remove
-          </Button>
-        )}
-      </td>
-    </tr>
-  );
-}
-
-export default function PageStock() {
   const { location } = useCurrentLocation();
   const [showRemoved, setShowRemoved] = useState(false);
+  const [isEditing, setIsEditing] = useState(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
 
   const { data: products, loading } = useMongoFetch(
@@ -227,33 +67,22 @@ export default function PageStock() {
     [showOnlyMenuItems, showRemoved, location],
   );
 
-  const [addProduct] = useMethod("Products.addProduct");
-  const columns = useMemo(
-    () =>
-      loading
-        ? []
-        : [
-            ...products.reduce((m, product) => {
-              Object.keys(product).map((key) => m.add(key));
-              return m;
-            }, new Set(["brandName", "name", "salePrice", "unitSize", "sizeUnit", "abv", "description", "tags"])),
-          ].filter(
-            (name) =>
-              ![
-                "_id",
-                "buyPrice",
-                "shopPrices",
-                "createdAt",
-                "removedAt",
-                "updatedAt",
-                "locationIds",
-              ].includes(name),
-          ),
-    [products, loading],
-  );
   if (loading) return "Loading...";
   return (
     <>
+      <button onClick={() => setIsEditing(NEW)}>Create Product</button>
+      {isEditing === NEW ? (
+        <Modal>
+          <PageStockItem onCancel={() => setIsEditing(null)} />
+        </Modal>
+      ) : isEditing ? (
+        <Modal>
+          <PageStockItem
+            onCancel={() => setIsEditing(null)}
+            product={products.find(({ _id }) => _id === isEditing)}
+          />
+        </Modal>
+      ) : null}
       <label>
         <input
           type="checkbox"
@@ -262,11 +91,103 @@ export default function PageStock() {
         />
         show only items on the menu
       </label>
-      <PageStockItem />
       <hr />
-      {products.map((product) => (
-        <PageStockItem key={product._id} product={product} />
-      ))}
+      <table>
+        <thead>
+          <tr>
+            <th />
+            <th>Brand</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Size</th>
+            <th>ABV</th>
+            <th>Description</th>
+            <th>Tags</th>
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((product) => (
+            <tr key={product._id}>
+              <td>
+                {product ? (
+                  <>
+                    <button
+                      onClick={() =>
+                        editProduct({
+                          productId: product._id,
+                          data: product.locationIds?.includes(location?._id)
+                            ? {
+                                locationIds: product.locationIds.filter(
+                                  (id) => id !== location?._id,
+                                ),
+                              }
+                            : {
+                                locationIds: [
+                                  ...(product.locationIds || []),
+                                  location?._id,
+                                ],
+                              },
+                        })
+                      }
+                    >
+                      {product.locationIds?.includes(location?._id)
+                        ? "Remove from menu"
+                        : "Add to menu"}
+                    </button>
+                  </>
+                ) : null}
+              </td>
+              <td>{product.brandName}</td>
+              <td>{product.name}</td>
+              <td>{product.salePrice}</td>
+              <td>
+                {product.unitSize}
+                {product.sizeUnit}
+              </td>
+              <td>{product.abv ? `${product.abv}%` : null}</td>
+              <td>{product.description}</td>
+              <td>
+                {[...(product.tags || [])].sort()?.map((tag) => (
+                  <span
+                    key={tag}
+                    className={css`
+                      display: inline-block;
+                      background: ${stringToColour(tag) ||
+                      `rgba(0, 0, 0, 0.4)`};
+                      color: ${getCorrectTextColor(stringToColour(tag)) ||
+                      "white"};
+                      padding: 0 3px;
+                      border-radius: 4px;
+                      margin-left: 2px;
+                    `}
+                  >
+                    {tag.trim()}
+                  </span>
+                ))}
+              </td>
+              <td>
+                <button onClick={() => setIsEditing(product._id)}>Edit</button>
+                {product && isUserAdmin(user) && (
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to delete " + product.name,
+                        )
+                      ) {
+                        removeProduct({ productId: product._id });
+                      }
+                    }}
+                  >
+                    Delete product
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   );
 }

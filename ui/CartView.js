@@ -82,6 +82,7 @@ const removeItem = (items, i) =>
   items.slice(0, i - 1).concat(items.slice(i, items.length));
 
 export default function CartView() {
+  useSubscription("products");
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { data: products, loading } = useMongoFetch(
@@ -93,8 +94,7 @@ export default function CartView() {
   );
   const [doSellProducts] = useMethod("Sales.sellProducts");
 
-  if (loading) return null;
-  const haxTotal = pickedProductIds.reduce(
+  const haxTotal = pickedProductIds?.reduce(
     (m, id) => m + +products.find(({ _id }) => id == _id).salePrice,
     0,
   );
