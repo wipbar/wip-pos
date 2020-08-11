@@ -66,7 +66,7 @@ export default function PageSales() {
                     {salesOfDay.reduce((memo, { amount }) => memo + amount, 0)}
                   </b>
                 </code>
-                <small>{salesOfDay[0].currency}</small>
+                <small>{salesOfDay[0].currency}</small>{" "}
                 <small>
                   <button
                     type="button"
@@ -98,7 +98,10 @@ export default function PageSales() {
                     <ul>
                       {products.map((product, i) => (
                         <li key={sale._id + i + product._id}>
-                          {product.name} {product.brandName}
+                          {product.brandName ? (
+                            <>{product.brandName} - </>
+                          ) : null}{" "}
+                          {product.name}
                         </li>
                       ))}
                     </ul>
