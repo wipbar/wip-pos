@@ -1,12 +1,11 @@
 import { css } from "emotion";
 import React, { useState } from "react";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 import Products from "../api/products";
 import useMethod from "../hooks/useMethod";
+import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import { useTracker } from "meteor/react-meteor-data";
-import { useParams } from "react-router-dom/cjs/react-router-dom.min";
-import useMongoFetch from "../hooks/useMongoFetch";
 
 function CartViewProductsItem({ product, onRemoveClick }) {
   return (
@@ -22,6 +21,7 @@ function CartViewProductsItem({ product, onRemoveClick }) {
         className={css`
           display: flex;
           align-items: center;
+          flex-wrap: wrap;
           max-width: 100%;
         `}
       >
@@ -32,11 +32,12 @@ function CartViewProductsItem({ product, onRemoveClick }) {
             color: red;
             border-radius: 100%;
             margin-right: 5px;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             font-family: sans-serif;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
           `}
           onClick={onRemoveClick}
         >
@@ -53,7 +54,7 @@ function CartViewProductsItem({ product, onRemoveClick }) {
               <br />
             </>
           ) : null}
-          <big>{product.name}</big>
+          {product.name}
           <br />
           <small>
             <i>
@@ -92,6 +93,7 @@ export default function CartView() {
     "pickedProductIds",
     [],
   );
+  const [sellingLoading, setSellingLoading] = useState(false);
   const [doSellProducts] = useMethod("Sales.sellProducts");
 
   const haxTotal = pickedProductIds?.reduce(
@@ -101,6 +103,7 @@ export default function CartView() {
   return (
     <div
       className={css`
+        width: 200px;
         background: rgba(255, 255, 255, 0.1);
         display: flex;
         flex-direction: column;
@@ -224,16 +227,21 @@ export default function CartView() {
                 padding: 1em;
                 width: 100%;
               `}
+              disabled={sellingLoading}
               onClick={async () => {
-                await doSellProducts({
-                  locationSlug,
-                  productIds: pickedProductIds,
-                });
-                setPickedProductIds([]);
-                setConfirmOpen(false);
+                try {
+                  setSellingLoading(true);
+                  await doSellProducts({
+                    locationSlug,
+                    productIds: pickedProductIds,
+                  });
+                  setPickedProductIds([]);
+                  setConfirmOpen(false);
+                } catch {}
+                setSellingLoading(false);
               }}
             >
-              yeah i got it
+              {sellingLoading ? <>Selling...</> : <>yeah i got it</>}
             </button>
           </div>
         </div>

@@ -25,6 +25,7 @@ if (Meteor.isServer)
 
 Meteor.methods({
   "Sales.sellProducts"({ locationSlug, productIds }) {
+    if (this.isSimulation) return;
     if (!locationSlug || !productIds) throw new Meteor.Error("misisng");
     const { userId } = this;
     if (!userId) throw new Meteor.Error("log in please");
