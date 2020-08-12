@@ -1,5 +1,16 @@
-import { endOfHour, isPast, min, setHours, startOfHour } from "date-fns";
+import {
+  addHours,
+  endOfHour,
+  isAfter,
+  isBefore,
+  isPast,
+  min,
+  setHours,
+  startOfHour,
+  subHours,
+} from "date-fns";
 import { css } from "emotion";
+import { subtract } from "lodash";
 import React, { useMemo } from "react";
 import Camps from "../api/camps";
 import Products from "../api/products";
@@ -14,7 +25,7 @@ function SparkLine({
   fill = "yellow",
   ...props
 }) {
-  console.log(data);
+  //  console.log(data);
   const viewBoxWidth = 1000;
   const viewBoxHeight = 5;
 
@@ -32,11 +43,13 @@ function SparkLine({
       const XDelta = maxX - minX;
       const YDelta = maxY - minY;
       let dataPoints = data
-        .map(([x, y]) => {
-          let xNext = xOffset + ((x - minX) / XDelta) * (viewBoxWidth + 1);
-          let yNext = yOffset - ((y - minY) / YDelta) * viewBoxHeight;
-          return ["L", xNext, yNext].join(" ");
-        })
+        .map(([x, y]) =>
+          [
+            "L",
+            xOffset + ((x - minX) / XDelta) * (viewBoxWidth + 1),
+            yOffset - ((y - minY) / YDelta) * viewBoxHeight,
+          ].join(" "),
+        )
         .join(" ");
       const firstPoint = `L ${xOffset} ${viewBoxHeight}`;
       const lastPoint = `L ${xOffset + (viewBoxWidth + 1)} ${viewBoxHeight}`;
@@ -63,28 +76,8 @@ const rolloverOffset = 4;
 
 export default function PageMenu() {
   const currentDate = new Date();
-  const {
-    data: [currentCamp],
-    loading: campsLoading,
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const from = useMemo(
-    () =>
-      startOfHour(
-        setHours(
-          isPast(currentCamp?.start)
-            ? currentCamp?.start
-            : currentCamp?.buildup,
-          rolloverOffset,
-        ),
-      ),
-    [currentCamp],
-  );
-  console.log(endOfHour(currentDate));
-  const to = useMemo(
-    () =>
-      endOfHour(min(setHours(currentCamp?.end, rolloverOffset), currentDate)),
-    [currentCamp, currentDate],
-  );
+  const from = subHours(currentDate, 24);
+  const to = currentDate;
   const {
     location = {},
     loading: locationLoading,
@@ -105,7 +98,6 @@ export default function PageMenu() {
     ),
     [location._id],
   );
-  console.log(products);
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(
@@ -127,7 +119,6 @@ export default function PageMenu() {
 
   if (productsLoading || locationLoading) return "Loading...";
   if (error) return error;
-  console.log(sales);
   return (
     <div
       className={css`
@@ -155,7 +146,6 @@ export default function PageMenu() {
               return m;
             }, {}),
           ).sort(([, a], [, b]) => b.length - a.length);
-          console.log(tags);
           return (
             <>
               <div
@@ -218,6 +208,7 @@ export default function PageMenu() {
                               flex: 1;
                               display: flex;
                               justify-content: space-between;
+                              margin-bottom: -12px;
                             `}
                           >
                             <span>
@@ -258,23 +249,39 @@ export default function PageMenu() {
                           </div>
                           <SparkLine
                             className={css`
-                              margin-top: -20px;
                               border-bottom: yellow 1px solid;
                             `}
-                            data={Object.entries(
-                              sales.reduce((memo, sale) => {
-                                const count = sale.products.filter(
-                                  (saleProduct) =>
-                                    saleProduct._id === product._id,
-                                ).length;
-                                if (count) {
-                                  const key = ~~(sale.timestamp / 3600000);
-                                  memo[key] = (memo[key] || 0) + count;
-                                }
-                                console.log(memo);
-                                return memo;
-                              }, {}),
-                            ).map(([x, y]) => [+x, y])}
+                            data={(() => {
+                              let hours = [];
+
+                              for (
+                                let i = from;
+                                isBefore(i, to);
+                                i = addHours(i, 1)
+                              ) {
+                                const hourEnd = endOfHour(i);
+                                hours.push([
+                                  i,
+                                  sales
+                                    .filter(
+                                      (sale) =>
+                                        isBefore(sale.timestamp, hourEnd) &&
+                                        isAfter(sale.timestamp, i),
+                                    )
+                                    .reduce((memo, sale) => {
+                                      memo =
+                                        memo +
+                                        sale.products.filter(
+                                          (saleProduct) =>
+                                            saleProduct._id === product._id,
+                                        ).length;
+
+                                      return memo;
+                                    }, 0),
+                                ]);
+                              }
+                              return hours;
+                            })()}
                           />
                         </div>
                       ))}
