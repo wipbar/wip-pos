@@ -27,7 +27,7 @@ function SparkLine({
 }) {
   //  console.log(data);
   const viewBoxWidth = 1000;
-  const viewBoxHeight = 5;
+  const viewBoxHeight = 10;
 
   const pathD = useMemo(() => {
     if (data.length) {
@@ -60,7 +60,7 @@ function SparkLine({
   return (
     <svg
       width="100%"
-      height="5"
+      height={viewBoxHeight}
       viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
       preserveAspectRatio="none"
       {...props}
@@ -253,13 +253,13 @@ export default function PageMenu() {
                             `}
                             data={(() => {
                               let hours = [];
-
+                              let productTotalForPeriod = 0;
                               for (
                                 let i = from;
                                 isBefore(i, to);
                                 i = addHours(i, 1)
                               ) {
-                                const hourEnd = endOfHour(i);
+                                const hourEnd = addHours(i, 1);
                                 hours.push([
                                   i,
                                   sales
@@ -269,15 +269,16 @@ export default function PageMenu() {
                                         isAfter(sale.timestamp, i),
                                     )
                                     .reduce((memo, sale) => {
-                                      memo =
-                                        memo +
-                                        sale.products.filter(
-                                          (saleProduct) =>
-                                            saleProduct._id === product._id,
-                                        ).length;
+                                      const count = sale.products.filter(
+                                        (saleProduct) =>
+                                          saleProduct._id === product._id,
+                                      ).length;
+                                      memo = memo + count;
 
+                                      productTotalForPeriod =
+                                        productTotalForPeriod + count;
                                       return memo;
-                                    }, 0),
+                                    }, productTotalForPeriod),
                                 ]);
                               }
                               return hours;
