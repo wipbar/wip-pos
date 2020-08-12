@@ -1,8 +1,5 @@
 import {
-  addHours,
   endOfHour,
-  isAfter,
-  isBefore,
   isPast,
   min,
   setHours,
@@ -10,7 +7,6 @@ import {
   subHours,
 } from "date-fns";
 import { css } from "emotion";
-import { subtract } from "lodash";
 import React, { useMemo } from "react";
 import Camps from "../api/camps";
 import Products from "../api/products";
@@ -23,6 +19,7 @@ function SparkLine({
   strokeWidth = 1,
   stroke = "transparent",
   fill = "yellow",
+  minMaxY,
   ...props
 }) {
   //  console.log(data);
@@ -33,7 +30,10 @@ function SparkLine({
     if (data.length) {
       const xOffset = -1;
       const yOffset = viewBoxHeight;
-      let minX, maxX, minY, maxY;
+      let minX,
+        maxX,
+        minY,
+        maxY = minMaxY;
       for (let [x, y] of data) {
         if (!minX || x < minX) minX = x;
         if (!maxX || x > maxX) maxX = x;
@@ -55,7 +55,7 @@ function SparkLine({
       const lastPoint = `L ${xOffset + (viewBoxWidth + 1)} ${viewBoxHeight}`;
       return `M ${xOffset} ${yOffset} ${firstPoint} ${dataPoints} ${lastPoint}`;
     }
-  }, [data]);
+  }, [data, minMaxY]);
 
   return (
     <svg
@@ -75,15 +75,26 @@ function SparkLine({
 const rolloverOffset = 4;
 
 export default function PageMenu() {
+  const {
+    data: [currentCamp],
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
   const currentDate = new Date();
-  const from = subHours(currentDate, 24);
-  const to = currentDate;
+  const from =
+    subHours(currentDate, 24) ||
+    startOfHour(
+      setHours(
+        isPast(currentCamp?.start) ? currentCamp?.start : currentCamp?.buildup,
+        rolloverOffset,
+      ),
+    );
+  const to =
+    currentDate ||
+    endOfHour(min(setHours(currentCamp?.end, rolloverOffset), currentDate));
   const {
     location = {},
     loading: locationLoading,
     error,
   } = useCurrentLocation();
-  console.log({ from, to });
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ timestamp: { $gte: from, $lte: to } }),
     [from, to],
@@ -252,36 +263,26 @@ export default function PageMenu() {
                               border-bottom: yellow 1px solid;
                             `}
                             data={(() => {
-                              let hours = [];
                               let productTotalForPeriod = 0;
-                              for (
-                                let i = from;
-                                isBefore(i, to);
-                                i = addHours(i, 1)
-                              ) {
-                                const hourEnd = addHours(i, 1);
-                                hours.push([
-                                  i,
-                                  sales
-                                    .filter(
-                                      (sale) =>
-                                        isBefore(sale.timestamp, hourEnd) &&
-                                        isAfter(sale.timestamp, i),
-                                    )
-                                    .reduce((memo, sale) => {
-                                      const count = sale.products.filter(
-                                        (saleProduct) =>
-                                          saleProduct._id === product._id,
-                                      ).length;
-                                      memo = memo + count;
+                              const salesData = sales.map((sale) => {
+                                const count = sale.products.filter(
+                                  (saleProduct) =>
+                                    saleProduct._id === product._id,
+                                ).length;
 
-                                      productTotalForPeriod =
-                                        productTotalForPeriod + count;
-                                      return memo;
-                                    }, productTotalForPeriod),
-                                ]);
-                              }
-                              return hours;
+                                productTotalForPeriod =
+                                  productTotalForPeriod + count;
+                                return [sale.timestamp, productTotalForPeriod];
+                              }, productTotalForPeriod);
+
+                              salesData.unshift([from, 0]);
+
+                              salesData.push([
+                                currentDate,
+                                productTotalForPeriod,
+                              ]);
+
+                              return salesData;
                             })()}
                           />
                         </div>
