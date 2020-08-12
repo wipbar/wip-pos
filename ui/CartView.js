@@ -119,6 +119,7 @@ export default function CartView() {
               padding: 0;
               overflow-y: scroll;
               overflow-x: hidden;
+              max-height: calc(100vh - 230px);
             `}
           >
             {pickedProductIds.map((id, i) => (

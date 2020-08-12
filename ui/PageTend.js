@@ -25,6 +25,7 @@ export default function PageTend() {
           flex: 3;
           overflow-y: scroll;
           overflow-x: hidden;
+          max-height: calc(100vh - 80px);
         `}
       />
       <CartView />
