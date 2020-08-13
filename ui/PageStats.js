@@ -18,6 +18,7 @@ import Products from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
+import Countdown from "react-countdown";
 
 const rolloverOffset = 4;
 
@@ -297,8 +298,35 @@ export default function PageStats() {
           flex: 1;
         `}
       >
+        <center>
+          <big>
+            <span
+              className={css`
+                font-size: 5em;
+              `}
+            >
+              <Countdown
+                date={startOfHour(setHours(addHours(new Date(), 8), 2))}
+                daysInHours
+              />
+            </span>
+            <br />
+            <span
+              className={css`
+                font-size: 3.5em;
+              `}
+            >
+              TILL CURFEW
+            </span>
+          </big>
+        </center>
+        <hr />
         Most sold @ {currentCamp.name}:
-        <ul>
+        <ul
+          className={css`
+            padding: 0;
+          `}
+        >
           {mostSold.map(([productId, count]) => {
             const product = products.find(({ _id }) => _id == productId);
             if (!product) return null;
@@ -306,13 +334,25 @@ export default function PageStats() {
               <li
                 key={productId}
                 className={css`
-                  white-space: nowrap;
+                  list-style: none;
+                  display: flex;
+                  align-items: flex-start;
                 `}
               >
-                <big>{count}x </big>
-                {product.brandName ? <>{product.brandName} - </> : null}
-                {product.name}({product.unitSize}
-                {product.sizeUnit})
+                <div
+                  className={css`
+                    width: 50px;
+                    text-align: right;
+                    margin-right: 8px;
+                  `}
+                >
+                  <b>{count}</b>x
+                </div>
+                <div>
+                  {product.brandName ? <>{product.brandName} - </> : null}
+                  {product.name}({product.unitSize}
+                  {product.sizeUnit})
+                </div>
               </li>
             );
           })}

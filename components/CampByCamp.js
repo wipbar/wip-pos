@@ -54,17 +54,33 @@ export default function CampByCamp() {
   if (campsLoading || salesLoading) return "Loading...";
   return (
     <ResponsiveContainer width={900} height={400}>
-      <LineChart data={data}>
+      <LineChart data={data} margin={{ top: 0, right: 0, left: 40, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
           dataKey="hour"
           interval={5}
-          tickFormatter={(value) =>
-            String(((value + 1) % 24) - 1).padStart(2, "0")
+          tickFormatter={(hour) =>
+            String(((hour + 1 + 2) % 24) - 1).padStart(2, "0")
           }
         />
-        <YAxis domain={["dataMin", "dataMax"]} />
-        <Tooltip />
+        <YAxis
+          domain={["dataMin", "dataMax"]}
+          label={{
+            value: "Revenue (HAX)",
+            angle: -90,
+            offset: 70,
+            position: "insideLeft",
+            style: { fill: "yellow" },
+          }}
+        />
+        <Tooltip
+          labelFormatter={(hour) =>
+            `H${String(((hour + 1 + 2) % 24) - 1).padStart(2, "0")}D${String(
+              Math.ceil(hour / 24),
+            ).padStart(2, "0")}`
+          }
+          wrapperStyle={{ background: "black" }}
+        />
         <Legend />
         <Line
           type="monotone"
