@@ -13,6 +13,7 @@ import Products from "../api/products";
 import Sales from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
+import Masonry from "react-masonry-css";
 
 function SparkLine({
   data,
@@ -124,25 +125,14 @@ export default function PageMenu() {
       ),
     [products],
   );
-  const randomIndex = Math.floor(
-    Math.random() * (productsGroupedByTags.length - 1),
-  );
 
   if (productsLoading || locationLoading) return "Loading...";
   if (error) return error;
   return (
-    <div
-      className={css`
-        display: flex;
-        padding: 16px;
-        font-size: 1.25em;
-        overflow: hidden;
-        /*height: 100%;
-        max-height: 100%;*/
-        font-family: monospace;
-        letter-spacing: -1px;
-        flex-wrap: wrap;
-      `}
+    <Masonry
+      breakpointCols={3}
+      className="my-masonry-grid"
+      columnClassName="my-masonry-grid_column"
     >
       {productsGroupedByTags
         .sort((a, b) => a[0].localeCompare(b[0]))
@@ -159,166 +149,144 @@ export default function PageMenu() {
             }, {}),
           ).sort(([, a], [, b]) => b.length - a.length);
           return (
-            <>
-              <div
-                key={tags}
+            <div
+              key={tags}
+              className={css`
+                -webkit-column-break-inside: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                border: 3px solid #ffed00;
+                margin: 5px;
+                padding: 4px;
+                flex: 32% 0;
+              `}
+            >
+              <h3
                 className={css`
-                  -webkit-column-break-inside: avoid;
-                  page-break-inside: avoid;
-                  break-inside: avoid;
-                  border: 3px solid #ffed00;
-                  margin: 5px;
-                  padding: 4px;
-                  flex: 32% 0;
+                  margin: 0;
+                  padding: 8px;
                 `}
               >
-                <h3
-                  className={css`
-                    margin: 0;
-                    padding: 8px;
-                  `}
-                >
-                  {tags?.join?.(", ") || tags}
-                </h3>
-                <ul
-                  className={css`
-                    margin: 0;
-                    padding: 0;
-                    list-style: none;
-                  `}
-                >
-                  {productsByBrandName.map(([brandName, products]) => (
-                    <li
-                      key={brandName}
-                      className={css`
-                        margin: 0;
-                        padding: 4px 6px;
-                        display: flex;
-                        flex-direction: column;
-                        background: rgba(255, 255, 255, 0.1);
-                        margin-top: 4px;
-                        align-items: stretch;
-                        -webkit-column-break-inside: avoid;
-                        page-break-inside: avoid;
-                        break-inside: avoid;
-                      `}
-                    >
-                      <small
-                        className={css`
-                          flex: 1;
-                          display: flex;
-                          justify-content: space-between;
-                        `}
-                      >
-                        <span>{brandName}</span>
-                        <small>HAX</small>
-                      </small>
-                      {products.map((product) => (
-                        <div key={product._id}>
-                          <div
-                            className={css`
-                              flex: 1;
-                              display: flex;
-                              justify-content: space-between;
-                              margin-bottom: -12px;
-                            `}
-                          >
-                            <span>
-                              <div
-                                className={css`
-                                  font-weight: 500;
-                                `}
-                              >
-                                {product.name}
-                              </div>
-                              <small
-                                className={css`
-                                  margin-top: -0.5em;
-                                  display: block;
-                                `}
-                              >
-                                {[
-                                  product.description || null,
-                                  product.unitSize && product.sizeUnit
-                                    ? `${product.unitSize}${product.sizeUnit}`
-                                    : null,
-                                  typeof product.abv === "number" ||
-                                  (typeof product.abv === "string" &&
-                                    product.abv)
-                                    ? `${product.abv}%`
-                                    : null,
-                                ]
-                                  .filter(Boolean)
-                                  .map((thing, i) => (
-                                    <React.Fragment key={thing}>
-                                      {i > 0 ? ", " : null}
-                                      <small key={thing}>{thing}</small>
-                                    </React.Fragment>
-                                  ))}
-                              </small>
-                            </span>
-                            <b>{product.salePrice}</b>
-                          </div>
-                          <SparkLine
-                            className={css`
-                              border-bottom: yellow 1px solid;
-                            `}
-                            data={(() => {
-                              let productTotalForPeriod = 0;
-                              const salesData = sales.reduce((memo, sale) => {
-                                const count = sale.products.filter(
-                                  (saleProduct) =>
-                                    saleProduct._id === product._id,
-                                ).length;
-                                if (count) {
-                                  productTotalForPeriod =
-                                    productTotalForPeriod + count;
-                                  memo.push([
-                                    sale.timestamp,
-                                    productTotalForPeriod,
-                                  ]);
-                                }
-
-                                return memo;
-                              }, []);
-
-                              salesData.unshift([from, 0]);
-
-                              salesData.push([
-                                currentDate,
-                                productTotalForPeriod,
-                              ]);
-                              return salesData;
-                            })()}
-                          />
-                        </div>
-                      ))}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {i === randomIndex && false ? (
-                <div
-                  className={css`
-                    display: flex;
-                    justify-content: center;
-                  `}
-                >
-                  <pre
+                {tags?.join?.(", ") || tags}
+              </h3>
+              <ul
+                className={css`
+                  margin: 0;
+                  padding: 0;
+                  list-style: none;
+                `}
+              >
+                {productsByBrandName.map(([brandName, products]) => (
+                  <li
+                    key={brandName}
                     className={css`
-                      font-size: 0.7em;
-                      opacity: 0.7;
-                      line-height: 1;
-                      letter-spacing: -2px;
+                      margin: 0;
+                      padding: 4px 6px;
+                      display: flex;
+                      flex-direction: column;
+                      background: rgba(255, 255, 255, 0.1);
+                      margin-top: 4px;
+                      align-items: stretch;
+                      -webkit-column-break-inside: avoid;
+                      page-break-inside: avoid;
+                      break-inside: avoid;
                     `}
                   >
-                    TBDTBDTBDTBDTBDTBDTBDTBDTBDTBDTBD
-                  </pre>
-                </div>
-              ) : null}
-            </>
+                    <small
+                      className={css`
+                        flex: 1;
+                        display: flex;
+                        justify-content: space-between;
+                      `}
+                    >
+                      <span>{brandName}</span>
+                      <small>HAX</small>
+                    </small>
+                    {products.map((product) => (
+                      <div key={product._id}>
+                        <div
+                          className={css`
+                            flex: 1;
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: -12px;
+                          `}
+                        >
+                          <span>
+                            <div
+                              className={css`
+                                font-weight: 500;
+                              `}
+                            >
+                              {product.name}
+                            </div>
+                            <small
+                              className={css`
+                                margin-top: -0.5em;
+                                display: block;
+                              `}
+                            >
+                              {[
+                                product.description || null,
+                                product.unitSize && product.sizeUnit
+                                  ? `${product.unitSize}${product.sizeUnit}`
+                                  : null,
+                                typeof product.abv === "number" ||
+                                (typeof product.abv === "string" && product.abv)
+                                  ? `${product.abv}%`
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .map((thing, i) => (
+                                  <React.Fragment key={thing}>
+                                    {i > 0 ? ", " : null}
+                                    <small key={thing}>{thing}</small>
+                                  </React.Fragment>
+                                ))}
+                            </small>
+                          </span>
+                          <b>{product.salePrice}</b>
+                        </div>
+                        <SparkLine
+                          className={css`
+                            border-bottom: yellow 1px solid;
+                          `}
+                          data={(() => {
+                            let productTotalForPeriod = 0;
+                            const salesData = sales.reduce((memo, sale) => {
+                              const count = sale.products.filter(
+                                (saleProduct) =>
+                                  saleProduct._id === product._id,
+                              ).length;
+                              if (count) {
+                                productTotalForPeriod =
+                                  productTotalForPeriod + count;
+                                memo.push([
+                                  sale.timestamp,
+                                  productTotalForPeriod,
+                                ]);
+                              }
+
+                              return memo;
+                            }, []);
+
+                            salesData.unshift([from, 0]);
+
+                            salesData.push([
+                              currentDate,
+                              productTotalForPeriod,
+                            ]);
+                            return salesData;
+                          })()}
+                        />
+                      </div>
+                    ))}
+                  </li>
+                ))}
+              </ul>
+            </div>
           );
         })}
-    </div>
+    </Masonry>
   );
 }
