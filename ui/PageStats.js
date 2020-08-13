@@ -303,6 +303,11 @@ export default function PageStats() {
             <span
               className={css`
                 font-size: 5em;
+                ${startOfHour(setHours(addHours(new Date(), 8), 2)) -
+                  new Date() <
+                600000
+                  ? `animation: blink-animation 1s steps(5, start) infinite;`
+                  : ""}
               `}
             >
               <Countdown
