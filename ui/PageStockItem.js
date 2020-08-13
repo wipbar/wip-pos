@@ -69,7 +69,6 @@ export default function PageStockItem({ onCancel, product }) {
     formState: { isDirty, isSubmitting },
     setValue,
   } = useForm();
-  console.log(errors);
   const onSubmit2 = async (data) => {
     console.log(data);
     if (!product) {

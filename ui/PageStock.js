@@ -1,8 +1,12 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
+import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { css } from "emotion";
 import React, { useState } from "react";
 import { isUserAdmin } from "../api/accounts";
-import Locations from "../api/locations";
 import Products from "../api/products";
+import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
@@ -107,85 +111,89 @@ export default function PageStock() {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
-            <tr key={product._id}>
-              <td>
-                {product ? (
-                  <>
-                    <button
-                      onClick={() =>
-                        editProduct({
-                          productId: product._id,
-                          data: product.locationIds?.includes(location?._id)
-                            ? {
-                                locationIds: product.locationIds.filter(
-                                  (id) => id !== location?._id,
-                                ),
-                              }
-                            : {
-                                locationIds: [
-                                  ...(product.locationIds || []),
-                                  location?._id,
-                                ],
-                              },
-                        })
-                      }
-                    >
-                      {product.locationIds?.includes(location?._id)
-                        ? "Remove from menu"
-                        : "Add to menu"}
-                    </button>
-                  </>
-                ) : null}
-              </td>
-              <td>{product.brandName}</td>
-              <td>{product.name}</td>
-              <td>{product.salePrice}</td>
-              <td>
-                {product.unitSize}
-                {product.sizeUnit}
-              </td>
-              <td>{product.abv ? `${product.abv}%` : null}</td>
-              <td>{product.description}</td>
-              <td>
-                {[...(product.tags || [])].sort()?.map((tag) => (
-                  <span
-                    key={tag}
-                    className={css`
-                      display: inline-block;
-                      background: ${stringToColour(tag) ||
-                      `rgba(0, 0, 0, 0.4)`};
-                      color: ${getCorrectTextColor(stringToColour(tag)) ||
-                      "white"};
-                      padding: 0 3px;
-                      border-radius: 4px;
-                      margin-left: 2px;
-                    `}
-                  >
-                    {tag.trim()}
-                  </span>
-                ))}
-              </td>
-              <td>
-                <button onClick={() => setIsEditing(product._id)}>Edit</button>
-                {product && isUserAdmin(user) && (
+          {products.map((product) => {
+            const isOnMenu = product.locationIds?.includes(location?._id);
+            return (
+              <tr key={product._id}>
+                <td>
                   <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to delete " + product.name,
-                        )
-                      ) {
-                        removeProduct({ productId: product._id });
-                      }
+                    onClick={() =>
+                      editProduct({
+                        productId: product._id,
+                        data: product.locationIds?.includes(location?._id)
+                          ? {
+                              locationIds: product.locationIds.filter(
+                                (id) => id !== location?._id,
+                              ),
+                            }
+                          : {
+                              locationIds: [
+                                ...(product.locationIds || []),
+                                location?._id,
+                              ],
+                            },
+                      })
+                    }
+                    style={{
+                      whiteSpace: "nowrap",
+                      background: isOnMenu ? "red" : "limegreen",
+                      color: "white",
                     }}
                   >
-                    Delete product
+                    <FontAwesomeIcon icon={isOnMenu ? faMinus : faPlus} /> Menu
                   </button>
-                )}
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td>{product.brandName}</td>
+                <td>{product.name}</td>
+                <td>{product.salePrice}</td>
+                <td>
+                  {product.unitSize}
+                  {product.sizeUnit}
+                </td>
+                <td>{product.abv ? `${product.abv}%` : null}</td>
+                <td>{product.description}</td>
+                <td style={{ whiteSpace: "nowrap" }}>
+                  {[...(product.tags || [])].sort()?.map((tag) => (
+                    <span
+                      key={tag}
+                      className={css`
+                        display: inline-block;
+                        background: ${stringToColour(tag) ||
+                        `rgba(0, 0, 0, 0.4)`};
+                        color: ${getCorrectTextColor(stringToColour(tag)) ||
+                        "white"};
+                        padding: 0 3px;
+                        border-radius: 4px;
+                        margin-left: 2px;
+                      `}
+                    >
+                      {tag.trim()}
+                    </span>
+                  ))}
+                </td>
+                <td style={{ whiteSpace: "nowrap" }}>
+                  <button onClick={() => setIsEditing(product._id)}>
+                    <FontAwesomeIcon icon={faPencilAlt} />
+                  </button>
+                  {product && isUserAdmin(user) && (
+                    <button
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to delete " + product.name,
+                          )
+                        ) {
+                          removeProduct({ productId: product._id });
+                        }
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </>

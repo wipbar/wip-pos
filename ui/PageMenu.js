@@ -264,16 +264,22 @@ export default function PageMenu() {
                             `}
                             data={(() => {
                               let productTotalForPeriod = 0;
-                              const salesData = sales.map((sale) => {
+                              const salesData = sales.reduce((memo, sale) => {
                                 const count = sale.products.filter(
                                   (saleProduct) =>
                                     saleProduct._id === product._id,
                                 ).length;
+                                if (count) {
+                                  productTotalForPeriod =
+                                    productTotalForPeriod + count;
+                                  memo.push([
+                                    sale.timestamp,
+                                    productTotalForPeriod,
+                                  ]);
+                                }
 
-                                productTotalForPeriod =
-                                  productTotalForPeriod + count;
-                                return [sale.timestamp, productTotalForPeriod];
-                              }, productTotalForPeriod);
+                                return memo;
+                              }, []);
 
                               salesData.unshift([from, 0]);
 
@@ -281,7 +287,6 @@ export default function PageMenu() {
                                 currentDate,
                                 productTotalForPeriod,
                               ]);
-
                               return salesData;
                             })()}
                           />

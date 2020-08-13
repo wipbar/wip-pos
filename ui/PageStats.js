@@ -51,7 +51,6 @@ export default function PageStats() {
     () => Math.max(...sales.map((sale) => getHours(sale.timestamp))),
     [sales],
   );
-  console.log(earliestSale, latestSale);
   const allHours = useMemo(() => {
     let hours = [];
     for (let i = from; isBefore(i, to); i = addHours(i, 1)) hours.push(i);
