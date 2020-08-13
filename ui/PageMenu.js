@@ -136,6 +136,7 @@ export default function PageMenu() {
         display: flex;
         padding: 16px;
         font-size: 1.25em;
+        overflow: hidden;
         /*height: 100%;
         max-height: 100%;*/
         font-family: monospace;
