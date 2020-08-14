@@ -222,7 +222,7 @@ export default function PageMenu() {
                             </div>
                             <small
                               className={css`
-                                margin-top: -0.5em;
+                                margin-top: -0.25em;
                                 display: block;
                               `}
                             >
