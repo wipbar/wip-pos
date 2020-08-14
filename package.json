@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.11.2",
-    "@fortawesome/free-regular-svg-icons": "^5.14.0",
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "bcrypt": "^5.0.0",
     "date-fns": "^1.30.1",
