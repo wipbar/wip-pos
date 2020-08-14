@@ -8,7 +8,7 @@ import { getCorrectTextColor, stringToColour } from "../util";
 
 const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
-
+const tagsToString = (tags = []) => [...tags].sort().join(",");
 export default function ProductPicker(props) {
   const { location } = useCurrentLocation();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
@@ -166,11 +166,21 @@ export default function ProductPicker(props) {
         {[...products]
           .sort((a, b) =>
             activeFilters.length
-              ? ((a.tags ? "!!!!" : "") + a.name).localeCompare(
-                  (b.tags ? "!!!!" : "") + b.name,
+              ? (
+                  (a.tags ? "!!!!" : "") +
+                  (a.brandName || "ZZZZZZZZZ") +
+                  a.name
+                ).localeCompare(
+                  (b.tags ? "!!!!" : "") +
+                    (b.brandName || "ZZZZZZZZZ") +
+                    b.name,
                 )
-              : ((a.brandName || "ZZZZZZZZZ") + a.name).localeCompare(
-                  (b.brandName || "ZZZZZZZZZ") + b.name,
+              : (
+                  tagsToString(a.tags) +
+                  (a.brandName || "ZZZZZZZZZ") +
+                  a.name
+                ).localeCompare(
+                  tagsToString(b.tags) + (b.brandName || "ZZZZZZZZZ") + b.name,
                 ),
           )
           .filter((product) => {
