@@ -309,7 +309,9 @@ export default function PageStats() {
             <span
               className={css`
                 font-size: 5em;
-                ${next2am - currentDate < 600000
+                ${next2am - currentDate < 300000
+                  ? `animation: blink-animation 1s steps(5, start) infinite, flash-animation 500ms steps(5, start) infinite;`
+                  : next2am - currentDate < 600000
                   ? `animation: blink-animation 1s steps(5, start) infinite;`
                   : ""}
               `}

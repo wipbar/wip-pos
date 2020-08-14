@@ -11,7 +11,6 @@ const removeItem = (items, i) =>
   items.slice(0, i).concat(items.slice(i + 1, items.length));
 
 export default function ProductPicker(props) {
-  useSubscription("products");
   const { location } = useCurrentLocation();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
   const [showItemDetails, setShowItemDetails] = useState(true);
