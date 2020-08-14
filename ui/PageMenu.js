@@ -74,6 +74,11 @@ function SparkLine({
 }
 
 const rolloverOffset = 4;
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 export default function PageMenu() {
   const {
@@ -128,6 +133,7 @@ export default function PageMenu() {
 
   if (productsLoading || locationLoading) return "Loading...";
   if (error) return error;
+  const randomIndex = getRandomInt(0, productsGroupedByTags?.length - 1);
   return (
     <Masonry
       breakpointCols={3}
@@ -149,142 +155,152 @@ export default function PageMenu() {
             }, {}),
           ).sort(([, a], [, b]) => b.length - a.length);
           return (
-            <div
-              key={tags}
-              className={css`
-                -webkit-column-break-inside: avoid;
-                page-break-inside: avoid;
-                break-inside: avoid;
-                border: 3px solid #ffed00;
-                margin: 5px;
-                padding: 4px;
-                flex: 32% 0;
-              `}
-            >
-              <h3
+            <>
+              <div
+                key={tags}
                 className={css`
-                  margin: 0;
-                  padding: 8px;
+                  -webkit-column-break-inside: avoid;
+                  page-break-inside: avoid;
+                  break-inside: avoid;
+                  border: 3px solid #ffed00;
+                  margin: 5px;
+                  padding: 4px;
+                  flex: 32% 0;
                 `}
               >
-                {tags?.join?.(", ") || tags}
-              </h3>
-              <ul
-                className={css`
-                  margin: 0;
-                  padding: 0;
-                  list-style: none;
-                `}
-              >
-                {productsByBrandName.map(([brandName, products]) => (
-                  <li
-                    key={brandName}
-                    className={css`
-                      margin: 0;
-                      padding: 4px 6px;
-                      display: flex;
-                      flex-direction: column;
-                      background: rgba(255, 255, 255, 0.1);
-                      margin-top: 4px;
-                      align-items: stretch;
-                      -webkit-column-break-inside: avoid;
-                      page-break-inside: avoid;
-                      break-inside: avoid;
-                    `}
-                  >
-                    <small
+                <h3
+                  className={css`
+                    margin: 0;
+                    padding: 8px;
+                  `}
+                >
+                  {tags?.join?.(", ") || tags}
+                </h3>
+                <ul
+                  className={css`
+                    margin: 0;
+                    padding: 0;
+                    list-style: none;
+                  `}
+                >
+                  {productsByBrandName.map(([brandName, products]) => (
+                    <li
+                      key={brandName}
                       className={css`
-                        flex: 1;
+                        margin: 0;
+                        padding: 4px 6px;
                         display: flex;
-                        justify-content: space-between;
+                        flex-direction: column;
+                        background: rgba(255, 255, 255, 0.1);
+                        margin-top: 4px;
+                        align-items: stretch;
+                        -webkit-column-break-inside: avoid;
+                        page-break-inside: avoid;
+                        break-inside: avoid;
                       `}
                     >
-                      <span>{brandName}</span>
-                      <small>HAX</small>
-                    </small>
-                    {products.map((product) => (
-                      <div key={product._id}>
-                        <div
-                          className={css`
-                            flex: 1;
-                            display: flex;
-                            justify-content: space-between;
-                            margin-bottom: -12px;
-                          `}
-                        >
-                          <span>
-                            <div
-                              className={css`
-                                font-weight: 500;
-                              `}
-                            >
-                              {product.name}
-                            </div>
-                            <small
-                              className={css`
-                                margin-top: -0.25em;
-                                display: block;
-                              `}
-                            >
-                              {[
-                                product.description || null,
-                                product.unitSize && product.sizeUnit
-                                  ? `${product.unitSize}${product.sizeUnit}`
-                                  : null,
-                                typeof product.abv === "number" ||
-                                (typeof product.abv === "string" && product.abv)
-                                  ? `${product.abv}%`
-                                  : null,
-                              ]
-                                .filter(Boolean)
-                                .map((thing, i) => (
-                                  <React.Fragment key={thing}>
-                                    {i > 0 ? ", " : null}
-                                    <small key={thing}>{thing}</small>
-                                  </React.Fragment>
-                                ))}
-                            </small>
-                          </span>
-                          <b>{product.salePrice}</b>
+                      <small
+                        className={css`
+                          flex: 1;
+                          display: flex;
+                          justify-content: space-between;
+                        `}
+                      >
+                        <span>{brandName}</span>
+                        <small>HAX</small>
+                      </small>
+                      {products.map((product) => (
+                        <div key={product._id}>
+                          <div
+                            className={css`
+                              flex: 1;
+                              display: flex;
+                              justify-content: space-between;
+                              margin-bottom: -12px;
+                            `}
+                          >
+                            <span>
+                              <div
+                                className={css`
+                                  font-weight: 500;
+                                `}
+                              >
+                                {product.name}
+                              </div>
+                              <small
+                                className={css`
+                                  margin-top: -0.25em;
+                                  display: block;
+                                `}
+                              >
+                                {[
+                                  product.description || null,
+                                  product.unitSize && product.sizeUnit
+                                    ? `${product.unitSize}${product.sizeUnit}`
+                                    : null,
+                                  typeof product.abv === "number" ||
+                                  (typeof product.abv === "string" &&
+                                    product.abv)
+                                    ? `${product.abv}%`
+                                    : null,
+                                ]
+                                  .filter(Boolean)
+                                  .map((thing, i) => (
+                                    <React.Fragment key={thing}>
+                                      {i > 0 ? ", " : null}
+                                      <small key={thing}>{thing}</small>
+                                    </React.Fragment>
+                                  ))}
+                              </small>
+                            </span>
+                            <b>{product.salePrice}</b>
+                          </div>
+                          <SparkLine
+                            className={css`
+                              border-bottom: yellow 1px solid;
+                            `}
+                            data={(() => {
+                              let productTotalForPeriod = 0;
+                              const salesData = sales.reduce((memo, sale) => {
+                                const count = sale.products.filter(
+                                  (saleProduct) =>
+                                    saleProduct._id === product._id,
+                                ).length;
+                                if (count) {
+                                  productTotalForPeriod =
+                                    productTotalForPeriod + count;
+                                  memo.push([sale.timestamp, count]);
+                                }
+
+                                return memo;
+                              }, []);
+
+                              salesData.unshift([from, 0]);
+
+                              salesData.push([
+                                currentDate,
+                                productTotalForPeriod,
+                              ]);
+                              return salesData;
+                            })()}
+                          />
                         </div>
-                        <SparkLine
-                          className={css`
-                            border-bottom: yellow 1px solid;
-                          `}
-                          data={(() => {
-                            let productTotalForPeriod = 0;
-                            const salesData = sales.reduce((memo, sale) => {
-                              const count = sale.products.filter(
-                                (saleProduct) =>
-                                  saleProduct._id === product._id,
-                              ).length;
-                              if (count) {
-                                productTotalForPeriod =
-                                  productTotalForPeriod + count;
-                                memo.push([
-                                  sale.timestamp,
-                                  productTotalForPeriod,
-                                ]);
-                              }
-
-                              return memo;
-                            }, []);
-
-                            salesData.unshift([from, 0]);
-
-                            salesData.push([
-                              currentDate,
-                              productTotalForPeriod,
-                            ]);
-                            return salesData;
-                          })()}
-                        />
-                      </div>
-                    ))}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                      ))}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {randomIndex === i ? (
+                <center
+                  className={css`
+                    margin-top: -8px;
+                    margin-bottom: 16px;
+                  `}
+                >
+                  <pre>ZFN4rgb73BQjXUzJzYtcCkCtApf9BS5j</pre>
+                </center>
+              ) : null}
+            </>
           );
         })}
     </Masonry>

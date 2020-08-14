@@ -4,7 +4,6 @@ import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
-import useSubscription from "../hooks/useSubscription";
 import { getCorrectTextColor, stringToColour } from "../util";
 
 const removeItem = (items, i) =>
@@ -201,8 +200,10 @@ export default function ProductPicker(props) {
                   width: 32%;
                 }
                 width: 24%;
-                background: ${stringToColour(product.brandName, 0.4) ||
-                "rgba(255, 255, 255, 1)"};
+                background: ${stringToColour(
+                  [...(product.tags || [])].sort().join(","),
+                  0.4,
+                ) || "rgba(255, 255, 255, 1)"};
                 color: white;
                 display: flex;
                 flex-direction: column;
