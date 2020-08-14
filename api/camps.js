@@ -6,7 +6,7 @@ const Camps = new Mongo.Collection("camps");
 const addCamp = (camps) => Camps.insert(camps);
 if (Meteor.isServer) {
   Meteor.startup(() => {
-    if (Camps.find().count() === 0) {
+    if (true || Camps.find().count() === 0) {
       console.log("Seeding camps");
       addCamp({
         name: "BornHack 2019",
@@ -14,6 +14,7 @@ if (Meteor.isServer) {
         buildup: new Date(2019, 7, 5, 12),
         start: startOfDay(new Date(2019, 7, 8)),
         end: endOfDay(new Date(2019, 7, 15)),
+        color: "#FFED00",
       });
       addCamp({
         name: "BornHack 2020",
@@ -21,6 +22,7 @@ if (Meteor.isServer) {
         buildup: new Date(2020, 7, 7, 12),
         start: startOfDay(new Date(2020, 7, 11)),
         end: endOfDay(new Date(2020, 7, 18)),
+        color: "#FD8B25",
       });
     }
   });
