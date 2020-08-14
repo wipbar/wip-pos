@@ -242,7 +242,7 @@ export default function ProductPicker(props) {
                             {product.unitSize}
                             {product.sizeUnit}
                           </i>{" "}
-                          {product.tags?.map((tag) => (
+                          {[...(product.tags || [])].sort()?.map((tag) => (
                             <span
                               key={tag}
                               className={css`

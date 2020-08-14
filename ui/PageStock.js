@@ -66,7 +66,7 @@ export default function PageStock() {
           ? { locationIds: { $elemMatch: { $eq: location._id } } }
           : undefined),
       },
-      { sort: { createdAt: -1 } },
+      { sort: { updatedAt: -1, createdAt: -1 } },
     ),
     [showOnlyMenuItems, showRemoved, location],
   );

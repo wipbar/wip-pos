@@ -269,7 +269,10 @@ export default function PageMenu() {
                                 if (count) {
                                   productTotalForPeriod =
                                     productTotalForPeriod + count;
-                                  memo.push([sale.timestamp, count]);
+                                  memo.push([
+                                    sale.timestamp,
+                                    productTotalForPeriod,
+                                  ]);
                                 }
 
                                 return memo;
