@@ -199,6 +199,10 @@ export default function CartView() {
               padding: 1em;
               text-align: center;
             `}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             please confirm tending{" "}
             <code>
@@ -228,7 +232,7 @@ export default function CartView() {
                 width: 100%;
               `}
               disabled={sellingLoading}
-              onClick={async () => {
+              onClick={async (e) => {
                 try {
                   setSellingLoading(true);
                   await doSellProducts({
