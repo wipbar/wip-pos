@@ -136,13 +136,13 @@ export default function PageMenu() {
   const randomIndex = getRandomInt(0, productsGroupedByTags?.length - 1);
   return (
     <Masonry
-      breakpointCols={3}
+      breakpointCols={5}
       className="my-masonry-grid"
       columnClassName="my-masonry-grid_column"
     >
       {productsGroupedByTags
         .sort((a, b) => a[0].localeCompare(b[0]))
-        //        .sort((a, b) => b[1].length - a[1].length)
+        .sort((a, b) => b[1].length - a[1].length)
         .map(([tags, products], i) => {
           const productsByBrandName = Object.entries(
             products.reduce((m, product) => {
@@ -293,7 +293,7 @@ export default function PageMenu() {
                   ))}
                 </ul>
               </div>
-              {randomIndex === i ? (
+              {randomIndex === i && false ? (
                 <center
                   className={css`
                     margin-top: -8px;
