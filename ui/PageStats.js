@@ -1,4 +1,5 @@
 import {
+  addDays,
   addHours,
   differenceInDays,
   endOfHour,
@@ -6,6 +7,7 @@ import {
   getHours,
   isAfter,
   isBefore,
+  isFuture,
   isPast,
   min,
   setHours,
@@ -122,6 +124,10 @@ export default function PageStats() {
   );
   const showHour = (hour) => getHours(hour) >= 13 || getHours(hour) <= 3;
   if (salesLoading || productsLoading || campsLoading) return "Loading...";
+
+  const next2am = isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
+    ? startOfHour(setHours(currentDate, 2))
+    : startOfHour(setHours(addDays(currentDate, 1), 2));
   return (
     <div
       className={css`
@@ -303,17 +309,12 @@ export default function PageStats() {
             <span
               className={css`
                 font-size: 5em;
-                ${startOfHour(setHours(addHours(new Date(), 8), 2)) -
-                  new Date() <
-                600000
+                ${next2am - currentDate < 600000
                   ? `animation: blink-animation 1s steps(5, start) infinite;`
                   : ""}
               `}
             >
-              <Countdown
-                date={startOfHour(setHours(addHours(new Date(), 8), 2))}
-                daysInHours
-              />
+              <Countdown date={next2am} daysInHours />
             </span>
             <br />
             <span
