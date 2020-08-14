@@ -23,6 +23,23 @@ import useMongoFetch from "../hooks/useMongoFetch";
 import Countdown from "react-countdown";
 
 const rolloverOffset = 4;
+const renderer = ({ hours, minutes, seconds, completed }) => {
+  return (
+    <span
+      className={css`
+        font-size: 5em;
+        ${hours == 0 && minutes <= 9
+          ? `animation: blink-animation 1s steps(5, start) infinite, flash-animation 500ms steps(5, start) infinite;`
+          : hours == 0
+          ? `animation: blink-animation 1s steps(5, start) infinite;`
+          : ""}
+      `}
+    >
+      {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
+      {String(seconds).padStart(2, "0")}
+    </span>
+  );
+};
 
 export default function PageStats() {
   const currentDate = new Date();
@@ -306,18 +323,7 @@ export default function PageStats() {
       >
         <center>
           <big>
-            <span
-              className={css`
-                font-size: 5em;
-                ${next2am - currentDate < 600000
-                  ? `animation: blink-animation 1s steps(5, start) infinite, flash-animation 500ms steps(5, start) infinite;`
-                  : next2am - currentDate < 3600000
-                  ? `animation: blink-animation 1s steps(5, start) infinite;`
-                  : ""}
-              `}
-            >
-              <Countdown date={next2am} daysInHours />
-            </span>
+            <Countdown date={next2am} renderer={renderer} daysInHours />
             <br />
             <span
               className={css`
