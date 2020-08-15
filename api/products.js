@@ -53,7 +53,7 @@ Meteor.methods({
       salePrice: data.salePrice && Number(data.salePrice.trim()),
       unitSize: data.unitSize && Number(data.unitSize.trim()),
       sizeUnit: data.sizeUnit.trim(),
-      abv: Number(data.abv.trim()),
+      abv: data.abv?.trim() && Number(data.abv.trim()),
       tags: data.tags?.map((tag) => tag.trim().toLowerCase()) || [],
       shopPrices: data.buyPrice
         ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: new Date() }]
