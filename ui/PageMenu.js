@@ -293,11 +293,12 @@ export default function PageMenu() {
                   ))}
                 </ul>
               </div>
-              {randomIndex === i && false ? (
+              {randomIndex === i ? (
                 <center
                   className={css`
                     margin-top: -8px;
                     margin-bottom: 16px;
+                    font-size: 0.6em;
                   `}
                 >
                   <pre>ZFN4rgb73BQjXUzJzYtcCkCtApf9BS5j</pre>
