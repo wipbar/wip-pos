@@ -6,7 +6,7 @@ const Camps = new Mongo.Collection("camps");
 const addCamp = (camps) => Camps.insert(camps);
 if (Meteor.isServer) {
   Meteor.startup(() => {
-    if (true || Camps.find().count() === 0) {
+    if (Camps.find().count() === 0) {
       console.log("Seeding camps");
       addCamp({
         name: "BornHack 2019",
