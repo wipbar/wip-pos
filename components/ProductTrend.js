@@ -1,4 +1,4 @@
-import { isWithinRange, subHours } from "date-fns";
+import { isWithinRange, min, subHours } from "date-fns";
 import React, { useMemo } from "react";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
@@ -11,19 +11,27 @@ export default function ProductTrend({ product, ...props }) {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
   const productSales = useMongoFetch(
-    Sales.find({ products: { $elemMatch: { _id: product._id } } }),
+    Sales.find(
+      {
+        products: { $elemMatch: { _id: product._id } },
+        timestamp: { $gte: currentCamp?.start, $lte: currentCamp?.end },
+      },
+      { sort: { timestamp: 1 } },
+    ),
+    [product, currentCamp],
   )?.data?.map((sale) => ({
     ...sale,
     products: sale.products.filter(
       (saleProduct) => saleProduct._id === product._id,
     ),
   }));
-  // eslint-disable-next-line no-undef
+  const firstSale = productSales[0];
+
   const averageSalesPerHour = useMemo(
     () =>
       productSales.reduce((memo, sale) => sale.products.length + memo, 0) /
-      ((currentCamp?.end - currentCamp?.start) / 3600000),
-    [currentCamp, productSales],
+      ((min(currentCamp?.end, new Date()) - firstSale?.timestamp) / 3600000),
+    [currentCamp, firstSale, productSales],
   );
   const salesInPastHour = useMemo(
     () =>
@@ -34,7 +42,8 @@ export default function ProductTrend({ product, ...props }) {
         .reduce((memo, sale) => sale.products.length + memo, 0),
     [productSales],
   );
+  console.log({ salesInPastHour, averageSalesPerHour });
   const number = Number(salesInPastHour / (averageSalesPerHour / f)).toFixed(3);
-  if (number > 400) return <Fire {...props} />;
+  if (salesInPastHour > 1 && number > 30) return <Fire {...props} />;
   return null;
 }

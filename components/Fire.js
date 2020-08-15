@@ -12,7 +12,7 @@ export default function Fire(props) {
               -webkit-filter: blur(0.02em);
               position: relative;
               width: 140%;
-              transform: translate(-14%, 50%);
+              transform: translate(-14%, 75%);
               height: 2em;
               margin-top: -2em;
               opacity: 0.5;
