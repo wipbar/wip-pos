@@ -155,7 +155,12 @@ export default function PageMenu() {
               }
               return m;
             }, {}),
-          ).sort(([, a], [, b]) => b.length - a.length);
+          )
+            .sort(([, a], [, b]) => b.length - a.length)
+            .map(([brand, products]) => [
+              brand,
+              products.sort((a, b) => a.name.localeCompare(b.name)),
+            ]);
           return (
             <>
               <div

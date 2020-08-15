@@ -35,7 +35,7 @@ export default function ProductPicker(props) {
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
-  const { data: products } = useMongoFetch(
+  const { data: products, loading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const toggleTag = useCallback(
@@ -58,7 +58,7 @@ export default function ProductPicker(props) {
         return memo;
       }, new Set()),
   ];
-
+  if (loading) return "Loading...";
   return (
     <div {...props}>
       <div
@@ -164,24 +164,10 @@ export default function ProductPicker(props) {
         `}
       >
         {[...products]
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .sort((a, b) => a.brandName.localeCompare(b.brandName))
           .sort((a, b) =>
-            activeFilters.length
-              ? (
-                  (a.tags ? "!!!!" : "") +
-                  (a.brandName || "ZZZZZZZZZ") +
-                  a.name
-                ).localeCompare(
-                  (b.tags ? "!!!!" : "") +
-                    (b.brandName || "ZZZZZZZZZ") +
-                    b.name,
-                )
-              : (
-                  tagsToString(a.tags) +
-                  (a.brandName || "ZZZZZZZZZ") +
-                  a.name
-                ).localeCompare(
-                  tagsToString(b.tags) + (b.brandName || "ZZZZZZZZZ") + b.name,
-                ),
+            tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
           )
           .filter((product) => {
             if (!activeFilters.length) return true;

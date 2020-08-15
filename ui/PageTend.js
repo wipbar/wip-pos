@@ -1,12 +1,10 @@
 import { css } from "emotion";
 import React from "react";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useSubscription from "../hooks/useSubscription";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 
 export default function PageTend() {
-  useSubscription("sales");
   const { error, loading } = useCurrentLocation(true);
   if (loading) return "Loading...";
   if (error) return error;
