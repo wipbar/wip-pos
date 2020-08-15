@@ -15,7 +15,7 @@ export default function Fire(props) {
               transform: translate(-14%, 50%);
               height: 2em;
               margin-top: -2em;
-              opacity: 0.4;
+              opacity: 0.5;
             }
 
             .particle {
