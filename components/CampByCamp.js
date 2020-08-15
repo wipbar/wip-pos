@@ -49,7 +49,6 @@ export default function CampByCamp() {
       });
       data.push(datapoint);
     }
-    console.log(data);
   }
   if (campsLoading || salesLoading) return "Loading...";
   return (

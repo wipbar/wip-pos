@@ -28,7 +28,11 @@ const renderer = ({ hours, minutes, seconds, completed }) => {
     <span
       className={css`
         font-size: 5em;
-        ${hours == 0 && minutes <= 9
+        display: inline-block;
+        transform-origin: 50% 50%;
+        ${hours == 0 && minutes <= 4
+          ? `animation: blink-animation 1s steps(5, start) infinite, flash-animation 500ms steps(5, start) infinite, shake 300ms infinite;`
+          : hours == 0 && minutes <= 14
           ? `animation: blink-animation 1s steps(5, start) infinite, flash-animation 500ms steps(5, start) infinite;`
           : hours == 0
           ? `animation: blink-animation 1s steps(5, start) infinite;`
