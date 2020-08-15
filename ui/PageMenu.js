@@ -135,6 +135,7 @@ export default function PageMenu() {
   if (productsLoading || locationLoading) return "Loading...";
   if (error) return error;
   const randomIndex = getRandomInt(0, productsGroupedByTags?.length - 1);
+  const randomIndex2 = getRandomInt(0, productsGroupedByTags?.length - 1);
   return (
     <Masonry
       breakpointCols={5}
@@ -317,6 +318,17 @@ export default function PageMenu() {
                   `}
                 >
                   <pre>ZFN4rgb73BQjXUzJzYtcCkCtApf9BS5j</pre>
+                </center>
+              ) : null}
+              {randomIndex2 === i ? (
+                <center
+                  className={css`
+                    margin-top: -8px;
+                    margin-bottom: 16px;
+                    font-size: 0.6em;
+                  `}
+                >
+                  <pre>Rendered: {new Date().toLocaleString()}</pre>
                 </center>
               ) : null}
             </>

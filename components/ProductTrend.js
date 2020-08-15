@@ -5,7 +5,7 @@ import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
 import Fire from "./Fire";
 
-const f = 10;
+const f = 0.25;
 export default function ProductTrend({ product, ...props }) {
   const {
     data: [currentCamp],
@@ -30,20 +30,22 @@ export default function ProductTrend({ product, ...props }) {
   const averageSalesPerHour = useMemo(
     () =>
       productSales.reduce((memo, sale) => sale.products.length + memo, 0) /
-      ((min(currentCamp?.end, new Date()) - firstSale?.timestamp) / 3600000),
+      ((min(currentCamp?.end, new Date()) -
+        (firstSale?.timestamp || currentCamp?.start)) /
+        3600000),
     [currentCamp, firstSale, productSales],
   );
   const salesInPastHour = useMemo(
     () =>
       productSales
         .filter((sale) =>
-          isWithinRange(sale.timestamp, subHours(new Date(), 2), new Date()),
+          isWithinRange(sale.timestamp, subHours(new Date(), 1), new Date()),
         )
         .reduce((memo, sale) => sale.products.length + memo, 0),
     [productSales],
   );
   console.log({ salesInPastHour, averageSalesPerHour });
-  const number = Number(salesInPastHour / (averageSalesPerHour / f)).toFixed(3);
-  if (salesInPastHour > 1 && number > 30) return <Fire {...props} />;
+  const number = Number(salesInPastHour / (averageSalesPerHour * f)).toFixed(3);
+  if (salesInPastHour > 1 && number > 8) return <Fire {...props} />;
   return null;
 }
