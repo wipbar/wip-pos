@@ -6,11 +6,6 @@ export default function Fire(props) {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            body {
-              background-color: #300808;
-              margin: 0;
-            }
-
             .fire {
               font-size: 16px;
               filter: blur(0.02em);
