@@ -14,6 +14,7 @@ import Sales from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import Masonry from "react-masonry-css";
+import ProductTrend from "../components/ProductTrend";
 
 function SparkLine({
   data,
@@ -210,7 +211,21 @@ export default function PageMenu() {
                         <small>HAX</small>
                       </small>
                       {products.map((product) => (
-                        <div key={product._id}>
+                        <div
+                          key={product._id}
+                          className={css`
+                            position: relative;
+                          `}
+                        >
+                          <ProductTrend
+                            product={product}
+                            className={css`
+                              position: absolute !important;
+                              bottom: 0;
+                              width: 100%;
+                              z-index: 0;
+                            `}
+                          />
                           <div
                             className={css`
                               flex: 1;

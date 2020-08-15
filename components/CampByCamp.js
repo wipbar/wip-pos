@@ -30,30 +30,28 @@ export default function CampByCamp() {
     : null;
 
   const data = useMemo(() => {
-    const tempData = [];
-    if (longestCampHours && sales.length) {
-      let campTotals = {};
-      for (let i = 0; i < longestCampHours; i++) {
-        const datapoint = { hour: i };
-        camps.forEach((camp) => {
-          const count = sales
-            .filter((sale) =>
-              isWithinRange(
-                sale.timestamp,
-                addHours(camp.start, i),
-                endOfHour(addHours(camp.start, i)),
-              ),
-            )
-            .reduce((memo, sale) => memo + Number(sale.amount), 0);
-          if (count) {
-            campTotals[camp.slug] = (campTotals[camp.slug] || 0) + count;
-            datapoint[camp.slug] = campTotals[camp.slug];
-          }
-        });
-        tempData.push(datapoint);
-      }
+    const data = [];
+    let campTotals = {};
+    for (let i = 0; i < longestCampHours; i++) {
+      const datapoint = { hour: i };
+      camps.forEach((camp) => {
+        const count = sales
+          .filter((sale) =>
+            isWithinRange(
+              sale.timestamp,
+              addHours(camp.start, i),
+              endOfHour(addHours(camp.start, i)),
+            ),
+          )
+          .reduce((memo, sale) => memo + Number(sale.amount), 0);
+        if (count) {
+          campTotals[camp.slug] = (campTotals[camp.slug] || 0) + count;
+          datapoint[camp.slug] = campTotals[camp.slug];
+        }
+      });
+      data.push(datapoint);
     }
-    return tempData;
+    return data;
   }, [camps, longestCampHours, sales]);
   if (campsLoading || salesLoading) return "Loading...";
   console.log(data);
