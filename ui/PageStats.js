@@ -143,7 +143,7 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
-  const showHour = (hour) => getHours(hour) >= 13 || getHours(hour) <= 3;
+  const showHour = (hour) => getHours(hour) >= 11 || getHours(hour) <= 3;
   if (salesLoading || productsLoading || campsLoading) return "Loading...";
 
   const next2am = isAfter(startOfHour(setHours(currentDate, 6)), currentDate)

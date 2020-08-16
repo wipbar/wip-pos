@@ -46,6 +46,6 @@ export default function ProductTrend({ product, ...props }) {
   );
   console.log({ salesInPastHour, averageSalesPerHour });
   const number = Number(salesInPastHour / (averageSalesPerHour * f)).toFixed(3);
-  if (salesInPastHour > 1 && number > 30) return <Fire {...props} />;
+  if (salesInPastHour > 2 && number > 30) return <Fire {...props} />;
   return null;
 }
