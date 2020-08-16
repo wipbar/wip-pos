@@ -5,6 +5,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -29,7 +30,7 @@ export default function CampByCamp() {
     ? Math.ceil((longestCamp.end - longestCamp.start) / (3600 * 1000))
     : null;
 
-  const data = useMemo(() => {
+  const [data, campTotals] = useMemo(() => {
     const data = [];
     let campTotals = {};
     for (let i = 0; i < longestCampHours; i++) {
@@ -51,7 +52,7 @@ export default function CampByCamp() {
       });
       data.push(datapoint);
     }
-    return data;
+    return [data, campTotals];
   }, [camps, longestCampHours, sales]);
   if (campsLoading || salesLoading) return "Loading...";
   console.log(data);
@@ -85,6 +86,16 @@ export default function CampByCamp() {
           wrapperStyle={{ background: "black" }}
         />
         <Legend />
+        <ReferenceLine
+          y={campTotals["bornhack-2019"]}
+          label={{
+            value: "Max 2019",
+            position: "insideTop",
+            style: { fill: "#FFED00" },
+          }}
+          stroke="#FFED00"
+          strokeDasharray="3 3"
+        />
         <Line
           type="monotone"
           dataKey="bornhack-2019"
