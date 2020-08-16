@@ -22,7 +22,7 @@ import CampByCamp from "../components/CampByCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
 import Countdown from "react-countdown";
 
-const rolloverOffset = 4;
+const rolloverOffset = 5;
 const renderer = ({ hours, minutes, seconds, completed }) => {
   return (
     <span

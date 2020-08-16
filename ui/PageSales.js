@@ -6,7 +6,7 @@ import Sales from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 
-const rolloverOffset = 4;
+const rolloverOffset = 5;
 
 function saveAs(blob, type, name) {
   const a = window.document.createElement("a");

@@ -74,7 +74,7 @@ function SparkLine({
   );
 }
 
-const rolloverOffset = 4;
+const rolloverOffset = 5;
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
