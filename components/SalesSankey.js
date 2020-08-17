@@ -42,7 +42,7 @@ function DemoSankeyNode({
         stroke="#FFED00"
         strokeOpacity="0.5"
       >
-        {payload.value + "k"}
+        {payload.value}HAX
       </text>
     </Layer>
   );
@@ -65,7 +65,7 @@ export default function SalesSankey() {
     );
     const data0 = {
       nodes: [
-        { name: "Bar Purchases" },
+        { name: "Bar Sales" },
         { name: "Alcoholic" },
         { name: "Beer" },
         { name: "Non-Beer" },
@@ -156,11 +156,11 @@ export default function SalesSankey() {
 
     return data0;
   }, []);
-
+  if (!data) return "Loading...";
   return (
     <Sankey
       width={900}
-      height={400}
+      height={350}
       data={data}
       nodePading={50}
       margin={{

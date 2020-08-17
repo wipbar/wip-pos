@@ -1,13 +1,7 @@
 import {
   addDays,
-  addHours,
-  differenceInDays,
   endOfHour,
-  format,
-  getHours,
   isAfter,
-  isBefore,
-  isFuture,
   isPast,
   min,
   setHours,
@@ -15,13 +9,13 @@ import {
 } from "date-fns";
 import { css } from "emotion";
 import React, { useMemo } from "react";
+import Countdown from "react-countdown";
 import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
-import useMongoFetch from "../hooks/useMongoFetch";
-import Countdown from "react-countdown";
 import SalesSankey from "../components/SalesSankey";
+import useMongoFetch from "../hooks/useMongoFetch";
 
 const rolloverOffset = 5;
 const renderer = ({ hours, minutes, seconds, completed }) => {
@@ -69,69 +63,6 @@ export default function PageStats() {
   const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
-  const earliestSale = useMemo(
-    () => Math.min(...sales.map((sale) => getHours(sale.timestamp))),
-    [sales],
-  );
-  const latestSale = useMemo(
-    () => Math.max(...sales.map((sale) => getHours(sale.timestamp))),
-    [sales],
-  );
-  const allHours = useMemo(() => {
-    let hours = [];
-    for (let i = from; isBefore(i, to); i = addHours(i, 1)) hours.push(i);
-
-    return hours;
-  }, [from, to]);
-  const allDays = useMemo(() => {
-    let days = [[]];
-    let dayI = 0;
-    let hourI = 0;
-    for (let i = from; isBefore(i, to); i = addHours(i, 1)) {
-      days[dayI].push(i);
-      hourI++;
-      if (hourI == 24) {
-        hourI = 0;
-        dayI++;
-        days[dayI] = [];
-      }
-    }
-    return days;
-  }, [from, to]);
-  let mostSoldProductsPerHour = useMemo(
-    () =>
-      allHours.reduce((m, hour) => {
-        const hourEnd = endOfHour(hour);
-        const numberOfProductsSoldThisHour = sales
-          .filter(
-            ({ timestamp }) =>
-              isAfter(timestamp, hour) && isBefore(timestamp, hourEnd),
-          )
-          .reduce((mn, sale) => sale.products.length + mn, 0);
-        return numberOfProductsSoldThisHour > m
-          ? numberOfProductsSoldThisHour
-          : m;
-      }, 0),
-    [allHours, sales],
-  );
-  const salesByDayAndHour = useMemo(
-    () =>
-      allDays.map((hours) =>
-        hours.map((hour) => {
-          const hourEnd = endOfHour(hour);
-          return [
-            hour,
-            sales.filter(
-              (sale) =>
-                isAfter(sale.timestamp, hour) &&
-                isBefore(sale.timestamp, hourEnd),
-            ),
-          ];
-        }),
-      ),
-    //.filter((hours) => hours.length),
-    [allDays, sales],
-  );
   const mostSold = useMemo(
     () =>
       Object.entries(
@@ -144,7 +75,6 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
-  const showHour = (hour) => getHours(hour) >= 11 || getHours(hour) <= 3;
   if (salesLoading || productsLoading || campsLoading) return "Loading...";
 
   const next2am = isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
@@ -165,159 +95,6 @@ export default function PageStats() {
           height: 100%;
         `}
       >
-        {salesByDayAndHour?.some?.((d) => d.some(({ length }) => length)) ? (
-          <table
-            className={css`
-              border-collapse: collapse;
-              width: 100%;
-            `}
-          >
-            <thead>
-              <tr>
-                <th />
-                {salesByDayAndHour[0].map(([hour]) =>
-                  showHour(hour) ? (
-                    <th key={hour}>{format(hour, "HH")}</th>
-                  ) : null,
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {salesByDayAndHour.map((hours, i) =>
-                hours.length ? (
-                  <tr
-                    key={hours[0][0]}
-                    className={css`
-                      background: ${(i + 1) % 2
-                        ? "rgba(255,255,0,0.1)"
-                        : "rgba(0,0,0,0)"};
-                    `}
-                  >
-                    <th key={format(hours[0][0], "DD")}>
-                      <div style={{ marginBottom: "-5px" }}>
-                        <small>
-                          DAY
-                          <br />
-                        </small>
-                      </div>
-                      <big>
-                        {((diff) =>
-                          diff === 0 ? (
-                            <big>
-                              <big style={{ lineHeight: 0 }}>{diff}</big>
-                            </big>
-                          ) : diff > 0 ? (
-                            String(diff).padStart(2, "0")
-                          ) : (
-                            diff
-                          ))(
-                          differenceInDays(
-                            hours[0][0],
-                            setHours(currentCamp.start, rolloverOffset),
-                          ) + 1,
-                        )}
-                      </big>
-                    </th>
-                    {hours.map(([hour, hourSales]) => {
-                      if (!showHour(hour)) return null;
-                      const beer = hourSales.reduce(
-                        (m, hourSale) =>
-                          hourSale.products.filter(({ _id, tags }) => {
-                            const product = products.find(
-                              (product) => product._id == _id,
-                            );
-                            if (product) return product.tags?.includes("beer");
-                            return tags?.includes("beer");
-                          }).length + m,
-                        0,
-                      );
-                      const mate = hourSales.reduce(
-                        (m, hourSale) =>
-                          hourSale.products.filter(({ _id, name }) => {
-                            const product = products.find(
-                              (product) => product._id == _id,
-                            );
-                            if (product)
-                              return product.name
-                                ?.toLowerCase()
-                                .includes("mate");
-                            return name?.toLowerCase().includes("mate");
-                          }).length + m,
-                        0,
-                      );
-                      const others = hourSales.reduce(
-                        (m, hourSale) =>
-                          hourSale.products
-                            .filter(({ _id, name }) => {
-                              const product = products.find(
-                                (product) => product._id == _id,
-                              );
-                              if (product)
-                                return !product.name
-                                  ?.toLowerCase()
-                                  .includes("mate");
-                              return !name?.toLowerCase().includes("mate");
-                            })
-                            .filter(({ _id, tags }) => {
-                              const product = products.find(
-                                (product) => product._id == _id,
-                              );
-                              if (product)
-                                return !product.tags?.includes("beer");
-                              return !tags?.includes("beer");
-                            }).length + m,
-                        0,
-                      );
-                      return (
-                        <td
-                          key={hour}
-                          className={css`
-                            text-align: center;
-                            border-top: 1px solid rgba(255, 255, 255, 0.4);
-                            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-                            padding-top: calc(100% / 25);
-                            position: relative;
-                          `}
-                        >
-                          <div
-                            className={css`
-                              position: absolute;
-                              height: 100%;
-                              width: 100%;
-                              bottom: 0;
-                              left: 0;
-                              right: 0;
-                              top: 0;
-                              display: flex;
-                              flex-direction: column-reverse;
-                            `}
-                          >
-                            {[mate, beer].map((productSales, i) => (
-                              <div
-                                key={["mate", "beer", "others"][i]}
-                                className={css`
-                                  height: ${(productSales /
-                                    mostSoldProductsPerHour) *
-                                  100}%;
-                                  background-color: ${[
-                                    "yellow",
-                                    "red",
-                                    "lightgray",
-                                  ][i]};
-                                `}
-                              />
-                            ))}
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ) : null,
-              )}
-            </tbody>
-          </table>
-        ) : null}
-        <br />
         <SalesSankey />
         <br />
         <CampByCamp />
@@ -342,7 +119,7 @@ export default function PageStats() {
           </big>
         </center>
         <hr />
-        Most sold @ {currentCamp.name}:
+        Most sold @ {currentCamp?.name}:
         <ul
           className={css`
             padding: 0;
