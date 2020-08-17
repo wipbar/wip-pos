@@ -108,7 +108,7 @@ export default function CampByCamp() {
           strokeWidth={4}
           strokeDasharray="3 3"
           dot={false}
-          connectNulls
+          
         />
         <Line
           type="monotone"
@@ -116,7 +116,7 @@ export default function CampByCamp() {
           stroke="#FD8B25"
           strokeWidth={4}
           dot={false}
-          connectNulls
+          
         />
       </LineChart>
     </ResponsiveContainer>

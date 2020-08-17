@@ -21,6 +21,7 @@ import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
 import Countdown from "react-countdown";
+import SalesSankey from "../components/SalesSankey";
 
 const rolloverOffset = 5;
 const renderer = ({ hours, minutes, seconds, completed }) => {
@@ -316,6 +317,8 @@ export default function PageStats() {
             </tbody>
           </table>
         ) : null}
+        <br />
+        <SalesSankey />
         <br />
         <CampByCamp />
       </div>
