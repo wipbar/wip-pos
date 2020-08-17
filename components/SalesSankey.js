@@ -42,7 +42,7 @@ function DemoSankeyNode({
         stroke="#FFED00"
         strokeOpacity="0.5"
       >
-        {payload.value}HAX
+        {payload.value} units
       </text>
     </Layer>
   );
@@ -54,15 +54,10 @@ export default function SalesSankey() {
     const sales = Sales.find({
       timestamp: { $gte: currentCamp?.start, $lte: currentCamp?.end },
     }).fetch();
-    const productsSold = sales.reduce(
-      (memo, sale) => [
-        ...memo,
-        ...sale.products.filter((saleProduct) =>
-          Products.findOne(saleProduct._id),
-        ),
-      ],
-      [],
-    );
+    const productsSold = sales.reduce((memo, sale) => {
+      memo.push(...sale.products.map(({ _id }) => Products.findOne(_id)));
+      return memo;
+    }, []);
     const data0 = {
       nodes: [
         { name: "Bar Sales" },
@@ -77,79 +72,68 @@ export default function SalesSankey() {
         {
           source: 0,
           target: 1,
-          value: productsSold
-            .filter(
-              ({ tags }) =>
-                tags.includes("cocktail") ||
-                tags.includes("spirit") ||
-                tags.includes("cider") ||
-                tags.includes("beer"),
-            )
-            .reduce((memo, { salePrice }) => memo + Number(salePrice), 0),
+          value: productsSold.filter(
+            ({ tags }) =>
+              tags.includes("cocktail") ||
+              tags.includes("spirit") ||
+              tags.includes("cider") ||
+              tags.includes("beer"),
+          ).length,
         }, // Alcoholic
         {
           source: 1,
           target: 2,
-          value: productsSold
-            .filter(({ tags }) => tags.includes("beer"))
-            .reduce((memo, { salePrice }) => memo + Number(salePrice), 0),
+          value: productsSold.filter(({ tags }) => tags.includes("beer"))
+            .length,
         }, // Beer
         {
           source: 1,
           target: 3,
-          value: productsSold
-            .filter(
-              ({ tags }) =>
-                tags.includes("cocktail") ||
-                tags.includes("spirit") ||
-                tags.includes("cider"),
-            )
-            .reduce((memo, { salePrice }) => memo + Number(salePrice), 0),
+          value: productsSold.filter(
+            ({ tags }) =>
+              tags.includes("cocktail") ||
+              tags.includes("spirit") ||
+              tags.includes("cider"),
+          ).length,
         }, // Non-beer
         {
           source: 0,
           target: 4,
-          value: productsSold
-            .filter(
-              ({ tags }) =>
-                !(
-                  tags.includes("cocktail") ||
-                  tags.includes("spirit") ||
-                  tags.includes("cider") ||
-                  tags.includes("beer")
-                ),
-            )
-            .reduce((memo, { salePrice }) => memo + Number(salePrice), 0),
+          value: productsSold.filter(
+            ({ tags }) =>
+              !(
+                tags.includes("cocktail") ||
+                tags.includes("spirit") ||
+                tags.includes("cider") ||
+                tags.includes("beer")
+              ),
+          ).length,
         }, // Non-alcoholic
         {
           source: 4,
           target: 5,
-          value: productsSold
-            .filter(
-              ({ name, tags }) =>
-                !(
-                  tags.includes("cocktail") ||
-                  tags.includes("spirit") ||
-                  tags.includes("cider") ||
-                  tags.includes("beer")
-                ) && name === "Mate",
-            )
-            .reduce((memo, { salePrice }) => memo + Number(salePrice), 0),
+          value: productsSold.filter(
+            ({ name, tags }) =>
+              !(
+                tags.includes("cocktail") ||
+                tags.includes("spirit") ||
+                tags.includes("cider") ||
+                tags.includes("beer")
+              ) && name === "Mate",
+          ).length,
         }, // Mate
         {
           source: 4,
           target: 6,
-          value: productsSold
-            .filter(
-              ({ tags }) =>
-                !(
-                  tags.includes("cocktail") ||
-                  tags.includes("spirit") ||
-                  tags.includes("cider") ||
-                  tags.includes("beer")
-                ) && name !== "Mate",
-            )
-            .reduce((memo, { salePrice }) => memo + Number(salePrice), 0),
+          value: productsSold.filter(
+            ({ name, tags }) =>
+              !(
+                tags.includes("cocktail") ||
+                tags.includes("spirit") ||
+                tags.includes("cider") ||
+                tags.includes("beer")
+              ) && name !== "Mate",
+          ).length,
         }, // Non-mate
       ],
     };
