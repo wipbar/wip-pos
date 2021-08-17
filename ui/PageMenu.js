@@ -136,6 +136,31 @@ export default function PageMenu() {
   if (error) return error;
   const randomIndex = getRandomInt(0, productsGroupedByTags?.length - 1);
   const randomIndex2 = getRandomInt(0, productsGroupedByTags?.length - 1);
+
+  if (!productsGroupedByTags.length)
+    return (
+      <marquee scrollAmount="20">
+        <big
+          className={css`
+            font-size: 6em;
+            height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+          `}
+        >
+          <center>
+            Nothing for sale
+            <br />
+            at the moment :(
+          </center>
+        </big>
+        <center>
+          <pre>Rendered: {new Date().toLocaleString()}</pre>
+        </center>
+      </marquee>
+    );
   return (
     <Masonry
       breakpointCols={5}
