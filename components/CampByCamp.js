@@ -91,52 +91,31 @@ export default function CampByCamp() {
           wrapperStyle={{ background: "black" }}
         />
         <Legend />
-        <ReferenceLine
-          y={campTotals["bornhack-2019"]}
-          label={{
-            value: "Max 2019",
-            position: "insideTop",
-            style: { fill: "#FFED00" },
-          }}
-          stroke="#FFED00"
-          strokeDasharray="3 3"
-        />
-        <ReferenceLine
-          y={campTotals["bornhack-2020"]}
-          label={{
-            value: "Max 2020",
-            position: "insideTop",
-            style: { fill: "#E22028" },
-          }}
-          stroke="#E22028"
-          strokeDasharray="3 3"
-        />
-        <Line
-          type="monotone"
-          dataKey="bornhack-2019"
-          stroke="#FFED00"
-          strokeWidth={4}
-          strokeDasharray="3 3"
-          dot={false}
-          connectNulls
-        />
-        <Line
-          type="monotone"
-          dataKey="bornhack-2020"
-          stroke="#FD8B25"
-          strokeDasharray="3 3"
-          strokeWidth={4}
-          dot={false}
-          connectNulls
-        />
-        <Line
-          type="monotone"
-          dataKey="bornhack-2021"
-          stroke="#E22028"
-          strokeWidth={4}
-          dot={false}
-          connectNulls
-        />
+        {camps.map((camp, i) =>
+          i < camps.length - 1 ? (
+            <ReferenceLine
+              y={campTotals[camp.slug]}
+              label={{
+                value: "Max " + camp.name,
+                position: "insideTop",
+                style: { fill: camp.color },
+              }}
+              stroke={camp.color}
+              strokeDasharray="3 3"
+            />
+          ) : null,
+        )}
+        {camps.map((camp, i) => (
+          <Line
+            type="monotone"
+            key={camp.slug}
+            dataKey={camp.slug}
+            stroke={camp.color}
+            strokeWidth={camps.length - 1 === i ? 4 : undefined}
+            dot={false}
+            connectNulls
+          />
+        ))}
       </LineChart>
     </ResponsiveContainer>
   );
