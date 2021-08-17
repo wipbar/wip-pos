@@ -101,6 +101,16 @@ export default function CampByCamp() {
           stroke="#FFED00"
           strokeDasharray="3 3"
         />
+        <ReferenceLine
+          y={campTotals["bornhack-2020"]}
+          label={{
+            value: "Max 2020",
+            position: "insideTop",
+            style: { fill: "#E22028" },
+          }}
+          stroke="#E22028"
+          strokeDasharray="3 3"
+        />
         <Line
           type="monotone"
           dataKey="bornhack-2019"
