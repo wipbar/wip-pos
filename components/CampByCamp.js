@@ -114,6 +114,15 @@ export default function CampByCamp() {
           type="monotone"
           dataKey="bornhack-2020"
           stroke="#FD8B25"
+          strokeDasharray="3 3"
+          strokeWidth={4}
+          dot={false}
+          connectNulls
+        />
+        <Line
+          type="monotone"
+          dataKey="bornhack-2021"
+          stroke="#E22028"
           strokeWidth={4}
           dot={false}
           connectNulls

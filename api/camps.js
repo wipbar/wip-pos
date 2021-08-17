@@ -25,6 +25,16 @@ if (Meteor.isServer) {
         color: "#FD8B25",
       });
     }
+    if (!Camps.findOne({ slug: "bornhack-2021" })) {
+      addCamp({
+        name: "BornHack 2021",
+        slug: "bornhack-2021",
+        buildup: new Date(2021, 7, 13, 12),
+        start: startOfDay(new Date(2021, 7, 19)),
+        end: endOfDay(new Date(2021, 7, 26)),
+        color: "#E22028",
+      });
+    }
   });
 }
 export default Camps;

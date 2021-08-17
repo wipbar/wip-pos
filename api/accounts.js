@@ -188,7 +188,7 @@ export const isUserInTeam = (userOrId, inTeam) => {
   );
   return !!user?.profile?.teams?.find(
     ({ team, camp }) =>
-      team.toLowerCase() === inTeam.toLowerCase() && camp === "BornHack 2020",
+      team.toLowerCase() === inTeam.toLowerCase() && camp === "BornHack 2021",
   );
 };
 export const assertUserInAnyTeam = (userOrId) => {
