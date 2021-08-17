@@ -1,12 +1,10 @@
 import { css } from "emotion";
-import React, { useState } from "react";
+import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
-import { isUserAdmin } from "../api/accounts";
 import Locations from "../api/locations";
 import Products from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 
@@ -17,13 +15,16 @@ const Label = ({ label, children }) => (
   <label
     className={css`
       display: flex;
-      width: 400px;
+      width: 480px;
       align-items: center;
+      > div > input {
+        width: 100%;
+      }
     `}
   >
     <small
       className={css`
-        flex: 0.4;
+        flex: 0.33;
         text-align: right;
         margin-right: 4px;
       `}
@@ -79,6 +80,9 @@ export default function PageStockItem({ onCancel, product }) {
     onCancel?.();
     reset();
   };
+  const mostRecentShopPrice =
+    product.shopPrices &&
+    [...product.shopPrices].sort((a, b) => b.timestamp - a.timestamp)[0];
 
   return (
     <form
@@ -184,6 +188,27 @@ export default function PageStockItem({ onCancel, product }) {
               }
             />
           )}
+        />
+      </Label>
+      <Label label="Unit Cost">
+        <input
+          type="number"
+          name="buyPrice"
+          placeholder={
+            mostRecentShopPrice &&
+            `Most recently ${
+              mostRecentShopPrice.buyPrice
+            } on ${new Intl.DateTimeFormat("da-DK", {
+              year: "numeric",
+              month: "numeric",
+              day: "numeric",
+              hour: "numeric",
+              minute: "numeric",
+              second: "numeric",
+            }).format(mostRecentShopPrice.timestamp)}`
+          }
+          step="any"
+          ref={register}
         />
       </Label>
       <hr />
