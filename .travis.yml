@@ -14,6 +14,6 @@ cache:
     - node_modules
 deploy:
   provider: script
-  script: node -e "console.log(new Buffer(process.env.METEOR_TOKEN, 'base64').toString('utf-8'))" && METEOR_SESSION_FILE=token.json meteor deploy wip-pos.eu.meteorapp.com --settings production-settings.json
+  script: node -e "console.log(Buffer.from(process.env.METEOR_TOKEN, 'base64').toString('utf-8'))" && METEOR_SESSION_FILE=token.json meteor deploy wip-pos.eu.meteorapp.com --settings production-settings.json
   on:
     branch: master
