@@ -27,7 +27,7 @@ const getSaleProfits = (sale, products) =>
       (currentProduct.salePrice -
         ((currentProduct.shopPrices || [])
           .filter(({ timestamp }) => timestamp < sale.timestamp)
-          .sort((a, b) => b.timestamp - a.timestamp)?.[0]?.buyPrice || NaN))
+          .sort((a, b) => b.timestamp - a.timestamp)?.[0]?.buyPrice || 0))
     );
   }, 0);
 
