@@ -112,7 +112,8 @@ export default function CampByCamp() {
             dataKey={camp.slug}
             name={camp.name}
             stroke={camp.color}
-            strokeWidth={camps.length - 1 === i ? 4 : undefined}
+            strokeDasharray={camps.length - 1 === i ? undefined : "3 3"}
+            strokeWidth={4}
             dot={false}
             connectNulls
           />
