@@ -1,5 +1,11 @@
 import React from "react";
-import { Layer, Rectangle, Sankey, Tooltip } from "recharts";
+import {
+  Layer,
+  Rectangle,
+  ResponsiveContainer,
+  Sankey,
+  Tooltip,
+} from "recharts";
 import { useTracker } from "meteor/react-meteor-data";
 import Products from "../api/products";
 import Sales from "../api/sales";
@@ -160,20 +166,21 @@ export default function SalesSankey() {
   if (!data) return "Loading...";
 
   return (
-    <Sankey
-      width={900}
-      height={350}
-      data={data}
-      nodePading={50}
-      margin={{
-        left: 100,
-        right: 100,
-        bottom: 25,
-      }}
-      link={{ stroke: currentCamp?.color || "#77c878" }}
-      node={<DemoSankeyNode camp={currentCamp} />}
-    >
-      <Tooltip />
-    </Sankey>
+    <ResponsiveContainer width={"100%"} height={350}>
+      <Sankey
+        height={350}
+        data={data}
+        nodePading={50}
+        margin={{
+          left: 100,
+          right: 100,
+          bottom: 25,
+        }}
+        link={{ stroke: currentCamp?.color || "#77c878" }}
+        node={<DemoSankeyNode camp={currentCamp} />}
+      >
+        <Tooltip />
+      </Sankey>
+    </ResponsiveContainer>
   );
 }

@@ -87,12 +87,16 @@ export default function PageStats() {
         font-family: monospace;
         display: flex;
         height: 100%;
+        width: 100%;
+        max-width: 100%;
+        flex-wrap: wrap;
       `}
     >
       <div
         className={css`
           flex: 2;
           height: 100%;
+          min-width: 400px;
         `}
       >
         <SalesSankey />

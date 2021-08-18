@@ -1,4 +1,4 @@
-import { addHours, endOfHour, isWithinRange } from "date-fns";
+import { addHours, endOfHour, isFuture, isPast, isWithinRange } from "date-fns";
 import React, { useMemo } from "react";
 import {
   CartesianGrid,
@@ -18,6 +18,11 @@ import useMongoFetch from "../hooks/useMongoFetch";
 
 export default function CampByCamp() {
   const { data: camps, loading: campsLoading } = useMongoFetch(Camps, []);
+  const {
+    data: [currentCamp],
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const isCurrentlyBuildup =
+    currentCamp && isPast(currentCamp.buildup) && isFuture(currentCamp.start);
   const { location } = useCurrentLocation();
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ locationId: location?._id }),
@@ -27,26 +32,38 @@ export default function CampByCamp() {
     if (!memo) {
       memo = camp;
     } else {
-      if (camp.end - camp.start > memo.end - memo.start) memo = camp;
+      if (
+        camp.end - (isCurrentlyBuildup ? camp.buildup : camp.start) >
+        memo.end - (isCurrentlyBuildup ? camp.buildup : memo.start)
+      )
+        memo = camp;
     }
     return memo;
   }, null);
   const longestCampHours = longestCamp
-    ? Math.ceil((longestCamp.end - longestCamp.start) / (3600 * 1000))
+    ? Math.ceil(
+        (longestCamp.end -
+          (isCurrentlyBuildup ? longestCamp.buildup : longestCamp.start)) /
+          (3600 * 1000),
+      )
     : null;
-
+  const longestCampBuildupHours = isCurrentlyBuildup
+    ? (longestCamp.start - longestCamp.buildup) / 1000 / 60 / 60
+    : 0;
+  console.log(longestCampBuildupHours);
   const [data, campTotals] = useMemo(() => {
     const data = [];
     let campTotals = {};
     for (let i = 0; i < longestCampHours; i++) {
-      const datapoint = { hour: i };
+      const datapoint = { hour: i - longestCampBuildupHours };
       camps.forEach((camp) => {
+        const start = isCurrentlyBuildup ? camp.buildup : camp.start;
         const count = sales
           .filter((sale) =>
             isWithinRange(
               sale.timestamp,
-              addHours(camp.start, i),
-              endOfHour(addHours(camp.start, i)),
+              addHours(start, i),
+              endOfHour(addHours(start, i)),
             ),
           )
           .reduce((memo, sale) => memo + Number(sale.amount), 0);
@@ -58,19 +75,25 @@ export default function CampByCamp() {
       data.push(datapoint);
     }
     return [data, campTotals];
-  }, [camps, longestCampHours, sales]);
+  }, [
+    camps,
+    isCurrentlyBuildup,
+    longestCampBuildupHours,
+    longestCampHours,
+    sales,
+  ]);
   if (campsLoading || salesLoading) return "Loading...";
 
   return (
-    <ResponsiveContainer width={900} height={350}>
-      <LineChart data={data} margin={{ top: 0, right: 0, left: 40, bottom: 0 }}>
+    <ResponsiveContainer width={"100%"} height={350}>
+      <LineChart
+        data={data}
+        margin={{ top: 0, right: 20, left: 40, bottom: 0 }}
+      >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
           dataKey="hour"
-          interval={5}
-          tickFormatter={(hour) =>
-            String(((hour + 1 + 2) % 24) - 1).padStart(2, "0")
-          }
+          tickFormatter={(hour) => String((hour + 2) % 24).padStart(2, "0")}
         />
         <YAxis
           domain={["dataMin", "dataMax"]}
@@ -84,17 +107,28 @@ export default function CampByCamp() {
         />
         <Tooltip
           labelFormatter={(hour) =>
-            `H${String(((hour + 1 + 2) % 24) - 1).padStart(2, "0")}D${String(
+            `H${String((hour + 2) % 24).padStart(2, "0")}D${String(
               Math.ceil(hour / 24),
             ).padStart(2, "0")}`
           }
           wrapperStyle={{ background: "black" }}
         />
         <Legend />
+        <ReferenceLine
+          x={0 - 2 + 12}
+          strokeWidth={2}
+          stroke={currentCamp?.color || "#00FFFF"}
+          label={{
+            value: "Start " + currentCamp?.name,
+            position: "insideLeft",
+            style: { fill: currentCamp?.color },
+          }}
+        />
         {camps.map((camp, i) =>
           i < camps.length - 1 ? (
             <ReferenceLine
               y={campTotals[camp.slug]}
+              key={camp.slug + "-ReferenceLine"}
               label={{
                 value: "Max " + camp.name,
                 position: "insideTop",
