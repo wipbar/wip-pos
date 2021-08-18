@@ -22,13 +22,12 @@ const getSaleProfits = (sale, products) =>
   sale.products.reduce((m, saleProduct) => {
     const currentProduct =
       products.find(({ _id }) => _id === saleProduct._id) || saleProduct;
-    return (
-      m +
-      (currentProduct.salePrice -
-        ((currentProduct.shopPrices || [])
-          .filter(({ timestamp }) => timestamp < sale.timestamp)
-          .sort((a, b) => b.timestamp - a.timestamp)?.[0]?.buyPrice || 0))
-    );
+    const shopPrice = (currentProduct.shopPrices || [])
+      .filter(({ timestamp }) => timestamp < sale.timestamp)
+      .sort((a, b) => b.timestamp - a.timestamp)?.[0]?.buyPrice;
+    if (!shopPrice) return m;
+
+    return m + (currentProduct.salePrice - shopPrice);
   }, 0);
 
 export default function PageSales() {
