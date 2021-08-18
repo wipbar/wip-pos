@@ -21,8 +21,13 @@ export default function CampByCamp() {
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const isCurrentlyBuildup =
-    currentCamp && isPast(currentCamp.buildup) && isFuture(currentCamp.start);
+  const isCurrentlyBuildup = Boolean(
+    currentCamp &&
+      isPast(currentCamp.buildup) &&
+      isFuture(currentCamp.start) &&
+      false,
+  );
+  console.log(isCurrentlyBuildup);
   const { location } = useCurrentLocation();
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ locationId: location?._id }),
@@ -115,16 +120,18 @@ export default function CampByCamp() {
           contentStyle={{ background: "#000" }}
         />
         <Legend />
-        <ReferenceLine
-          x={0 - 2 + 12}
-          strokeWidth={2}
-          stroke={currentCamp?.color || "#00FFFF"}
-          label={{
-            value: "Start " + currentCamp?.name,
-            position: "insideLeft",
-            style: { fill: currentCamp?.color },
-          }}
-        />
+        {isCurrentlyBuildup && (
+          <ReferenceLine
+            x={0 - 2 + 12}
+            strokeWidth={2}
+            stroke={currentCamp?.color || "#00FFFF"}
+            label={{
+              value: "Start " + currentCamp?.name,
+              position: "insideLeft",
+              style: { fill: currentCamp?.color },
+            }}
+          />
+        )}
         {camps.map((camp, i) =>
           i < camps.length - 1 ? (
             <ReferenceLine
