@@ -196,16 +196,17 @@ export default function PageStockItem({ onCancel, product }) {
           name="buyPrice"
           placeholder={
             mostRecentShopPrice &&
-            `Most recently ${
-              mostRecentShopPrice.buyPrice
-            } on ${new Intl.DateTimeFormat("da-DK", {
-              year: "numeric",
-              month: "numeric",
-              day: "numeric",
-              hour: "numeric",
-              minute: "numeric",
-              second: "numeric",
-            }).format(mostRecentShopPrice.timestamp)}`
+            `${mostRecentShopPrice.buyPrice} on ${new Intl.DateTimeFormat(
+              "da-DK",
+              {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "numeric",
+                minute: "numeric",
+                second: "numeric",
+              },
+            ).format(mostRecentShopPrice.timestamp)}`
           }
           step="any"
           ref={register}
