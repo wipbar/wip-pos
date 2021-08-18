@@ -124,7 +124,7 @@ export default function PageStock() {
                         productId: product._id,
                         data: product.locationIds?.includes(location?._id)
                           ? {
-                              locationIds: product.locationIds.filter(
+                              locationIds: product.locationIds?.filter(
                                 (id) => id !== location?._id,
                               ),
                             }
