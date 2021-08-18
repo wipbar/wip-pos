@@ -17,6 +17,17 @@ function saveAs(blob, type, name) {
   document.body.removeChild(a);
 }
 
+const getSaleProfits = ({ products }) =>
+  products.reduce(
+    (m, product) =>
+      m +
+      (product.salePrice -
+        ([...(product.shopPrices || [])].sort(
+          (a, b) => b.timestamp - a.timestamp,
+        )?.[0]?.buyPrice || NaN)),
+    0,
+  );
+
 export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
   const { data: sales, loading: salesLoading } = useMongoFetch(
@@ -67,21 +78,13 @@ export default function PageSales() {
                   <b>
                     {salesOfDay.reduce((memo, { amount }) => memo + amount, 0)}
                   </b>
-                  (+{" "}
-                  {salesOfDay
-                    .map(({ products }) =>
-                      products.reduce(
-                        (m, product) =>
-                          m +
-                          (product.salePrice -
-                            ([...(product.shopPrices || [])].sort(
-                              (a, b) => b.timestamp - a.timestamp,
-                            )?.[0]?.buyPrice || NaN)),
-                        0,
-                      ),
+                  <span style={{ color: "limegreen" }}>
+                    (+{" "}
+                    {salesOfDay
+                      .map(getSaleProfits)
+                      .reduce((memo, profit) => memo + profit)}
                     )
-                    .reduce((memo, profit) => memo + profit)}
-                  )
+                  </span>
                 </code>
                 <small>{salesOfDay[0].currency}</small>{" "}
                 <small>
@@ -105,15 +108,18 @@ export default function PageSales() {
                 </small>
               </summary>
               <ul>
-                {salesOfDay.map(({ products, ...sale }) => (
+                {salesOfDay.map((sale) => (
                   <li key={sale._id}>
                     {format(sale.timestamp, "HH:mm:ss")}{" "}
                     <code>
                       <b>{sale.amount}</b>
+                      <span style={{ color: "limegreen" }}>
+                        (+ {getSaleProfits(sale)})
+                      </span>
                     </code>
                     <small>{sale.currency}</small>
                     <ul>
-                      {products.map((product, i) => (
+                      {sale.products.map((product, i) => (
                         <li key={sale._id + i + product._id}>
                           {product.brandName ? (
                             <>{product.brandName} - </>
