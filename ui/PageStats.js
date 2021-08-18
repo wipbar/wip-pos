@@ -125,35 +125,39 @@ export default function PageStats() {
             padding: 0;
           `}
         >
-          {mostSold.map(([productId, count]) => {
-            const product = products.find(({ _id }) => _id == productId);
-            if (!product) return null;
-            return (
-              <li
-                key={productId}
-                className={css`
-                  list-style: none;
-                  display: flex;
-                  align-items: flex-start;
-                `}
-              >
-                <div
+          {mostSold.length ? (
+            mostSold.map(([productId, count]) => {
+              const product = products.find(({ _id }) => _id == productId);
+              if (!product) return null;
+              return (
+                <li
+                  key={productId}
                   className={css`
-                    width: 50px;
-                    text-align: right;
-                    margin-right: 8px;
+                    list-style: none;
+                    display: flex;
+                    align-items: flex-start;
                   `}
                 >
-                  <b>{count}</b>x
-                </div>
-                <div>
-                  {product.brandName ? <>{product.brandName} - </> : null}
-                  {product.name}({product.unitSize}
-                  {product.sizeUnit})
-                </div>
-              </li>
-            );
-          })}
+                  <div
+                    className={css`
+                      width: 50px;
+                      text-align: right;
+                      margin-right: 8px;
+                    `}
+                  >
+                    <b>{count}</b>x
+                  </div>
+                  <div>
+                    {product.brandName ? <>{product.brandName} - </> : null}
+                    {product.name}({product.unitSize}
+                    {product.sizeUnit})
+                  </div>
+                </li>
+              );
+            })
+          ) : (
+            <i>Nothing has been sold yet :(</i>
+          )}
         </ul>
       </div>
     </div>
