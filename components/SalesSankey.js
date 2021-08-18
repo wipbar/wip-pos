@@ -12,6 +12,7 @@ import Sales from "../api/sales";
 import Camps from "../api/camps";
 import { isPast } from "date-fns";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 
 function DemoSankeyNode({
   x,
@@ -58,6 +59,7 @@ function DemoSankeyNode({
 }
 
 export default function SalesSankey() {
+  const currentLocation = useCurrentLocation()?.location;
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
@@ -77,7 +79,7 @@ export default function SalesSankey() {
     }, []);
     const data0 = {
       nodes: [
-        { name: "Bar Sales" },
+        { name: currentLocation?.name + " Sales" },
         { name: "Alcoholic" },
         { name: "Beer" },
         { name: "Non-Beer" },
