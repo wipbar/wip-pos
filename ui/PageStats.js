@@ -109,21 +109,25 @@ export default function PageStats() {
           flex: 1;
         `}
       >
-        <center>
-          <big>
-            <Countdown date={next2am} renderer={renderer} daysInHours />
-            <br />
-            <span
-              className={css`
-                font-size: 3.5em;
-              `}
-            >
-              TILL CURFEW
-            </span>
-          </big>
-        </center>
-        <hr />
-        Most sold @ {currentCamp?.name}:
+        {!"hide the curfew for the time being" && (
+          <>
+            <center>
+              <big>
+                <Countdown date={next2am} renderer={renderer} daysInHours />
+                <br />
+                <span
+                  className={css`
+                    font-size: 3.5em;
+                  `}
+                >
+                  TILL CURFEW
+                </span>
+              </big>
+            </center>
+            <hr />
+          </>
+        )}
+        <big>Most sold @ {currentCamp?.name}:</big>
         <ul
           className={css`
             padding: 0;
