@@ -4,6 +4,7 @@ import { useTracker } from "meteor/react-meteor-data";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import Camps from "../api/camps";
+import { isPast } from "date-fns";
 
 function DemoSankeyNode({
   x,
@@ -52,7 +53,12 @@ export default function SalesSankey() {
   const data = useTracker(() => {
     const [currentCamp] = Camps.find({}, { sort: { end: -1 } }).fetch();
     const sales = Sales.find({
-      timestamp: { $gte: currentCamp?.start, $lte: currentCamp?.end },
+      timestamp: {
+        $gte: isPast(currentCamp?.start)
+          ? currentCamp?.start
+          : currentCamp?.buildup,
+        $lte: currentCamp?.end,
+      },
     }).fetch();
     const productsSold = sales.reduce((memo, sale) => {
       memo.push(...sale.products.map(({ _id }) => Products.findOne(_id)));

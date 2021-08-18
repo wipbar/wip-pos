@@ -1,4 +1,4 @@
-import { isWithinRange, min, subHours } from "date-fns";
+import { isPast, isWithinRange, min, subHours } from "date-fns";
 import React, { useMemo } from "react";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
@@ -14,7 +14,12 @@ export default function ProductTrend({ product, ...props }) {
     Sales.find(
       {
         products: { $elemMatch: { _id: product._id } },
-        timestamp: { $gte: currentCamp?.start, $lte: currentCamp?.end },
+        timestamp: {
+          $gte: isPast(currentCamp?.start)
+            ? currentCamp?.start
+            : currentCamp?.buildup,
+          $lte: currentCamp?.end,
+        },
       },
       { sort: { timestamp: 1 } },
     ),
@@ -31,7 +36,10 @@ export default function ProductTrend({ product, ...props }) {
     () =>
       productSales.reduce((memo, sale) => sale.products.length + memo, 0) /
       ((min(currentCamp?.end, new Date()) -
-        (firstSale?.timestamp || currentCamp?.start)) /
+        (firstSale?.timestamp ||
+          (isPast(currentCamp?.start)
+            ? currentCamp?.start
+            : currentCamp?.buildup))) /
         3600000),
     [currentCamp, firstSale, productSales],
   );
