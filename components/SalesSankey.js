@@ -79,7 +79,7 @@ export default function SalesSankey() {
     }, []);
     const data0 = {
       nodes: [
-        { name: currentLocation?.name + " Sales" },
+        { name: "Sales" },
         { name: "Alcoholic" },
         { name: "Beer" },
         { name: "Non-Beer" },
