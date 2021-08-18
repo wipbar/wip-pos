@@ -81,7 +81,7 @@ export default function PageStockItem({ onCancel, product }) {
     reset();
   };
   const mostRecentShopPrice =
-    product.shopPrices &&
+    product?.shopPrices &&
     [...product.shopPrices].sort((a, b) => b.timestamp - a.timestamp)[0];
 
   return (
