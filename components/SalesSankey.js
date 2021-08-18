@@ -5,6 +5,7 @@ import Products from "../api/products";
 import Sales from "../api/sales";
 import Camps from "../api/camps";
 import { isPast } from "date-fns";
+import useMongoFetch from "../hooks/useMongoFetch";
 
 function DemoSankeyNode({
   x,
@@ -51,9 +52,9 @@ function DemoSankeyNode({
 }
 
 export default function SalesSankey() {
-  const [currentCamp] = useTracker(() =>
-    Camps.find({}, { sort: { end: -1 } }).fetch(),
-  );
+  const {
+    data: [currentCamp],
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
 
   const data = useTracker(() => {
     const sales = Sales.find({
