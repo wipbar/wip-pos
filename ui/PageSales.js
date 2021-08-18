@@ -18,16 +18,17 @@ function saveAs(blob, type, name) {
   document.body.removeChild(a);
 }
 
-const getSaleProfits = (sale, products) =>
+const getSaleExpenses = (sale, products) =>
   sale.products.reduce((m, saleProduct) => {
     const currentProduct =
       products.find(({ _id }) => _id === saleProduct._id) || saleProduct;
     const shopPrice = (currentProduct.shopPrices || [])
       .filter(({ timestamp }) => timestamp < sale.timestamp)
       .sort((a, b) => b.timestamp - a.timestamp)?.[0]?.buyPrice;
-    if (!shopPrice) return m;
 
-    return m + (currentProduct.salePrice - shopPrice);
+    if (!shopPrice) return m + Number(currentProduct.salePrice);
+
+    return m + Number(shopPrice);
   }, 0);
 
 export default function PageSales() {
@@ -81,13 +82,18 @@ export default function PageSales() {
                 {format(day, "DD/MM/YYYY")}{" "}
                 <code>
                   <b>
-                    {salesOfDay.reduce((memo, { amount }) => memo + amount, 0)}
+                    {salesOfDay.reduce(
+                      (memo, { amount }) => memo + Number(amount),
+                      0,
+                    )}
                   </b>
                   <span style={{ color: "limegreen" }}>
                     (+{" "}
                     {salesOfDay
-                      .map((sale) => getSaleProfits(sale, products))
-                      .reduce((memo, profit) => memo + profit)}
+                      .map(
+                        (sale) => sale.amount - getSaleExpenses(sale, products),
+                      )
+                      .reduce((memo, profit) => memo + Number(profit))}
                     )
                   </span>
                 </code>
@@ -95,18 +101,19 @@ export default function PageSales() {
                 <small>
                   <button
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
+                      const statements = salesOfDay.map((sale) => ({
+                        timestamp: sale.timestamp,
+                        amount: sale.amount,
+                        cost: getSaleExpenses(sale, products),
+                      }));
+
                       saveAs(
-                        JSON.stringify(
-                          salesOfDay.map(({ timestamp, amount }) => ({
-                            timestamp,
-                            amount,
-                          })),
-                        ),
+                        JSON.stringify(statements),
                         "application/json;charset=utf-8;",
                         `${location.slug}-${format(day, "YYYY-MM-DD")}.json`,
-                      )
-                    }
+                      );
+                    }}
                   >
                     Download as JSON
                   </button>
@@ -119,7 +126,7 @@ export default function PageSales() {
                     <code>
                       <b>{sale.amount}</b>
                       <span style={{ color: "limegreen" }}>
-                        (+ {getSaleProfits(sale, products)})
+                        (+ {sale.amount - getSaleExpenses(sale, products)})
                       </span>
                     </code>
                     <small>{sale.currency}</small>
