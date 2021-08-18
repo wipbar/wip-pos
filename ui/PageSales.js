@@ -65,6 +65,21 @@ export default function PageSales() {
                   <b>
                     {salesOfDay.reduce((memo, { amount }) => memo + amount, 0)}
                   </b>
+                  (+{" "}
+                  {salesOfDay
+                    .map(({ products }) =>
+                      products.reduce(
+                        (m, product) =>
+                          m +
+                          (product.salePrice -
+                            ([...(product.shopPrices || [])].sort(
+                              (a, b) => b.timestamp - a.timestamp,
+                            )?.[0]?.buyPrice || NaN)),
+                        0,
+                      ),
+                    )
+                    .reduce((memo, profit) => memo + profit)}
+                  )
                 </code>
                 <small>{salesOfDay[0].currency}</small>{" "}
                 <small>
