@@ -60,7 +60,7 @@ export default function CampByCamp() {
     return [data, campTotals];
   }, [camps, longestCampHours, sales]);
   if (campsLoading || salesLoading) return "Loading...";
-  console.log(data);
+
   return (
     <ResponsiveContainer width={900} height={350}>
       <LineChart data={data} margin={{ top: 0, right: 0, left: 40, bottom: 0 }}>
