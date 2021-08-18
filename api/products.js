@@ -76,7 +76,7 @@ Meteor.methods({
     });
   },
   "Products.removeProduct"({ productId }) {
-    if (!this.userId) throw new Meteor.Error("log in please");
+    assertUserInAnyTeam(this.userId);
     if (productId)
       return Products.update(productId, { $set: { removedAt: new Date() } });
   },

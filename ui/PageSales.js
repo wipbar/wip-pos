@@ -18,7 +18,7 @@ function saveAs(blob, type, name) {
 }
 
 export default function PageSales() {
-  const { location } = useCurrentLocation();
+  const { location, error } = useCurrentLocation(true);
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ locationId: location?._id }, { sort: { timestamp: -1 } }),
     [location],
@@ -36,6 +36,8 @@ export default function PageSales() {
   );
 
   if (salesLoading) return "Loading...";
+
+  if (error) return error;
 
   return (
     <>

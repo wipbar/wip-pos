@@ -53,8 +53,8 @@ export default function PageStock() {
   const user = useCurrentUser();
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
-  const { location } = useCurrentLocation();
-  const [showRemoved, setShowRemoved] = useState(false);
+  const { location, error } = useCurrentLocation(true);
+  const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
 
@@ -70,8 +70,10 @@ export default function PageStock() {
     ),
     [showOnlyMenuItems, showRemoved, location],
   );
-
   if (loading) return "Loading...";
+
+  if (error) return error;
+
   return (
     <>
       <button onClick={() => setIsEditing(NEW)}>Create Product</button>
