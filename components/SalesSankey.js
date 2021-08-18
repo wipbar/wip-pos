@@ -170,7 +170,7 @@ export default function SalesSankey() {
         right: 100,
         bottom: 25,
       }}
-      link={{ stroke: "#77c878" }}
+      link={{ stroke: currentCamp?.color || "#77c878" }}
       node={<DemoSankeyNode camp={currentCamp} />}
     >
       <Tooltip />
