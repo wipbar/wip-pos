@@ -110,6 +110,7 @@ export default function CampByCamp() {
             type="monotone"
             key={camp.slug}
             dataKey={camp.slug}
+            name={camp.name}
             stroke={camp.color}
             strokeWidth={camps.length - 1 === i ? 4 : undefined}
             dot={false}
