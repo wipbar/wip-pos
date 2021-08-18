@@ -71,7 +71,7 @@ export default function UI() {
             align-items: center;
             > a,
             > div {
-              padding: 0.5em 1em;
+              padding: 0.25em 0.5em;
             }
           `}
         >
