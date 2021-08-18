@@ -171,11 +171,7 @@ export default function SalesSankey() {
         height={350}
         data={data}
         nodePading={50}
-        margin={{
-          left: 100,
-          right: 100,
-          bottom: 25,
-        }}
+        margin={{ left: 100, right: 100, bottom: 25 }}
         link={{ stroke: currentCamp?.color || "#77c878" }}
         node={<DemoSankeyNode camp={currentCamp} />}
       >

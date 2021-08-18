@@ -34,7 +34,7 @@ export default function CampByCamp() {
     } else {
       if (
         camp.end - (isCurrentlyBuildup ? camp.buildup : camp.start) >
-        memo.end - (isCurrentlyBuildup ? camp.buildup : memo.start)
+        memo.end - (isCurrentlyBuildup ? memo.buildup : memo.start)
       )
         memo = camp;
     }
@@ -111,7 +111,8 @@ export default function CampByCamp() {
               Math.ceil(hour / 24),
             ).padStart(2, "0")}`
           }
-          wrapperStyle={{ background: "black" }}
+          fill={"#000"}
+          contentStyle={{ background: "#000" }}
         />
         <Legend />
         <ReferenceLine
