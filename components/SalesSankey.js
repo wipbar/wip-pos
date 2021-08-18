@@ -14,6 +14,7 @@ function DemoSankeyNode({
   index,
   payload,
   containerWidth,
+  camp,
 }) {
   const isOut = x + width + 6 > containerWidth;
   return (
@@ -23,7 +24,7 @@ function DemoSankeyNode({
         y={y}
         width={width}
         height={height}
-        fill="#5192ca"
+        fill={camp?.color || "#5192ca"}
         fillOpacity="1"
       />
       <text
@@ -43,15 +44,18 @@ function DemoSankeyNode({
         stroke="#FFED00"
         strokeOpacity="0.5"
       >
-        {payload.value} units
+        {~~payload.value} units
       </text>
     </Layer>
   );
 }
 
 export default function SalesSankey() {
+  const [currentCamp] = useTracker(() =>
+    Camps.find({}, { sort: { end: -1 } }).fetch(),
+  );
+
   const data = useTracker(() => {
-    const [currentCamp] = Camps.find({}, { sort: { end: -1 } }).fetch();
     const sales = Sales.find({
       timestamp: {
         $gte: isPast(currentCamp?.start)
@@ -78,68 +82,74 @@ export default function SalesSankey() {
         {
           source: 0,
           target: 1,
-          value: productsSold.filter(
-            ({ tags }) =>
-              tags.includes("cocktail") ||
-              tags.includes("spirit") ||
-              tags.includes("cider") ||
-              tags.includes("beer"),
-          ).length,
+          value:
+            productsSold.filter(
+              ({ tags }) =>
+                tags.includes("cocktail") ||
+                tags.includes("spirit") ||
+                tags.includes("cider") ||
+                tags.includes("beer"),
+            ).length || 0.00001,
         }, // Alcoholic
         {
           source: 1,
           target: 2,
-          value: productsSold.filter(({ tags }) => tags.includes("beer"))
-            .length,
+          value:
+            productsSold.filter(({ tags }) => tags.includes("beer")).length ||
+            0.00001,
         }, // Beer
         {
           source: 1,
           target: 3,
-          value: productsSold.filter(
-            ({ tags }) =>
-              tags.includes("cocktail") ||
-              tags.includes("spirit") ||
-              tags.includes("cider"),
-          ).length,
+          value:
+            productsSold.filter(
+              ({ tags }) =>
+                tags.includes("cocktail") ||
+                tags.includes("spirit") ||
+                tags.includes("cider"),
+            ).length || 0.00001,
         }, // Non-beer
         {
           source: 0,
           target: 4,
-          value: productsSold.filter(
-            ({ tags }) =>
-              !(
-                tags.includes("cocktail") ||
-                tags.includes("spirit") ||
-                tags.includes("cider") ||
-                tags.includes("beer")
-              ),
-          ).length,
+          value:
+            productsSold.filter(
+              ({ tags }) =>
+                !(
+                  tags.includes("cocktail") ||
+                  tags.includes("spirit") ||
+                  tags.includes("cider") ||
+                  tags.includes("beer")
+                ),
+            ).length || 0.00001,
         }, // Non-alcoholic
         {
           source: 4,
           target: 5,
-          value: productsSold.filter(
-            ({ name, tags }) =>
-              !(
-                tags.includes("cocktail") ||
-                tags.includes("spirit") ||
-                tags.includes("cider") ||
-                tags.includes("beer")
-              ) && name === "Mate",
-          ).length,
+          value:
+            productsSold.filter(
+              ({ name, tags }) =>
+                !(
+                  tags.includes("cocktail") ||
+                  tags.includes("spirit") ||
+                  tags.includes("cider") ||
+                  tags.includes("beer")
+                ) && name === "Mate",
+            ).length || 0.00001,
         }, // Mate
         {
           source: 4,
           target: 6,
-          value: productsSold.filter(
-            ({ name, tags }) =>
-              !(
-                tags.includes("cocktail") ||
-                tags.includes("spirit") ||
-                tags.includes("cider") ||
-                tags.includes("beer")
-              ) && name !== "Mate",
-          ).length,
+          value:
+            productsSold.filter(
+              ({ name, tags }) =>
+                !(
+                  tags.includes("cocktail") ||
+                  tags.includes("spirit") ||
+                  tags.includes("cider") ||
+                  tags.includes("beer")
+                ) && name !== "Mate",
+            ).length || 0.00001,
         }, // Non-mate
       ],
     };
@@ -147,6 +157,7 @@ export default function SalesSankey() {
     return data0;
   }, []);
   if (!data) return "Loading...";
+
   return (
     <Sankey
       width={900}
@@ -159,7 +170,7 @@ export default function SalesSankey() {
         bottom: 25,
       }}
       link={{ stroke: "#77c878" }}
-      node={<DemoSankeyNode />}
+      node={<DemoSankeyNode camp={currentCamp} />}
     >
       <Tooltip />
     </Sankey>
