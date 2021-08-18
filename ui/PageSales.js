@@ -2,6 +2,7 @@ import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
 import { css } from "emotion";
 import { groupBy } from "lodash";
 import React, { useMemo } from "react";
+import Products from "../api/products";
 import Sales from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
@@ -17,22 +18,27 @@ function saveAs(blob, type, name) {
   document.body.removeChild(a);
 }
 
-const getSaleProfits = ({ products }) =>
-  products.reduce(
-    (m, product) =>
+const getSaleProfits = (sale, products) =>
+  sale.products.reduce((m, saleProduct) => {
+    const currentProduct =
+      products.find(({ _id }) => _id === saleProduct._id) || saleProduct;
+    return (
       m +
-      (product.salePrice -
-        ([...(product.shopPrices || [])].sort(
-          (a, b) => b.timestamp - a.timestamp,
-        )?.[0]?.buyPrice || NaN)),
-    0,
-  );
+      (currentProduct.salePrice -
+        ((currentProduct.shopPrices || [])
+          .filter(({ timestamp }) => timestamp < sale.timestamp)
+          .sort((a, b) => b.timestamp - a.timestamp)?.[0]?.buyPrice || NaN))
+    );
+  }, 0);
 
 export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ locationId: location?._id }, { sort: { timestamp: -1 } }),
     [location],
+  );
+  const { data: products, productsLoading } = useMongoFetch(
+    Products.find({ removedAt: { $exists: false } }),
   );
   const salesByDay = useMemo(
     () =>
@@ -46,7 +52,7 @@ export default function PageSales() {
     [sales],
   );
 
-  if (salesLoading) return "Loading...";
+  if (salesLoading || productsLoading) return "Loading...";
 
   if (error) return error;
 
@@ -81,7 +87,7 @@ export default function PageSales() {
                   <span style={{ color: "limegreen" }}>
                     (+{" "}
                     {salesOfDay
-                      .map(getSaleProfits)
+                      .map((sale) => getSaleProfits(sale, products))
                       .reduce((memo, profit) => memo + profit)}
                     )
                   </span>
@@ -114,7 +120,7 @@ export default function PageSales() {
                     <code>
                       <b>{sale.amount}</b>
                       <span style={{ color: "limegreen" }}>
-                        (+ {getSaleProfits(sale)})
+                        (+ {getSaleProfits(sale, products)})
                       </span>
                     </code>
                     <small>{sale.currency}</small>
