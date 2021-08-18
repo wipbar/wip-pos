@@ -57,6 +57,7 @@ export default function PageStock() {
   const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
+  const [sortBy, setSortBy] = useState(undefined);
 
   const { data: products, loading } = useMongoFetch(
     Products.find(
@@ -66,9 +67,15 @@ export default function PageStock() {
           ? { locationIds: { $elemMatch: { $eq: location._id } } }
           : undefined),
       },
-      { sort: { updatedAt: -1, createdAt: -1 } },
+      {
+        sort: {
+          ...(sortBy ? { [sortBy]: 1 } : {}),
+          updatedAt: -1,
+          createdAt: -1,
+        },
+      },
     ),
-    [showOnlyMenuItems, showRemoved, location],
+    [showOnlyMenuItems, showRemoved, location, sortBy],
   );
   if (loading) return "Loading...";
 
@@ -97,6 +104,19 @@ export default function PageStock() {
         />
         show only items on the menu
       </label>
+      <select
+        onChange={(event) => setSortBy(event.target.value || undefined)}
+        value={sortBy}
+      >
+        <option value={""}>Sort By...</option>
+        {products?.length
+          ? Object.keys(products[0]).map((key) => (
+              <option key={key} value={key}>
+                {key}
+              </option>
+            ))
+          : null}
+      </select>
       <hr />
       <table>
         <thead>
