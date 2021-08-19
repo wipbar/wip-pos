@@ -76,7 +76,7 @@ export default function PageStock() {
   if (error) return error;
 
   return (
-    <>
+    <div>
       <button onClick={() => setIsEditing(NEW)}>Create Product</button>
       {isEditing === NEW ? (
         <Modal>
@@ -222,6 +222,6 @@ export default function PageStock() {
           })}
         </tbody>
       </table>
-    </>
+    </div>
   );
 }

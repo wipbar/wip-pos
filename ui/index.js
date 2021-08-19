@@ -56,7 +56,13 @@ export default function UI() {
   }, [currentLocation, setTitle, pageSlug, locationSlug]);
   if (!currentLocation) return "Loading...";
   return (
-    <div>
+    <div
+      className={css`
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      `}
+    >
       <div
         className={css`
           background: rgba(255, 255, 255, 0.2);

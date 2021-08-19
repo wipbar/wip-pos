@@ -71,7 +71,7 @@ export default function PageSales() {
   if (error) return error;
 
   return (
-    <>
+    <div>
       <select
         value={campSlug || camps?.[0]?.slug}
         onChange={({ target }) => setCampSlug(target.value)}
@@ -175,6 +175,6 @@ export default function PageSales() {
         Date rollover at{" "}
         {format(setMinutes(setHours(new Date(), rolloverOffset), 0), "HH:mm")}
       </small>
-    </>
+    </div>
   );
 }
