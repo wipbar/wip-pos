@@ -72,7 +72,10 @@ if (Meteor.isClient) {
       },
       options: {
         profile: {
-          name: identity.profile.public_credit_name,
+          name:
+            identity.profile.public_credit_name !== "Unnamed"
+              ? identity.profile.public_credit_name
+              : identity.user.username,
           profile: identity.profile,
           user: identity.user,
           teams: identity.teams,
