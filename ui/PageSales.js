@@ -1,7 +1,8 @@
 import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
 import { css } from "emotion";
 import { groupBy } from "lodash";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -33,9 +34,20 @@ const getSaleExpenses = (sale, products) =>
 
 export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
+  const { data: camps } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const [campSlug, setCampSlug] = useState(camps?.[0]?.slug);
+  const selectedCamp =
+    camps?.find((camp) => camp.slug === campSlug) || camps?.[0];
+  console.log(selectedCamp);
   const { data: sales, loading: salesLoading } = useMongoFetch(
-    Sales.find({ locationId: location?._id }, { sort: { timestamp: -1 } }),
-    [location],
+    Sales.find(
+      {
+        locationId: location?._id,
+        timestamp: { $gte: selectedCamp?.start, $lte: selectedCamp?.end },
+      },
+      { sort: { timestamp: -1 } },
+    ),
+    [location, selectedCamp],
   );
   const { data: products, productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
@@ -58,6 +70,16 @@ export default function PageSales() {
 
   return (
     <>
+      <select
+        value={campSlug || camps?.[0]?.slug}
+        onChange={({ target }) => setCampSlug(target.value)}
+      >
+        {camps.map(({ slug, name }) => (
+          <option key={slug} value={slug}>
+            {name}
+          </option>
+        ))}
+      </select>
       <ul
         className={css`
           padding: 0;
