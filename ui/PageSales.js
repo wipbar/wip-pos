@@ -38,12 +38,14 @@ export default function PageSales() {
   const [campSlug, setCampSlug] = useState(camps?.[0]?.slug);
   const selectedCamp =
     camps?.find((camp) => camp.slug === campSlug) || camps?.[0];
-  console.log(selectedCamp);
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find(
       {
         locationId: location?._id,
-        timestamp: { $gte: selectedCamp?.start, $lte: selectedCamp?.end },
+        timestamp: {
+          $gte: selectedCamp?.start || new Date(new Date().getFullYear(), 0),
+          $lte: selectedCamp?.end || new Date(new Date().getFullYear() + 1, 0),
+        },
       },
       { sort: { timestamp: -1 } },
     ),
