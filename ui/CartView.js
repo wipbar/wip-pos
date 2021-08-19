@@ -278,8 +278,8 @@ export default function CartView() {
             <ul>
               {pickedProductIds.map((id, i) => (
                 <li key={i + id}>
-                  {products.find(({ _id }) => _id === id).name}{" "}
-                  {products.find(({ _id }) => _id === id).brandName}
+                  {products.find(({ _id }) => _id === id).brandName}{" "}
+                  {products.find(({ _id }) => _id === id).name}
                 </li>
               ))}
             </ul>
