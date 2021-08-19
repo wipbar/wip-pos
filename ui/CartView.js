@@ -1,13 +1,62 @@
+import { format } from "date-fns";
 import { css } from "emotion";
 import React, { useState } from "react";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 import Products from "../api/products";
+import Sales from "../api/sales";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
 
+function MostRecentSale() {
+  const { location, loading: locationLoading } = useCurrentLocation(true);
+  const {
+    data: [sale],
+    loading: salesLoading,
+  } = useMongoFetch(
+    Sales.find(
+      { locationId: location?._id },
+      { sort: { timestamp: -1 }, limit: 1 },
+    ),
+    [location],
+  );
+  console.log(sale, locationLoading, salesLoading);
+  if (locationLoading || salesLoading) return null;
+  return (
+    <div
+      className={css`
+        font-size: 0.7em;
+        opacity: 0.7;
+        color: gray;
+      `}
+    >
+      Last sale: {format(sale.timestamp, "HH:mm:ss")}{" "}
+      <code>
+        <b>{sale.amount}</b>
+      </code>
+      <small>{sale.currency}</small>
+      <ul
+        className={css`
+          padding: 0;
+          margin: 0;
+          padding-bottom: 20px;
+        `}
+      >
+        {sale.products.map((product, i) => (
+          <li key={sale._id + i + product._id}>
+            {product.brandName ? <>{product.brandName} - </> : null}{" "}
+            {product.name}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function CartViewProductsItem({ product, onRemoveClick }) {
+  if (!product) null;
   return (
     <li
       className={css`
@@ -86,7 +135,7 @@ export default function CartView() {
   useSubscription("products");
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const { data: products, loading } = useMongoFetch(
+  const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const [pickedProductIds, setPickedProductIds] = useSession(
@@ -97,9 +146,11 @@ export default function CartView() {
   const [doSellProducts] = useMethod("Sales.sellProducts");
 
   const haxTotal = pickedProductIds?.reduce(
-    (m, id) => m + +products.find(({ _id }) => id == _id).salePrice,
+    (m, id) => m + +products.find(({ _id }) => id == _id)?.salePrice,
     0,
   );
+
+  if (productsLoading) return null;
   return (
     <div
       className={css`
@@ -176,7 +227,19 @@ export default function CartView() {
             </div>
           </div>
         </>
-      ) : null}
+      ) : (
+        <div
+          className={css`
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            flex-direction: column;
+          `}
+        >
+          <MostRecentSale />
+        </div>
+      )}
       {confirmOpen ? (
         <div
           className={css`
@@ -232,7 +295,7 @@ export default function CartView() {
                 width: 100%;
               `}
               disabled={sellingLoading}
-              onClick={async (e) => {
+              onClick={async () => {
                 try {
                   setSellingLoading(true);
                   await doSellProducts({
