@@ -165,6 +165,7 @@ if (Meteor.isClient) {
   Meteor.loginWithBornhack = (...args) =>
     Accounts.applyLoginFunction(service, ...args);
 } else {
+  Accounts.onExternalLogin((options /* , user */) => options);
   Accounts.addAutopublishFields({
     // not sure whether the bornhack api can be used from the browser,
     // thus not sure if we should be sending access tokens; but we do it
