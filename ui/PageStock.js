@@ -161,7 +161,17 @@ export default function PageStock() {
                 </td>
                 <td>{product.brandName}</td>
                 <td>{product.name}</td>
-                <td>{product.salePrice}</td>
+                <td>
+                  {product.salePrice}{" "}
+                  {product.shopPrices?.some(
+                    ({ buyPrice }) =>
+                      buyPrice &&
+                      Number(buyPrice) !== Number(product.salePrice) &&
+                      Number(buyPrice) < Number(product.salePrice),
+                  ) ? null : (
+                    <small>?</small>
+                  )}
+                </td>
                 <td>
                   {product.unitSize}
                   {product.sizeUnit}
