@@ -14,16 +14,7 @@ import { isPast } from "date-fns";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 
-function DemoSankeyNode({
-  x,
-  y,
-  width,
-  height,
-  index,
-  payload,
-  containerWidth,
-  camp,
-}) {
+function Node({ x, y, width, height, index, payload, containerWidth, camp }) {
   const isOut = x + width + 6 > containerWidth;
   return (
     <Layer key={`CustomNode${index}`}>
@@ -32,7 +23,17 @@ function DemoSankeyNode({
         y={y}
         width={width}
         height={height}
-        fill={camp?.color || "#5192ca"}
+        fill={
+          payload?.name === "Mate"
+            ? "#193781"
+            : payload?.name === "Beer"
+            ? "#FFED00"
+            : payload?.name === "Non-Beer"
+            ? "#D2691E"
+            : payload?.name === "Non-Mate"
+            ? "#16503f"
+            : camp?.color || "#5192ca"
+        }
         fillOpacity="1"
       />
       <text
@@ -57,7 +58,43 @@ function DemoSankeyNode({
     </Layer>
   );
 }
-
+function Link({
+  camp,
+  sourceX,
+  sourceY,
+  sourceControlX,
+  targetX,
+  targetY,
+  targetControlX,
+  linkWidth,
+  payload,
+  ...others
+}) {
+  return (
+    <path
+      className="recharts-sankey-link"
+      d={`
+        M${sourceX},${sourceY}
+        C${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}
+      `}
+      fill="none"
+      stroke={
+        payload.target.name === "Mate"
+          ? "#193781"
+          : payload.target.name === "Beer"
+          ? "#FFED00"
+          : payload.target.name === "Non-Beer"
+          ? "#D2691E"
+          : payload.target.name === "Non-Mate"
+          ? "#16503f"
+          : camp?.color || "#77c878"
+      }
+      strokeWidth={linkWidth}
+      strokeOpacity="0.5"
+      {...others}
+    />
+  );
+}
 export default function SalesSankey() {
   const currentLocation = useCurrentLocation()?.location;
   const {
@@ -174,8 +211,8 @@ export default function SalesSankey() {
         data={data}
         nodePading={50}
         margin={{ left: 100, right: 100, bottom: 25 }}
-        link={{ stroke: currentCamp?.color || "#77c878" }}
-        node={<DemoSankeyNode camp={currentCamp} />}
+        link={<Link camp={currentCamp} />}
+        node={<Node camp={currentCamp} />}
       >
         <Tooltip />
       </Sankey>
