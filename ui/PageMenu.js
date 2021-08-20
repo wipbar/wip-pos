@@ -347,7 +347,7 @@ export default function PageMenu() {
                     font-size: 0.6em;
                   `}
                 >
-                  <pre>ZFN4rgb73BQjXUzJzYtcCkCtApf9BS5j</pre>
+                  <pre>ET1kkcTIrNKUEsI9NWKuYr8VGGOFlj@4</pre>
                 </center>
               ) : null}
               {randomIndex2 === i ? (
