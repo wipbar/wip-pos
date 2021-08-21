@@ -13,7 +13,6 @@ import {
 } from "recharts";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
-import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 
 export default function CampByCamp() {
@@ -28,11 +27,7 @@ export default function CampByCamp() {
       false,
   );
   console.log(isCurrentlyBuildup);
-  const { location } = useCurrentLocation();
-  const { data: sales, loading: salesLoading } = useMongoFetch(
-    Sales.find({ locationId: location?._id }),
-    [location],
-  );
+  const { data: sales, loading: salesLoading } = useMongoFetch(Sales, []);
   const longestCamp = camps.reduce((memo, camp) => {
     if (!memo) {
       memo = camp;

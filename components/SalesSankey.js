@@ -12,7 +12,6 @@ import Sales from "../api/sales";
 import Camps from "../api/camps";
 import { isPast } from "date-fns";
 import useMongoFetch from "../hooks/useMongoFetch";
-import useCurrentLocation from "../hooks/useCurrentLocation";
 
 function Node({ x, y, width, height, index, payload, containerWidth, camp }) {
   const isOut = x + width + 6 > containerWidth;
@@ -96,7 +95,6 @@ function Link({
   );
 }
 export default function SalesSankey() {
-  const currentLocation = useCurrentLocation()?.location;
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
