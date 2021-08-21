@@ -4,23 +4,22 @@ import {
   min,
   setHours,
   startOfHour,
-  subHours,
+  subHours
 } from "date-fns";
 import { css } from "emotion";
 import React, { useMemo } from "react";
 import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
+import ProductTrend from "../components/ProductTrend";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
-import Masonry from "react-masonry-css";
-import ProductTrend from "../components/ProductTrend";
 
 function SparkLine({
   data,
   strokeWidth = 1,
   stroke = "transparent",
-  fill = "yellow",
+  fill = "#E22028",
   minMaxY,
   ...props
 }) {
@@ -162,11 +161,7 @@ export default function PageMenu() {
       </marquee>
     );
   return (
-    <Masonry
-      breakpointCols={5}
-      className="my-masonry-grid"
-      columnClassName="my-masonry-grid_column"
-    >
+    <div className="my-masonry-grid">
       {productsGroupedByTags
         .sort((a, b) => a[0].localeCompare(b[0]))
         .sort((a, b) => b[1].length - a[1].length)
@@ -184,22 +179,17 @@ export default function PageMenu() {
             .sort(([, a], [, b]) => b.length - a.length)
             .map(([brand, products]) => [
               brand,
-              products.sort((a, b) => a.name.localeCompare(b.name)),
-            ]);
+              products
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .sort((a, b) => a.tap?.localeCompare(b.tap) || 0),
+            ])
+            .sort(
+              ([, aProducts], [, bProducts]) =>
+                aProducts?.[0]?.tap?.localeCompare(bProducts?.[0]?.tap) || 0,
+            );
           return (
             <>
-              <div
-                key={tags}
-                className={css`
-                  -webkit-column-break-inside: avoid;
-                  page-break-inside: avoid;
-                  break-inside: avoid;
-                  border: 3px solid #ffed00;
-                  margin: 5px;
-                  padding: 4px;
-                  flex: 32% 0;
-                `}
-              >
+              <div key={tags} className={css``}>
                 <h3
                   className={css`
                     margin: 0;
@@ -299,11 +289,23 @@ export default function PageMenu() {
                                   ))}
                               </small>
                             </span>
-                            <b>{product.salePrice}</b>
+                            <div>
+                              <b>{product.salePrice}</b>
+                              {product.tap ? (
+                                <div
+                                  className={css`
+                                    line-height: 0.5;
+                                    white-space: nowrap;
+                                  `}
+                                >
+                                  <small>🚰 {product.tap}</small>
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
                           <SparkLine
                             className={css`
-                              border-bottom: yellow 1px solid;
+                              border-bottom: #e22028 1px solid;
                             `}
                             data={(() => {
                               let productTotalForPeriod = 0;
@@ -364,6 +366,6 @@ export default function PageMenu() {
             </>
           );
         })}
-    </Masonry>
+    </div>
   );
 }

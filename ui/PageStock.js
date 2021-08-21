@@ -123,6 +123,7 @@ export default function PageStock() {
             <th>ABV</th>
             <th>Description</th>
             <th>Tags</th>
+            <th>Tap</th>
             <th />
           </tr>
         </thead>
@@ -197,6 +198,7 @@ export default function PageStock() {
                     </span>
                   ))}
                 </td>
+                <td>{product.tap}</td>
                 <td style={{ whiteSpace: "nowrap" }}>
                   <button onClick={() => setIsEditing(product._id)}>
                     <FontAwesomeIcon icon={faPencilAlt} />

@@ -26,9 +26,8 @@ export default function ProductPicker(props) {
     "pickedProductIds",
     [],
   );
-  const [prevPickedProductIds, setPrevPickedProductIds] = useState(
-    activeFilters,
-  );
+  const [prevPickedProductIds, setPrevPickedProductIds] =
+    useState(activeFilters);
   useEffect(() => {
     if (pickedProductIds?.length == 0 && prevPickedProductIds?.length > 0) {
       setActiveFilters([]);
@@ -166,6 +165,7 @@ export default function ProductPicker(props) {
         {[...products]
           .sort((a, b) => a.name.localeCompare(b.name))
           .sort((a, b) => a.brandName.localeCompare(b.brandName))
+          .sort((a, b) => a.tap?.localeCompare(b.tap) || 0)
           .sort((a, b) =>
             tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
           )
@@ -226,8 +226,12 @@ export default function ProductPicker(props) {
                   </div>
                 ) : null}
                 <div>
-                  <b>
-                    <big>{product.name}</big>
+                  <b
+                    className={css`
+                      font-size: 1.1em;
+                    `}
+                  >
+                    {product.name}
                   </b>
                   {showItemDetails && (
                     <>
@@ -262,19 +266,25 @@ export default function ProductPicker(props) {
                   )}
                 </div>
               </div>
-              {showItemDetails && (
-                <div
-                  className={css`
-                    margin-top: 6px;
-                    opacity: 0.75;
-                  `}
-                >
-                  <code>
-                    <b>{product.salePrice}</b>
-                  </code>
-                  <small>HAX</small>
-                </div>
-              )}
+              <div
+                className={css`
+                  margin-top: 6px;
+                `}
+              >
+                {showItemDetails && (
+                  <span
+                    className={css`
+                      opacity: 0.75;
+                    `}
+                  >
+                    <code>
+                      <b>{product.salePrice}</b>
+                    </code>
+                    <small>HAX</small>
+                  </span>
+                )}
+                {product.tap ? <small> 🚰 {product.tap}</small> : null}
+              </div>
             </button>
           ))}
         <div

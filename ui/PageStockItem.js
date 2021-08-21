@@ -73,9 +73,12 @@ export default function PageStockItem({ onCancel, product }) {
   const onSubmit2 = async (data) => {
     console.log(data);
     if (!product) {
-      await addProduct({ data });
+      await addProduct({ data: { ...data, tap: data.tap || null } });
     } else if (product) {
-      await editProduct({ productId: product._id, data });
+      await editProduct({
+        productId: product._id,
+        data: { ...data, tap: data.tap || null },
+      });
     }
     onCancel?.();
     reset();
@@ -166,6 +169,15 @@ export default function PageStockItem({ onCancel, product }) {
           defaultValue={product?.description || ""}
           ref={register}
         />
+      </Label>
+      <Label label="Tap">
+        <select name="tap" ref={register} defaultValue={product?.tap || ""}>
+          <option value="">---</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
       </Label>
       <Label label="Tags">
         <Controller
