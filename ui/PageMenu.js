@@ -4,7 +4,7 @@ import {
   min,
   setHours,
   startOfHour,
-  subHours
+  subHours,
 } from "date-fns";
 import { css } from "emotion";
 import React, { useMemo } from "react";
