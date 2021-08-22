@@ -236,6 +236,17 @@ export default function PageMenu() {
                           key={product._id}
                           className={css`
                             position: relative;
+                            ${product.name.includes("Kramse")
+                              ? `
+                                  box-shadow: 0 0 20px black, 0 0 40px black;
+                                  color: black;
+                                  background: rgba(255, 0, 0, 0.75);
+                                  padding: 0 4px;
+                                  animation-name: wobble;
+                                  animation-iteration-count: infinite;
+                                  animation-duration: 2s;
+                                `
+                              : ""}
                           `}
                         >
                           <ProductTrend
@@ -290,7 +301,7 @@ export default function PageMenu() {
                               </small>
                             </span>
                             <div>
-                              <b>{product.salePrice}</b>
+                              <b>{Number(product.salePrice) || "00"}</b>
                               {product.tap ? (
                                 <div
                                   className={css`
