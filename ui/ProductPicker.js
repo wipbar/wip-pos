@@ -309,6 +309,14 @@ export default function ProductPicker(props) {
             width: 24%;
           `}
         />
+        <div
+          className={css`
+            @media (orientation: portrait) {
+              width: 32%;
+            }
+            width: 24%;
+          `}
+        />
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
   <title>wip-pos</title>
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
   />
   <style>
     /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
@@ -30,6 +30,8 @@
  */
 
     body {
+      touch-action: pan-y;
+
       margin: 0;
     }
 
@@ -396,6 +398,8 @@
       overflow-x: hidden;
       overflow-y: auto;
       touch-action: manipulation;
+      touch-action: pan-y;
+
       color: #ffed00;
       color: #e22028;
       background-color: black;
