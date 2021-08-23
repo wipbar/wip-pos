@@ -4,7 +4,8 @@ import { Random } from "meteor/random";
 import { ServiceConfiguration } from "meteor/service-configuration";
 import { OAuth } from "meteor/oauth";
 import { _ } from "meteor/underscore";
-import { HTTP } from "meteor/http";
+import { fetch, Headers } from 'meteor/fetch';
+
 import Locations from "./locations";
 
 require("tls").DEFAULT_ECDH_CURVE = "auto";
