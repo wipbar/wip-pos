@@ -22,7 +22,7 @@ function MostRecentSale() {
     ),
     [location],
   );
-  console.log(sale, locationLoading, salesLoading);
+
   if (locationLoading || salesLoading) return null;
   return (
     <div
