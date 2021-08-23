@@ -1,5 +1,9 @@
 <head>
   <title>wip-pos</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
   <style>
     /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
 
@@ -591,7 +595,7 @@
       max-width: 100%;
     }
     .my-masonry-grid > div {
-      width: calc(50vw - 10px);
+      width: calc(100vw - 10px);
       -webkit-column-break-inside: avoid;
       page-break-inside: avoid;
       break-inside: avoid;
@@ -599,17 +603,22 @@
       margin: 5px;
       padding: 4px;
     }
+    @media (min-width: 600px) {
+      .my-masonry-grid > div {
+        width: calc(50vw - 10px);
+      }
+    }
     @media (min-width: 800px) {
       .my-masonry-grid > div {
         width: calc(33vw - 10px);
       }
     }
-    @media (min-width: 800px) {
+    @media (min-width: 1100px) {
       .my-masonry-grid > div {
         width: calc(25vw - 10px);
       }
     }
-    @media (min-width: 1200px) {
+    @media (min-width: 1400px) {
       .my-masonry-grid > div {
         width: calc(20vw - 10px);
       }
