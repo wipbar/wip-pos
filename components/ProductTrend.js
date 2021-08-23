@@ -11,7 +11,7 @@ export default function ProductTrend({ product, ...props }) {
   const { data: camps } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
   const [currentCamp] = camps || [];
   useWhyDidYouUpdate("ProductTrend", { product, ...props, currentCamp });
-  const productSales = useMongoFetch(
+  const { data } = useMongoFetch(
     Sales.find(
       {
         products: { $elemMatch: { _id: product._id } },
@@ -25,12 +25,17 @@ export default function ProductTrend({ product, ...props }) {
       { sort: { timestamp: 1 } },
     ),
     [product, currentCamp],
-  )?.data?.map((sale) => ({
-    ...sale,
-    products: sale.products.filter(
-      (saleProduct) => saleProduct._id === product._id,
-    ),
-  }));
+  );
+  const productSales = useMemo(
+    () =>
+      data?.map((sale) => ({
+        ...sale,
+        products: sale.products.filter(
+          (saleProduct) => saleProduct._id === product._id,
+        ),
+      })),
+    [data, product._id],
+  );
   const firstSale = productSales[0];
 
   const averageSalesPerHour = useMemo(

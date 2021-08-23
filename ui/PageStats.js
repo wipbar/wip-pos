@@ -41,19 +41,27 @@ const renderer = ({ hours, minutes, seconds, completed }) => {
 };
 
 export default function PageStats() {
-  const currentDate = new Date();
+  const currentDate = useMemo(() => new Date(), []);
   const {
     data: [currentCamp],
     loading: campsLoading,
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const from = startOfHour(
-    setHours(
-      isPast(currentCamp?.start) ? currentCamp?.start : currentCamp?.buildup,
-      rolloverOffset,
-    ),
+  const from = useMemo(
+    () =>
+      startOfHour(
+        setHours(
+          isPast(currentCamp?.start)
+            ? currentCamp?.start
+            : currentCamp?.buildup,
+          rolloverOffset,
+        ),
+      ),
+    [currentCamp],
   );
-  const to = endOfHour(
-    min(setHours(currentCamp?.end, rolloverOffset), currentDate),
+  const to = useMemo(
+    () =>
+      endOfHour(min(setHours(currentCamp?.end, rolloverOffset), currentDate)),
+    [currentCamp, currentDate],
   );
 
   const { data: sales, loading: salesLoading } = useMongoFetch(
