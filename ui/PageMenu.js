@@ -307,7 +307,11 @@ export default function PageMenu() {
                                   ))}
                               </small>
                             </span>
-                            <div>
+                            <div
+                              className={css`
+                                text-align: right;
+                              `}
+                            >
                               <b>{Number(product.salePrice) || "00"}</b>
                               {product.tap ? (
                                 <div

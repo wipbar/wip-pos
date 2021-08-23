@@ -192,10 +192,16 @@ export default function ProductPicker(props) {
                 ])
               }
               className={css`
-                @media (orientation: portrait) {
+                width: 100%;
+                @media (min-width: 500px) {
+                  width: 49%;
+                }
+                @media (min-width: 700px) {
                   width: 32%;
                 }
-                width: 24%;
+                @media (min-width: 1400px) {
+                  width: 24%;
+                }
                 background: ${stringToColour(
                   [...(product.tags || [])].sort().join(","),
                   0.4,
