@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { css } from "emotion";
 import React, { useState } from "react";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import useSound from "use-sound";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -132,6 +133,8 @@ const removeItem = (items, i) =>
   items.slice(0, i - 1).concat(items.slice(i, items.length));
 
 export default function CartView() {
+  const [playSound] = useSound("/cashregister.mp3");
+
   useSubscription("products");
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -302,6 +305,7 @@ export default function CartView() {
                     locationSlug,
                     productIds: pickedProductIds,
                   });
+                  playSound();
                   setPickedProductIds([]);
                   setConfirmOpen(false);
                 } catch {}
