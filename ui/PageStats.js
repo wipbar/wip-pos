@@ -16,6 +16,7 @@ import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import SalesSankey from "../components/SalesSankey";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useCurrentDate from "../hooks/useCurrentDate";
 
 const rolloverOffset = 5;
 const renderer = ({ hours, minutes, seconds, completed }) => {
@@ -41,7 +42,7 @@ const renderer = ({ hours, minutes, seconds, completed }) => {
 };
 
 export default function PageStats() {
-  const currentDate = useMemo(() => new Date(), []);
+  const currentDate = useCurrentDate(2000);
   const {
     data: [currentCamp],
     loading: campsLoading,
@@ -83,11 +84,15 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
+  const next2am = useMemo(
+    () =>
+      isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
+        ? startOfHour(setHours(currentDate, 2))
+        : startOfHour(setHours(addDays(currentDate, 1), 2)),
+    [currentDate],
+  );
   if (salesLoading || productsLoading || campsLoading) return "Loading...";
 
-  const next2am = isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
-    ? startOfHour(setHours(currentDate, 2))
-    : startOfHour(setHours(addDays(currentDate, 1), 2));
   return (
     <div
       className={css`

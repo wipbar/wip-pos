@@ -12,6 +12,7 @@ import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
+import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useWhyDidYouUpdate from "../hooks/useWhyDidYouUpdate";
@@ -82,12 +83,10 @@ function getRandomInt(min, max) {
 }
 
 export default function PageMenu() {
-  console.log("PageMenu");
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  useWhyDidYouUpdate({ currentCamp });
-  const currentDate = useMemo(() => new Date(), []);
+  const currentDate = useCurrentDate(60000);
   const from = useMemo(
     () =>
       subHours(currentDate, 24) ||

@@ -154,8 +154,8 @@ export default function CampByCamp() {
         hour: nowHour,
       },
       {
-        "bornhack-2021-trend": trend.calcY(Math.min(xMax, nowHour + 36)),
-        hour: Math.min(xMax, nowHour + 36),
+        "bornhack-2021-trend": trend.calcY(Math.min(xMax, nowHour + 24)),
+        hour: Math.min(xMax, nowHour + 24),
       },
     ];
   })();
