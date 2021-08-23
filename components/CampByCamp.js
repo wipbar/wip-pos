@@ -179,6 +179,7 @@ export default function CampByCamp() {
         />
         <YAxis
           domain={["dataMin", "dataMax"]}
+          tickFormatter={(amount) => ~~amount}
           label={{
             value: "Revenue (HAX)",
             angle: -90,
