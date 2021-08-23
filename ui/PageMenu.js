@@ -14,6 +14,7 @@ import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useWhyDidYouUpdate from "../hooks/useWhyDidYouUpdate";
 
 function SparkLine({
   data,
@@ -81,26 +82,32 @@ function getRandomInt(min, max) {
 }
 
 export default function PageMenu() {
+  console.log("PageMenu");
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const currentDate = new Date();
-  const from =
-    subHours(currentDate, 24) ||
-    startOfHour(
-      setHours(
-        isPast(currentCamp?.start) ? currentCamp?.start : currentCamp?.buildup,
-        rolloverOffset,
+  useWhyDidYouUpdate({ currentCamp });
+  const currentDate = useMemo(() => new Date(), []);
+  const from = useMemo(
+    () =>
+      subHours(currentDate, 24) ||
+      startOfHour(
+        setHours(
+          isPast(currentCamp?.start)
+            ? currentCamp?.start
+            : currentCamp?.buildup,
+          rolloverOffset,
+        ),
       ),
-    );
-  const to =
-    currentDate ||
-    endOfHour(min(setHours(currentCamp?.end, rolloverOffset), currentDate));
-  const {
-    location = {},
-    loading: locationLoading,
-    error,
-  } = useCurrentLocation();
+    [currentCamp, currentDate],
+  );
+  const to = useMemo(
+    () =>
+      currentDate ||
+      endOfHour(min(setHours(currentCamp?.end, rolloverOffset), currentDate)),
+    [currentCamp, currentDate],
+  );
+  const { location, loading: locationLoading, error } = useCurrentLocation();
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ timestamp: { $gte: from, $lte: to } }),
     [from, to],
@@ -109,12 +116,13 @@ export default function PageMenu() {
     Products.find(
       {
         removedAt: { $exists: false },
-        locationIds: { $elemMatch: { $eq: location._id } },
+        locationIds: { $elemMatch: { $eq: location?._id } },
       },
       { sort: { brandName: 1, name: 1 } },
     ),
-    [location._id],
+    [location?._id],
   );
+  useWhyDidYouUpdate("PageMenu", { products, sales, from, to });
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(
@@ -131,7 +139,7 @@ export default function PageMenu() {
     [products],
   );
 
-  if (productsLoading || locationLoading) return "Loading...";
+  if (productsLoading || locationLoading || salesLoading) return "Loading...";
   if (error) return error;
   const randomIndex = getRandomInt(0, productsGroupedByTags?.length - 1);
   const randomIndex2 = getRandomInt(0, productsGroupedByTags?.length - 1);

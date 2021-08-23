@@ -26,6 +26,7 @@ import PageTend from "./PageTend";
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
 export default function UI() {
+  console.log("UI");
   let history = useHistory();
   const { params: { locationSlug, 0: pageSlug } = {} } =
     useRouteMatch("/:locationSlug/*") || {};

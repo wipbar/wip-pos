@@ -3,13 +3,14 @@ import React, { useMemo } from "react";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useWhyDidYouUpdate from "../hooks/useWhyDidYouUpdate";
 import Fire from "./Fire";
 
 const f = 0.25;
 export default function ProductTrend({ product, ...props }) {
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const { data: camps } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const [currentCamp] = camps || [];
+  useWhyDidYouUpdate("ProductTrend", { product, ...props, currentCamp });
   const productSales = useMongoFetch(
     Sales.find(
       {

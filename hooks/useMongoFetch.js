@@ -1,8 +1,9 @@
-import { useTracker } from "meteor/react-meteor-data";
 import { Mongo } from "meteor/mongo";
+import { useTracker } from "meteor/react-meteor-data";
 import useSubscription from "./useSubscription";
 
-export default function useMongoFetch(query, deps = []) {
+const emptyArray = [];
+export default function useMongoFetch(query, deps = emptyArray) {
   return {
     loading: useSubscription(
       query instanceof Mongo.Collection
