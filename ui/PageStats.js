@@ -41,6 +41,32 @@ const renderer = ({ hours, minutes, seconds, completed }) => {
   );
 };
 
+function CurfewCountdown() {
+  const currentDate = useCurrentDate(50);
+  const next2am = useMemo(
+    () =>
+      isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
+        ? startOfHour(setHours(currentDate, 2))
+        : startOfHour(setHours(addDays(currentDate, 1), 2)),
+    [currentDate],
+  );
+  return (
+    <center>
+      <big>
+        <Countdown date={next2am} renderer={renderer} daysInHours />
+        <br />
+        <span
+          className={css`
+            font-size: 3.5em;
+          `}
+        >
+          TILL CURFEW
+        </span>
+      </big>
+    </center>
+  );
+}
+
 export default function PageStats() {
   const currentDate = useCurrentDate(2000);
   const {
@@ -84,13 +110,6 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
-  const next2am = useMemo(
-    () =>
-      isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
-        ? startOfHour(setHours(currentDate, 2))
-        : startOfHour(setHours(addDays(currentDate, 1), 2)),
-    [currentDate],
-  );
   if (salesLoading || productsLoading || campsLoading) return "Loading...";
 
   return (
@@ -122,19 +141,7 @@ export default function PageStats() {
           flex: 1;
         `}
       >
-        <center>
-          <big>
-            <Countdown date={next2am} renderer={renderer} daysInHours />
-            <br />
-            <span
-              className={css`
-                font-size: 3.5em;
-              `}
-            >
-              TILL CURFEW
-            </span>
-          </big>
-        </center>
+        <CurfewCountdown />
         <hr />
         <big>Most sold @ {currentCamp?.name}:</big>
         <ul
