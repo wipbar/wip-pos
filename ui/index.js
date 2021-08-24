@@ -4,12 +4,12 @@ import { Tracker } from "meteor/tracker";
 import React, { useEffect } from "react";
 import {
   Link,
+  Redirect,
   Route,
   Switch,
   useHistory,
   useRouteMatch,
 } from "react-router-dom";
-import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -27,7 +27,7 @@ Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
 export default function UI() {
   console.log("UI");
-  let history = useHistory();
+  const history = useHistory();
   const { params: { locationSlug, 0: pageSlug } = {} } =
     useRouteMatch("/:locationSlug/*") || {};
   const user = useCurrentUser();
