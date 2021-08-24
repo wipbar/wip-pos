@@ -83,3 +83,13 @@ Meteor.methods({
 });
 
 if (Meteor.isClient) window.Products = Products;
+
+export function isAlcoholic(product) {
+  if (
+    product.tags?.includes("cocktail") ||
+    product.tags?.includes("beer") ||
+    product.tags?.includes("cider") ||
+    product.tags?.includes("spirit")
+  )
+    return true;
+}

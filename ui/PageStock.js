@@ -1,11 +1,12 @@
-import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
+import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
-import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
+import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { css } from "emotion";
 import React, { useState } from "react";
 import { isUserAdmin } from "../api/accounts";
-import Products from "../api/products";
+import Products, { isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
@@ -48,12 +49,29 @@ const Modal = ({ children, onDismiss }) => (
     </div>
   </div>
 );
+function CurfewButton({ location }) {
+  const [toggleCurfew] = useMethod("Locations.toggleCurfew");
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        toggleCurfew({ locationId: location._id }).then(console.log);
+      }}
+    >
+      {location.curfew ? "Exit curfew" : "Enter curfew"}
+    </button>
+  );
+}
 const NEW = Symbol("New");
 export default function PageStock() {
   const user = useCurrentUser();
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
-  const { location, error } = useCurrentLocation(true);
+  const {
+    location,
+    error,
+    loading: locationLoading,
+  } = useCurrentLocation(true);
   const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
@@ -64,14 +82,15 @@ export default function PageStock() {
       {
         removedAt: { $exists: showRemoved },
         ...(showOnlyMenuItems
-          ? { locationIds: { $elemMatch: { $eq: location._id } } }
+          ? { locationIds: { $elemMatch: { $eq: location?._id } } }
           : undefined),
       },
       { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
     ),
-    [showOnlyMenuItems, showRemoved, location, sortBy],
+    [showOnlyMenuItems, showRemoved, location?._id, sortBy],
   );
-  if (loading) return "Loading...";
+  console.log(products, loading, locationLoading);
+  if (loading || locationLoading) return "Loading...";
 
   if (error) return error;
 
@@ -111,6 +130,7 @@ export default function PageStock() {
             ))
           : null}
       </select>
+      <CurfewButton location={location} />
       <hr />
       <table>
         <thead>
@@ -151,13 +171,28 @@ export default function PageStock() {
                             },
                       })
                     }
+                    disabled={location?.curfew && isAlcoholic(product)}
                     style={{
                       whiteSpace: "nowrap",
-                      background: isOnMenu ? "red" : "limegreen",
+                      background:
+                        location?.curfew && isAlcoholic(product)
+                          ? "gray"
+                          : isOnMenu
+                          ? "red"
+                          : "limegreen",
                       color: "white",
                     }}
                   >
-                    <FontAwesomeIcon icon={isOnMenu ? faMinus : faPlus} /> Menu
+                    <FontAwesomeIcon
+                      icon={
+                        location?.curfew && isAlcoholic(product)
+                          ? faBan
+                          : isOnMenu
+                          ? faMinus
+                          : faPlus
+                      }
+                    />{" "}
+                    Menu
                   </button>
                 </td>
                 <td>{product.brandName}</td>

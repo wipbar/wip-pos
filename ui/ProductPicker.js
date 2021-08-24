@@ -1,6 +1,6 @@
 import { css } from "emotion";
 import React, { useCallback, useEffect, useState } from "react";
-import Products from "../api/products";
+import Products, { isAlcoholic } from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
@@ -163,6 +163,7 @@ export default function ProductPicker(props) {
         `}
       >
         {[...products]
+          .filter((product) => (location.curfew ? !isAlcoholic(product) : true))
           .sort((a, b) => a.name.localeCompare(b.name))
           .sort((a, b) => a.brandName.localeCompare(b.brandName))
           .sort((a, b) => a.tap?.localeCompare(b.tap) || 0)

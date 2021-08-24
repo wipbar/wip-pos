@@ -31,7 +31,7 @@ export default function UI() {
   const { params: { locationSlug, 0: pageSlug } = {} } =
     useRouteMatch("/:locationSlug/*") || {};
   const user = useCurrentUser();
-  const { data: locations } = useMongoFetch(Locations);
+  const { data: locations, loading } = useMongoFetch(Locations);
   const userLocations = locations.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );
@@ -55,7 +55,8 @@ export default function UI() {
       );
     }
   }, [currentLocation, setTitle, pageSlug, locationSlug]);
-  if (!currentLocation) return "Loading...";
+  console.log(currentLocation, loading);
+  if (!currentLocation || loading) return "Loading...";
   return (
     <div
       className={css`

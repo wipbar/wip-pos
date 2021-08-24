@@ -9,7 +9,7 @@ import {
 import { css } from "emotion";
 import React, { useMemo } from "react";
 import Camps from "../api/camps";
-import Products from "../api/products";
+import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentDate from "../hooks/useCurrentDate";
@@ -125,17 +125,19 @@ export default function PageMenu() {
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(
-        products.reduce((memo, product) => {
-          const key = [...(product.tags || [])].sort()?.join(",") || "other";
-          if (memo[key]) {
-            memo[key].push(product);
-          } else {
-            memo[key] = [product];
-          }
-          return memo;
-        }, []),
+        products
+          .filter((product) => (location.curfew ? !isAlcoholic(product) : true))
+          .reduce((memo, product) => {
+            const key = [...(product.tags || [])].sort()?.join(",") || "other";
+            if (memo[key]) {
+              memo[key].push(product);
+            } else {
+              memo[key] = [product];
+            }
+            return memo;
+          }, []),
       ),
-    [products],
+    [location.curfew, products],
   );
 
   if (productsLoading || locationLoading || salesLoading) return "Loading...";
