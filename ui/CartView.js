@@ -133,7 +133,8 @@ const removeItem = (items, i) =>
   items.slice(0, i - 1).concat(items.slice(i, items.length));
 
 export default function CartView() {
-  const [playSound] = useSound("/cashregister.mp3");
+  const [playCrank] = useSound("/cashregistercrank.mp3");
+  const [playDing] = useSound("/cashregisterding.mp3");
 
   useSubscription("products");
   const { locationSlug } = useParams();
@@ -301,11 +302,12 @@ export default function CartView() {
               onClick={async () => {
                 try {
                   setSellingLoading(true);
+                  playCrank();
                   await doSellProducts({
                     locationSlug,
                     productIds: pickedProductIds,
                   });
-                  playSound();
+                  playDing();
                   setPickedProductIds([]);
                   setConfirmOpen(false);
                   try {
