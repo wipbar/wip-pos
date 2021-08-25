@@ -112,20 +112,27 @@ export default function SalesSankey() {
       memo.push(...sale.products.map(({ _id }) => Products.findOne(_id)));
       return memo;
     }, []);
+    const nodes = [
+      { name: "Sales" },
+      { name: "Alcoholic" },
+      { name: "Beer" },
+      { name: "Tap" },
+      { name: "Non-Tap" },
+      { name: "Non-Beer" },
+      { name: "Non-Alcoholic" },
+      { name: "Mate" },
+      { name: "Non-Mate" },
+      { name: "Non-Cocktail" },
+      { name: "Cocktail" },
+    ];
+    const getNode = (name) =>
+      nodes.indexOf(nodes.find((node) => node.name === name));
     const data0 = {
-      nodes: [
-        { name: "Sales" },
-        { name: "Alcoholic" },
-        { name: "Beer" },
-        { name: "Non-Beer" },
-        { name: "Non-Alcoholic" },
-        { name: "Mate" },
-        { name: "Non-Mate" },
-      ],
+      nodes,
       links: [
         {
-          source: 0,
-          target: 1,
+          source: getNode("Sales"),
+          target: getNode("Alcoholic"),
           value:
             productsSold.filter(
               ({ tags }) =>
@@ -136,15 +143,31 @@ export default function SalesSankey() {
             ).length || 0.00001,
         }, // Alcoholic
         {
-          source: 1,
-          target: 2,
+          source: getNode("Alcoholic"),
+          target: getNode("Beer"),
           value:
             productsSold.filter(({ tags }) => tags.includes("beer")).length ||
             0.00001,
         }, // Beer
         {
-          source: 1,
-          target: 3,
+          source: getNode("Beer"),
+          target: getNode("Tap"),
+          value:
+            productsSold.filter(
+              ({ tags }) => tags.includes("beer") && tags.includes("tap"),
+            ).length || 0.00001,
+        }, // Tap Beer
+        {
+          source: getNode("Beer"),
+          target: getNode("Non-Tap"),
+          value:
+            productsSold.filter(
+              ({ tags }) => tags.includes("beer") && !tags.includes("tap"),
+            ).length || 0.00001,
+        }, // Non-Tap Beer
+        {
+          source: getNode("Alcoholic"),
+          target: getNode("Non-Beer"),
           value:
             productsSold.filter(
               ({ tags }) =>
@@ -154,8 +177,25 @@ export default function SalesSankey() {
             ).length || 0.00001,
         }, // Non-beer
         {
-          source: 0,
-          target: 4,
+          source: getNode("Non-Beer"),
+          target: getNode("Cocktail"),
+          value:
+            productsSold.filter(({ tags }) => tags.includes("cocktail"))
+              .length || 0.00001,
+        }, // Cocktails
+        {
+          source: getNode("Non-Beer"),
+          target: getNode("Non-Cocktail"),
+          value:
+            productsSold.filter(
+              ({ tags }) =>
+                !tags.includes("cocktail") &&
+                (tags.includes("spirit") || tags.includes("cider")),
+            ).length || 0.00001,
+        }, // Non-Cocktail
+        {
+          source: getNode("Sales"),
+          target: getNode("Non-Alcoholic"),
           value:
             productsSold.filter(
               ({ tags }) =>
@@ -168,31 +208,31 @@ export default function SalesSankey() {
             ).length || 0.00001,
         }, // Non-alcoholic
         {
-          source: 4,
-          target: 5,
+          source: getNode("Non-Alcoholic"),
+          target: getNode("Mate"),
           value:
             productsSold.filter(
-              ({ name, tags }) =>
+              ({ brandName, tags }) =>
                 !(
                   tags.includes("cocktail") ||
                   tags.includes("spirit") ||
                   tags.includes("cider") ||
                   tags.includes("beer")
-                ) && name === "Mate",
+                ) && brandName?.includes("Mate"),
             ).length || 0.00001,
         }, // Mate
         {
-          source: 4,
-          target: 6,
+          source: getNode("Non-Alcoholic"),
+          target: getNode("Non-Mate"),
           value:
             productsSold.filter(
-              ({ name, tags }) =>
+              ({ brandName, tags }) =>
                 !(
                   tags.includes("cocktail") ||
                   tags.includes("spirit") ||
                   tags.includes("cider") ||
                   tags.includes("beer")
-                ) && name !== "Mate",
+                ) && !brandName?.includes("Mate"),
             ).length || 0.00001,
         }, // Non-mate
       ],
