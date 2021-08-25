@@ -1,4 +1,5 @@
 import { addHours, endOfHour, isFuture, isPast, isWithinRange } from "date-fns";
+import { css } from "emotion";
 import React, { useMemo } from "react";
 import {
   CartesianGrid,
@@ -12,6 +13,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Bar from "recharts/lib/cartesian/Bar";
+import ComposedChart from "recharts/lib/chart/ComposedChart";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
@@ -115,6 +118,7 @@ export default function CampByCamp() {
         if (count) {
           campTotals[camp.slug] = (campTotals[camp.slug] || 0) + count;
           datapoint[camp.slug] = campTotals[camp.slug];
+          datapoint[camp.slug + "individual"] = count;
         }
       });
       data.push(datapoint);
@@ -159,109 +163,131 @@ export default function CampByCamp() {
       },
     ];
   })();
-
+  console.log(data);
   return (
-    <ResponsiveContainer width="50%" height={350}>
-      <LineChart
-        data={data.map((d) =>
-          d.hour === trendData[0].hour
-            ? { ...d, ...trendData[0] }
-            : d.hour === trendData[1].hour
-            ? { ...d, ...trendData[1] }
-            : d,
-        )}
-        margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="hour"
-          tickFormatter={(hour) => String((hour + 2) % 24).padStart(2, "0")}
-          interval={23}
-        />
-        <YAxis
-          domain={["dataMin", "dataMax"]}
-          tickFormatter={(amount) => ~~amount}
-          label={{
-            value: "Revenue (HAX)",
-            angle: -90,
-            offset: 70,
-            position: "insideLeft",
-            style: { fill: "yellow" },
-          }}
-        />
-        <Tooltip
-          labelFormatter={(hour) =>
-            `H${String((hour + 2) % 24).padStart(2, "0")}D${String(
-              Math.ceil(hour / 24),
-            ).padStart(2, "0")}`
-          }
-          fill="#000"
-          contentStyle={{ background: "#000" }}
-        />
-        <Legend />
-        {isCurrentlyBuildup && (
-          <ReferenceLine
-            x={0 - 2 + 12}
-            strokeWidth={2}
-            stroke={currentCamp?.color || "#00FFFF"}
+    <div
+      className={css`
+        flex: 0.5;
+        min-width: 250px;
+      `}
+    >
+      <ResponsiveContainer width="100%" height={350}>
+        <ComposedChart
+          data={data.map((d) =>
+            d.hour === trendData[0].hour
+              ? { ...d, ...trendData[0] }
+              : d.hour === trendData[1].hour
+              ? { ...d, ...trendData[1] }
+              : d,
+          )}
+          margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="hour"
+            tickFormatter={(hour) => String((hour + 2) % 24).padStart(2, "0")}
+            interval={23}
+          />
+          <YAxis
+            domain={["dataMin", "dataMax"]}
+            tickFormatter={(amount) => ~~amount}
             label={{
-              value: "Start " + currentCamp?.name,
+              value: "Revenue (HAX)",
+              angle: -90,
+              offset: 70,
               position: "insideLeft",
-              style: { fill: currentCamp?.color },
+              style: { fill: "yellow" },
             }}
           />
-        )}
-        <ReferenceDot
-          y={yMax}
-          x={nowHour}
-          key="Now"
-          label={{
-            value: currentCamp?.start?.getFullYear(),
-            position: "right",
-            style: { fill: currentCamp?.color },
-          }}
-          fill={currentCamp?.color}
-          r={4}
-          stroke={currentCamp?.color}
-        />
-        {camps.map((camp, i) =>
-          i < camps.length - 1 ? (
+          <Tooltip
+            labelFormatter={(hour) =>
+              `H${String((hour + 2) % 24).padStart(2, "0")}D${String(
+                Math.ceil(hour / 24),
+              ).padStart(2, "0")}`
+            }
+            fill="#000"
+            contentStyle={{ background: "#000" }}
+          />
+          <Legend />
+          {isCurrentlyBuildup && (
             <ReferenceLine
-              y={campTotals[camp.slug]}
-              key={camp.slug + "-ReferenceLine"}
+              x={0 - 2 + 12}
+              strokeWidth={2}
+              stroke={currentCamp?.color || "#00FFFF"}
               label={{
-                value: "Max " + camp.start?.getFullYear(),
-                position: "insideTop",
-                style: { fill: camp.color },
+                value: "Start " + currentCamp?.name,
+                position: "insideLeft",
+                style: { fill: currentCamp?.color },
               }}
-              stroke={camp.color}
-              strokeDasharray="3 3"
             />
-          ) : null,
-        )}
-        {camps.map((camp, i) => (
+          )}
+          <ReferenceDot
+            y={yMax}
+            x={nowHour}
+            key="Now"
+            label={{
+              value: currentCamp?.start?.getFullYear(),
+              position: "insideBottomRight",
+              offset: 8,
+              style: { fill: currentCamp?.color },
+            }}
+            fill={currentCamp?.color}
+            r={4}
+            stroke={currentCamp?.color}
+          />
+          {camps.map((camp, i) =>
+            i < camps.length - 1 ? (
+              <ReferenceLine
+                y={campTotals[camp.slug]}
+                key={camp.slug + "-ReferenceLine"}
+                label={{
+                  value: "Max " + camp.start?.getFullYear(),
+                  position: "top",
+                  style: { fill: camp.color },
+                }}
+                stroke={camp.color}
+                strokeDasharray="3 3"
+              />
+            ) : null,
+          )}
+          {camps.map((camp, i) => (
+            <Line
+              type="monotone"
+              key={camp.slug}
+              dataKey={camp.slug}
+              name={camp.name}
+              stroke={camp.color}
+              strokeDasharray={camps.length - 1 === i ? undefined : "3 3"}
+              strokeWidth={4}
+              dot={false}
+              connectNulls
+            />
+          ))}
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            domain={["dataMin", "dataMax"]}
+            strokeOpacity={0.5}
+          />
+          <Bar
+            yAxisId="right"
+            key={currentCamp.slug + "individual"}
+            dataKey={currentCamp.slug + "individual"}
+            name={currentCamp.name}
+            fill={currentCamp.color}
+            fillOpacity={0.5}
+          />
           <Line
-            type="monotone"
-            key={camp.slug}
-            dataKey={camp.slug}
-            name={camp.name}
-            stroke={camp.color}
-            strokeDasharray={camps.length - 1 === i ? undefined : "3 3"}
-            strokeWidth={4}
+            key={currentCamp.slug + "-trend"}
+            dataKey={currentCamp.slug + "-trend"}
+            stroke={currentCamp.color}
+            strokeWidth={2}
+            strokeDasharray="4 2"
             dot={false}
             connectNulls
           />
-        ))}
-        <Line
-          key={currentCamp.slug + "-trend"}
-          dataKey={currentCamp.slug + "-trend"}
-          stroke={currentCamp.color}
-          strokeWidth={2}
-          strokeDasharray="4 2"
-          dot={false}
-          connectNulls
-        />
-      </LineChart>
-    </ResponsiveContainer>
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

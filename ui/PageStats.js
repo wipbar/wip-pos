@@ -136,6 +136,7 @@ export default function PageStats() {
         <div
           className={css`
             display: flex;
+            flex-wrap: wrap;
           `}
         >
           <CampByCamp />
