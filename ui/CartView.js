@@ -308,6 +308,9 @@ export default function CartView() {
                   playSound();
                   setPickedProductIds([]);
                   setConfirmOpen(false);
+                  try {
+                    console.log(navigator.vibrate?.(500));
+                  } catch {}
                 } catch {}
                 setSellingLoading(false);
               }}
