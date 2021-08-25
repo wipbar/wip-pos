@@ -245,7 +245,7 @@ export default function SalesSankey() {
   return (
     <ResponsiveContainer width={"100%"} height={350}>
       <Sankey
-        height={350}
+        height={320}
         data={data}
         nodePading={50}
         margin={{ left: 100, right: 100, bottom: 25 }}

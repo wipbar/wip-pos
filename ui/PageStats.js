@@ -17,6 +17,7 @@ import CampByCamp from "../components/CampByCamp";
 import SalesSankey from "../components/SalesSankey";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useCurrentDate from "../hooks/useCurrentDate";
+import DayByDay from "../components/DayByDay";
 
 const rolloverOffset = 5;
 const renderer = ({ hours, minutes, seconds, completed }) => {
@@ -127,13 +128,19 @@ export default function PageStats() {
       <div
         className={css`
           flex: 2;
-          height: 100%;
+          min-height: 100%;
           min-width: 400px;
         `}
       >
         <SalesSankey />
-        <br />
-        <CampByCamp />
+        <div
+          className={css`
+            display: flex;
+          `}
+        >
+          <CampByCamp />
+          <DayByDay />
+        </div>
       </div>
       <div
         className={css`

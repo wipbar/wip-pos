@@ -1,10 +1,11 @@
 import { Meteor } from "meteor/meteor";
 import { Accounts } from "meteor/accounts-base";
+import { Session } from "meteor/session";
 import { Random } from "meteor/random";
 import { ServiceConfiguration } from "meteor/service-configuration";
 import { OAuth } from "meteor/oauth";
 import { _ } from "meteor/underscore";
-import { fetch, Headers } from 'meteor/fetch';
+import { fetch, Headers } from "meteor/fetch";
 
 import Locations from "./locations";
 
@@ -209,3 +210,14 @@ export const assertUserInTeam = (userOrId, inTeam) => {
   if (!isUserInTeam(userOrId, inTeam))
     throw new Meteor.Error(`You are not a member of ${inTeam} Team`);
 };
+
+//In the client side
+if (Meteor.isClient)
+  Meteor.call("GALAXY_APP_VERSION_ID", (err, GALAXY_APP_VERSION_ID) =>
+    Session.set("GALAXY_APP_VERSION_ID", GALAXY_APP_VERSION_ID),
+  );
+
+if (Meteor.isServer)
+  Meteor.methods({
+    GALAXY_APP_VERSION_ID: () => process.env.GALAXY_APP_VERSION_ID || 69,
+  });

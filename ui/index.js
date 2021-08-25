@@ -10,6 +10,8 @@ import {
   useHistory,
   useRouteMatch,
 } from "react-router-dom";
+import { useTracker } from "meteor/react-meteor-data";
+
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -28,6 +30,9 @@ Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 export default function UI() {
   console.log("UI");
   const history = useHistory();
+  const GALAXY_APP_VERSION_ID = useTracker(
+    () => Session.get("GALAXY_APP_VERSION_ID") || "420",
+  );
   const { params: { locationSlug, 0: pageSlug } = {} } =
     useRouteMatch("/:locationSlug/*") || {};
   const user = useCurrentUser();
@@ -55,7 +60,7 @@ export default function UI() {
       );
     }
   }, [currentLocation, setTitle, pageSlug, locationSlug]);
-  console.log(currentLocation, loading);
+
   if (!currentLocation || loading) return "Loading...";
   return (
     <div
@@ -65,6 +70,18 @@ export default function UI() {
         flex-direction: column;
       `}
     >
+      <div
+        className={css`
+          position: absolute;
+          bottom: 24px;
+          right: 12px;
+          opacity: 0.5;
+          transform: rotate(90deg);
+          pointer-events: none;
+        `}
+      >
+        {GALAXY_APP_VERSION_ID}
+      </div>
       <div
         className={css`
           background: rgba(255, 255, 255, 0.2);

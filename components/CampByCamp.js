@@ -150,7 +150,7 @@ export default function CampByCamp() {
       {
         "bornhack-2021-trend": data.find(
           (d) => d["bornhack-2021"] && d.hour === nowHour,
-        )["bornhack-2021"],
+        )?.["bornhack-2021"],
         hour: nowHour,
       },
       {
@@ -161,7 +161,7 @@ export default function CampByCamp() {
   })();
 
   return (
-    <ResponsiveContainer width={"100%"} height={350}>
+    <ResponsiveContainer width="50%" height={350}>
       <LineChart
         data={data.map((d) =>
           d.hour === trendData[0].hour
@@ -170,7 +170,7 @@ export default function CampByCamp() {
             ? { ...d, ...trendData[1] }
             : d,
         )}
-        margin={{ top: 0, right: 20, left: 40, bottom: 0 }}
+        margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
@@ -194,7 +194,7 @@ export default function CampByCamp() {
               Math.ceil(hour / 24),
             ).padStart(2, "0")}`
           }
-          fill={"#000"}
+          fill="#000"
           contentStyle={{ background: "#000" }}
         />
         <Legend />
