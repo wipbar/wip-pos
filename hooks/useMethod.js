@@ -51,3 +51,4 @@ export default function useMethod(method, { transform } = {}) {
 
   return [call, { isLoading, data, error }];
 }
+mongodump --uri='mongodb+srv://wip:wipBarMongo@cluster0-mnvmd.mongodb.net/test?authSource=admin'  --out=./dumps/a && mongorestore --drop -h 127.0.0.1 --port 3001 -d meteor ./dumps/a/test && rm -rf ./dumps
