@@ -68,8 +68,7 @@ export default function DayByDay() {
       ),
     [camp.start, numberOfDaysInCurrentCamp, sales],
   );
-  console.log(data);
-  //  return null;
+
   return (
     <div
       className={css`

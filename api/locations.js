@@ -17,7 +17,7 @@ export default Locations;
 Meteor.methods({
   "Locations.toggleCurfew"({ locationId }) {
     const location = Locations.findOne(locationId);
-    console.log(locationId, location);
+
     if (!isUserInTeam(this.userId, location.teamName)) {
       throw new Meteor.Error("Wait that's illegal");
     }

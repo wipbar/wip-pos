@@ -58,7 +58,7 @@ export default function ProductTrend({ product, ...props }) {
         .reduce((memo, sale) => sale.products.length + memo, 0),
     [productSales],
   );
-  console.log({ salesInPastHour, averageSalesPerHour });
+
   const number = Number(salesInPastHour / (averageSalesPerHour * f)).toFixed(3);
   if (salesInPastHour > 2 && number > 30) return <Fire {...props} />;
   return null;

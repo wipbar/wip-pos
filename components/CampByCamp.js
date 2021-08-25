@@ -1,11 +1,12 @@
-import { addHours, endOfHour, isFuture, isPast, isWithinRange } from "date-fns";
+import { addHours, endOfHour, isWithinRange } from "date-fns";
 import { css } from "emotion";
 import React, { useMemo } from "react";
 import {
+  Bar,
   CartesianGrid,
+  ComposedChart,
   Legend,
   Line,
-  LineChart,
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
@@ -13,8 +14,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Bar from "recharts/lib/cartesian/Bar";
-import ComposedChart from "recharts/lib/chart/ComposedChart";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
@@ -68,50 +67,32 @@ export default function CampByCamp() {
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const isCurrentlyBuildup = Boolean(
-    currentCamp &&
-      isPast(currentCamp.buildup) &&
-      isFuture(currentCamp.start) &&
-      false,
-  );
-  console.log(isCurrentlyBuildup);
+
   const { data: sales, loading: salesLoading } = useMongoFetch(Sales, []);
   const longestCamp = camps.reduce((memo, camp) => {
     if (!memo) {
       memo = camp;
     } else {
-      if (
-        camp.end - (isCurrentlyBuildup ? camp.buildup : camp.start) >
-        memo.end - (isCurrentlyBuildup ? memo.buildup : memo.start)
-      )
-        memo = camp;
+      if (camp.end - camp.start > memo.end - memo.start) memo = camp;
     }
     return memo;
   }, null);
   const longestCampHours = longestCamp
-    ? Math.ceil(
-        (longestCamp.end -
-          (isCurrentlyBuildup ? longestCamp.buildup : longestCamp.start)) /
-          (3600 * 1000),
-      )
+    ? Math.ceil((longestCamp.end - longestCamp.start) / (3600 * 1000))
     : null;
-  const longestCampBuildupHours = isCurrentlyBuildup
-    ? (longestCamp.start - longestCamp.buildup) / 1000 / 60 / 60
-    : 0;
-  console.log(longestCampBuildupHours);
+
   const [data, campTotals] = useMemo(() => {
     const data = [];
     let campTotals = {};
     for (let i = 0; i < longestCampHours; i++) {
-      const datapoint = { hour: i - longestCampBuildupHours };
+      const datapoint = { hour: i };
       camps.forEach((camp) => {
-        const start = isCurrentlyBuildup ? camp.buildup : camp.start;
         const count = sales
           .filter((sale) =>
             isWithinRange(
               sale.timestamp,
-              addHours(start, i),
-              endOfHour(addHours(start, i)),
+              addHours(camp.start, i),
+              endOfHour(addHours(camp.start, i)),
             ),
           )
           .reduce((memo, sale) => memo + Number(sale.amount), 0);
@@ -124,24 +105,16 @@ export default function CampByCamp() {
       data.push(datapoint);
     }
     return [data, campTotals];
-  }, [
-    camps,
-    isCurrentlyBuildup,
-    longestCampBuildupHours,
-    longestCampHours,
-    sales,
-  ]);
+  }, [camps, longestCampHours, sales]);
   if (campsLoading || salesLoading) return "Loading...";
   let prev = 0;
   const weights = data.map((data) => (prev = data["bornhack-2021"] || prev));
   const yMax = Math.max(...weights);
-  const yMin = Math.min(...weights);
   const timestamps = data.map((data) => data.hour);
   const xMax = Math.max(...timestamps);
   const nowHour = Math.max(
     ...data.filter((d) => d["bornhack-2021"]).map((data) => data.hour),
   );
-  const xMin = Math.min(...timestamps);
 
   const trendData = (() => {
     const trend = createTrend(
@@ -163,7 +136,7 @@ export default function CampByCamp() {
       },
     ];
   })();
-  console.log(data);
+
   return (
     <div
       className={css`
@@ -209,18 +182,6 @@ export default function CampByCamp() {
             contentStyle={{ background: "#000" }}
           />
           <Legend />
-          {isCurrentlyBuildup && (
-            <ReferenceLine
-              x={0 - 2 + 12}
-              strokeWidth={2}
-              stroke={currentCamp?.color || "#00FFFF"}
-              label={{
-                value: "Start " + currentCamp?.name,
-                position: "insideLeft",
-                style: { fill: currentCamp?.color },
-              }}
-            />
-          )}
           <ReferenceDot
             y={yMax}
             x={nowHour}

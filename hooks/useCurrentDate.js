@@ -1,14 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function useCurrentDate(interval = 1000) {
   var [date, setDate] = useState(new Date());
 
-  useEffect(() => {
-    var timer = setInterval(() => setDate(new Date()), interval);
-    return function cleanup() {
-      clearInterval(timer);
-    };
-  });
+  useInterval(() => {
+    setDate(new Date());
+  }, interval);
 
   return date;
+}
+
+function useInterval(callback, delay) {
+  const savedCallback = useRef();
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  });
+
+  useEffect(() => {
+    function tick() {
+      savedCallback.current();
+    }
+
+    let id = setInterval(tick, delay);
+    return () => clearInterval(id);
+  }, [delay]);
 }
