@@ -167,6 +167,7 @@ export default function PageStats() {
                       width: 50px;
                       text-align: right;
                       margin-right: 8px;
+                      flex-shrink: 0;
                     `}
                   >
                     <b>{count}</b>x
