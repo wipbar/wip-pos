@@ -1,3 +1,1 @@
-To play with use first install Meteor https://www.meteor.com/install and then run `meteor --settings settings.json` in the directory
-
-In local dev the "admin" user has the default password "test"
+![IMG_20210825_012301](https://user-images.githubusercontent.com/1567633/130706820-99271ddf-b3aa-49d9-8304-d37856c97d55.jpg)
