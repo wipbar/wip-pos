@@ -4,8 +4,6 @@ import {
   endOfHour,
   isFuture,
   isWithinRange,
-  max,
-  min,
 } from "date-fns";
 import React, { useMemo } from "react";
 import {
@@ -14,7 +12,6 @@ import {
   Line,
   LineChart,
   ReferenceDot,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -68,6 +65,7 @@ export default function DayByDay() {
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
+          interval={3}
           dataKey="x"
           tickFormatter={(hour) => String((hour + 8) % 24).padStart(2, "0")}
         />

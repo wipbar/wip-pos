@@ -176,6 +176,7 @@ export default function CampByCamp() {
         <XAxis
           dataKey="hour"
           tickFormatter={(hour) => String((hour + 2) % 24).padStart(2, "0")}
+          interval={23}
         />
         <YAxis
           domain={["dataMin", "dataMax"]}
