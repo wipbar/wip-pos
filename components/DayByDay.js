@@ -130,7 +130,7 @@ export default function DayByDay() {
               type="monotone"
               key={i}
               dataKey={i}
-              name={`D${i + 1}`}
+              name={`ΣD${i + 1}`}
               strokeDasharray={
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
@@ -155,7 +155,7 @@ export default function DayByDay() {
                 yAxisId="right"
                 key={i + "individual"}
                 dataKey={i + "individual"}
-                name={`D${i + 1}`}
+                name={`ΔD${i + 1}`}
                 fill={camp.color}
                 fillOpacity={0.5}
               />

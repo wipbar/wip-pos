@@ -216,7 +216,7 @@ export default function CampByCamp() {
               type="monotone"
               key={camp.slug}
               dataKey={camp.slug}
-              name={camp.name}
+              name={"Σ" + camp.name}
               stroke={camp.color}
               strokeDasharray={camps.length - 1 === i ? undefined : "3 3"}
               strokeWidth={4}
@@ -234,7 +234,7 @@ export default function CampByCamp() {
             yAxisId="right"
             key={currentCamp.slug + "individual"}
             dataKey={currentCamp.slug + "individual"}
-            name={currentCamp.name}
+            name={"Δ" + currentCamp.name}
             fill={currentCamp.color}
             fillOpacity={0.5}
           />
