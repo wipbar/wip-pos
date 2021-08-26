@@ -1,6 +1,8 @@
 import {
+  addHours,
   endOfHour,
   isPast,
+  isWithinRange,
   min,
   setHours,
   startOfHour,
@@ -126,7 +128,7 @@ export default function PageMenu() {
     () =>
       Object.entries(
         products
-          .filter((product) => (location.curfew ? !isAlcoholic(product) : true))
+          .filter((product) => (location.curfew ? isAlcoholic(product) : true))
           .reduce((memo, product) => {
             const key = [...(product.tags || [])].sort()?.join(",") || "other";
             if (memo[key]) {
@@ -331,33 +333,24 @@ export default function PageMenu() {
                             className={css`
                               border-bottom: #e22028 1px solid;
                             `}
-                            data={(() => {
-                              let productTotalForPeriod = 0;
-                              const salesData = sales.reduce((memo, sale) => {
-                                const count = sale.products.filter(
-                                  (saleProduct) =>
-                                    saleProduct._id === product._id,
-                                ).length;
-                                if (count) {
-                                  productTotalForPeriod =
-                                    productTotalForPeriod + count;
-                                  memo.push([
+                            data={Array.from({ length: 24 }, (_, i) => [
+                              23 - i,
+                              sales.reduce(
+                                (memo, sale) =>
+                                  isWithinRange(
                                     sale.timestamp,
-                                    productTotalForPeriod,
-                                  ]);
-                                }
-
-                                return memo;
-                              }, []);
-
-                              salesData.unshift([from, 0]);
-
-                              salesData.push([
-                                currentDate,
-                                productTotalForPeriod,
-                              ]);
-                              return salesData;
-                            })()}
+                                    addHours(currentDate, -i),
+                                    endOfHour(addHours(currentDate, -i)),
+                                  )
+                                    ? memo +
+                                      sale.products.filter(
+                                        (saleProduct) =>
+                                          saleProduct._id === product._id,
+                                      ).length
+                                    : memo,
+                                0,
+                              ),
+                            ])}
                           />
                         </div>
                       ))}

@@ -9,6 +9,7 @@ import { css } from "emotion";
 import React, { useMemo } from "react";
 import {
   CartesianGrid,
+  ComposedChart,
   Legend,
   Line,
   ReferenceDot,
@@ -18,7 +19,6 @@ import {
   YAxis,
 } from "recharts";
 import Bar from "recharts/lib/cartesian/Bar";
-import ComposedChart from "recharts/lib/chart/ComposedChart";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
