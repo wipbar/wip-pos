@@ -1,11 +1,11 @@
-import { Meteor } from "meteor/meteor";
 import { Accounts } from "meteor/accounts-base";
-import { Session } from "meteor/session";
+import { Meteor } from "meteor/meteor";
+import { OAuth } from "meteor/oauth";
 import { Random } from "meteor/random";
 import { ServiceConfiguration } from "meteor/service-configuration";
-import { OAuth } from "meteor/oauth";
+import { Session } from "meteor/session";
 import { _ } from "meteor/underscore";
-import { fetch, Headers } from "meteor/fetch";
+import Camps from "./camps";
 
 import Locations from "./locations";
 
@@ -192,9 +192,14 @@ export const isUserInTeam = (userOrId, inTeam) => {
   const user = Meteor.users.findOne(
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
-  return !!user?.profile?.teams?.find(
-    ({ team, camp }) =>
-      team.toLowerCase() === inTeam.toLowerCase() && camp === "BornHack 2021",
+  const [currentCamp] = Camps.find({}, { sort: { end: -1 } }).fetch();
+
+  return Boolean(
+    user?.profile?.teams?.some(
+      ({ team, camp }) =>
+        team.toLowerCase() === inTeam.toLowerCase() &&
+        camp === currentCamp.name,
+    ),
   );
 };
 export const assertUserInAnyTeam = (userOrId) => {
