@@ -8,6 +8,7 @@ import {
 import { css } from "emotion";
 import React, { useMemo } from "react";
 import {
+  Bar,
   CartesianGrid,
   ComposedChart,
   Legend,
@@ -18,13 +19,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Bar from "recharts/lib/cartesian/Bar";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
 
 export default function DayByDay() {
-  const { data: sales = [] } = useMongoFetch(Sales);
+  const { data: sales } = useMongoFetch(Sales);
   const {
     data: [camp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
@@ -33,7 +33,10 @@ export default function DayByDay() {
   const data = useMemo(
     () =>
       Array.from({ length: 24 }, (_, i) =>
-        Array.from({ length: numberOfDaysInCurrentCamp }).reduce(
+        Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
+          x: number;
+          [key: string]: number | null;
+        }>(
           (memo, _, j) => {
             const hour = j * 24 + i;
             if (isFuture(addHours(camp.start, hour + 6))) return memo;
@@ -89,7 +92,7 @@ export default function DayByDay() {
           />
           <YAxis
             domain={["dataMin", "dataMax"]}
-            tickFormatter={(amount) => ~~amount}
+            tickFormatter={(amount: number) => String(~~amount)}
             label={{
               value: "Revenue (HAX)",
               angle: -90,
@@ -102,7 +105,6 @@ export default function DayByDay() {
             labelFormatter={(hour) =>
               `H${String((hour + 8) % 24).padStart(2, "0")}`
             }
-            fill="#000"
             contentStyle={{ background: "#000" }}
           />
           <Legend />

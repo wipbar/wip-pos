@@ -19,9 +19,10 @@ export default function useMongoFetch<T>(
         : false,
     ),
     data: useTracker(() => {
-      if (!query) return [];
+      if (!query) return emptyArray;
       if (query instanceof Mongo.Collection) return query.find().fetch();
       if (query instanceof Mongo.Cursor) return query.fetch();
+      throw new Error("useMongoFetch only accepts Collection and Cursor");
     }, deps),
   };
 }

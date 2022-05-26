@@ -2,19 +2,36 @@ import React from "react";
 import {
   Layer,
   Rectangle,
+  RectangleProps,
   ResponsiveContainer,
   Sankey,
   Tooltip,
 } from "recharts";
 import { useTracker } from "meteor/react-meteor-data";
-import Products from "../api/products";
+import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
-import Camps from "../api/camps";
+import Camps, { ICamp } from "../api/camps";
 import { isPast } from "date-fns";
 import useMongoFetch from "../hooks/useMongoFetch";
+import { SankeyLink, SankeyNode } from "recharts/types/util/types";
 
-function Node({ x, y, width, height, index, payload, containerWidth, camp }) {
+function Node({
+  x,
+  y,
+  width,
+  height,
+  index,
+  payload,
+  containerWidth,
+  camp,
+}: RectangleProps & {
+  camp: ICamp;
+  index?: number;
+  payload?: SankeyNode & { name: string };
+  containerWidth?: number;
+}) {
   const isOut = x + width + 6 > containerWidth;
+
   return (
     <Layer key={`CustomNode${index}`}>
       <Rectangle
@@ -35,25 +52,29 @@ function Node({ x, y, width, height, index, payload, containerWidth, camp }) {
         }
         fillOpacity="1"
       />
-      <text
-        textAnchor={isOut ? "end" : "start"}
-        x={isOut ? x - 6 : x + width + 6}
-        y={y + height / 2}
-        fontSize="14"
-        stroke="#FFED00"
-      >
-        {payload.name}
-      </text>
-      <text
-        textAnchor={isOut ? "end" : "start"}
-        x={isOut ? x - 6 : x + width + 6}
-        y={y + height / 2 + 13}
-        fontSize="12"
-        stroke="#FFED00"
-        strokeOpacity="0.5"
-      >
-        {~~payload.value} units
-      </text>
+      {payload?.name ? (
+        <text
+          textAnchor={isOut ? "end" : "start"}
+          x={isOut ? x - 6 : x + width + 6}
+          y={y + height / 2}
+          fontSize="14"
+          stroke="#FFED00"
+        >
+          {payload.name}
+        </text>
+      ) : null}
+      {payload?.value ? (
+        <text
+          textAnchor={isOut ? "end" : "start"}
+          x={isOut ? x - 6 : x + width + 6}
+          y={y + height / 2 + 13}
+          fontSize="12"
+          stroke="#FFED00"
+          strokeOpacity="0.5"
+        >
+          {~~payload.value} units
+        </text>
+      ) : null}
     </Layer>
   );
 }
@@ -68,6 +89,9 @@ function Link({
   linkWidth,
   payload,
   ...others
+}: {
+  payload?: SankeyLink & { target: { name: string } };
+  camp: ICamp;
 }) {
   return (
     <path
@@ -78,13 +102,13 @@ function Link({
       `}
       fill="none"
       stroke={
-        payload.target.name === "Mate"
+        payload?.target.name === "Mate"
           ? "#193781"
-          : payload.target.name === "Beer"
+          : payload?.target.name === "Beer"
           ? "#FFED00"
-          : payload.target.name === "Non-Beer"
+          : payload?.target.name === "Non-Beer"
           ? "#D2691E"
-          : payload.target.name === "Non-Mate"
+          : payload?.target.name === "Non-Mate"
           ? "#16503f"
           : camp?.color || "#77c878"
       }
@@ -108,8 +132,8 @@ export default function SalesSankey() {
         $lte: currentCamp?.end,
       },
     }).fetch();
-    const productsSold = sales.reduce((memo, sale) => {
-      memo.push(...sale.products.map(({ _id }) => Products.findOne(_id)));
+    const productsSold = sales.reduce<IProduct[]>((memo, sale) => {
+      memo.push(...sale.products.map(({ _id }) => Products.findOne(_id)!));
       return memo;
     }, []);
     const nodes = [
@@ -125,8 +149,8 @@ export default function SalesSankey() {
       { name: "Non-Cocktail" },
       { name: "Cocktail" },
     ];
-    const getNode = (name) =>
-      nodes.indexOf(nodes.find((node) => node.name === name));
+    const getNode = (name: string) =>
+      nodes.findIndex((node) => node.name === name);
     const data0 = {
       nodes,
       links: [
@@ -136,17 +160,17 @@ export default function SalesSankey() {
           value:
             productsSold.filter(
               ({ tags }) =>
-                tags.includes("cocktail") ||
-                tags.includes("spirit") ||
-                tags.includes("cider") ||
-                tags.includes("beer"),
+                tags?.includes("cocktail") ||
+                tags?.includes("spirit") ||
+                tags?.includes("cider") ||
+                tags?.includes("beer"),
             ).length || 0.00001,
         }, // Alcoholic
         {
           source: getNode("Alcoholic"),
           target: getNode("Beer"),
           value:
-            productsSold.filter(({ tags }) => tags.includes("beer")).length ||
+            productsSold.filter(({ tags }) => tags?.includes("beer")).length ||
             0.00001,
         }, // Beer
         {
@@ -154,7 +178,7 @@ export default function SalesSankey() {
           target: getNode("Tap"),
           value:
             productsSold.filter(
-              ({ tags }) => tags.includes("beer") && tags.includes("tap"),
+              ({ tags }) => tags?.includes("beer") && tags?.includes("tap"),
             ).length || 0.00001,
         }, // Tap Beer
         {
@@ -162,7 +186,7 @@ export default function SalesSankey() {
           target: getNode("Non-Tap"),
           value:
             productsSold.filter(
-              ({ tags }) => tags.includes("beer") && !tags.includes("tap"),
+              ({ tags }) => tags?.includes("beer") && !tags?.includes("tap"),
             ).length || 0.00001,
         }, // Non-Tap Beer
         {
@@ -171,16 +195,16 @@ export default function SalesSankey() {
           value:
             productsSold.filter(
               ({ tags }) =>
-                tags.includes("cocktail") ||
-                tags.includes("spirit") ||
-                tags.includes("cider"),
+                tags?.includes("cocktail") ||
+                tags?.includes("spirit") ||
+                tags?.includes("cider"),
             ).length || 0.00001,
         }, // Non-beer
         {
           source: getNode("Non-Beer"),
           target: getNode("Cocktail"),
           value:
-            productsSold.filter(({ tags }) => tags.includes("cocktail"))
+            productsSold.filter(({ tags }) => tags?.includes("cocktail"))
               .length || 0.00001,
         }, // Cocktails
         {
@@ -189,8 +213,8 @@ export default function SalesSankey() {
           value:
             productsSold.filter(
               ({ tags }) =>
-                !tags.includes("cocktail") &&
-                (tags.includes("spirit") || tags.includes("cider")),
+                !tags?.includes("cocktail") &&
+                (tags?.includes("spirit") || tags?.includes("cider")),
             ).length || 0.00001,
         }, // Non-Cocktail
         {
@@ -200,10 +224,10 @@ export default function SalesSankey() {
             productsSold.filter(
               ({ tags }) =>
                 !(
-                  tags.includes("cocktail") ||
-                  tags.includes("spirit") ||
-                  tags.includes("cider") ||
-                  tags.includes("beer")
+                  tags?.includes("cocktail") ||
+                  tags?.includes("spirit") ||
+                  tags?.includes("cider") ||
+                  tags?.includes("beer")
                 ),
             ).length || 0.00001,
         }, // Non-alcoholic
@@ -214,10 +238,10 @@ export default function SalesSankey() {
             productsSold.filter(
               ({ brandName, tags }) =>
                 !(
-                  tags.includes("cocktail") ||
-                  tags.includes("spirit") ||
-                  tags.includes("cider") ||
-                  tags.includes("beer")
+                  tags?.includes("cocktail") ||
+                  tags?.includes("spirit") ||
+                  tags?.includes("cider") ||
+                  tags?.includes("beer")
                 ) && brandName?.includes("Mate"),
             ).length || 0.00001,
         }, // Mate
@@ -228,10 +252,10 @@ export default function SalesSankey() {
             productsSold.filter(
               ({ brandName, tags }) =>
                 !(
-                  tags.includes("cocktail") ||
-                  tags.includes("spirit") ||
-                  tags.includes("cider") ||
-                  tags.includes("beer")
+                  tags?.includes("cocktail") ||
+                  tags?.includes("spirit") ||
+                  tags?.includes("cider") ||
+                  tags?.includes("beer")
                 ) && !brandName?.includes("Mate"),
             ).length || 0.00001,
         }, // Non-mate
@@ -247,7 +271,7 @@ export default function SalesSankey() {
       <Sankey
         height={320}
         data={data}
-        nodePading={50}
+        nodePadding={10}
         margin={{ left: 100, right: 100, bottom: 25 }}
         link={<Link camp={currentCamp} />}
         node={<Node camp={currentCamp} />}

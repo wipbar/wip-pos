@@ -2,7 +2,6 @@ import { css } from "emotion";
 import { useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
-import React from "react";
 import { useEffect } from "react";
 import {
   Link,
@@ -30,7 +29,7 @@ Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 export default function UI() {
   const navigate = useNavigate();
   const GALAXY_APP_VERSION_ID = useTracker(
-    () => Session.get("GALAXY_APP_VERSION_ID") || "420",
+    () => (Session.get("GALAXY_APP_VERSION_ID") as string | undefined) || "420",
   );
   const match = useMatch("/:locationSlug/*");
   const locationSlug = match?.params.locationSlug;
