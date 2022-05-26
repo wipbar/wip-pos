@@ -2,7 +2,7 @@ import { css } from "emotion";
 import { useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Link,
   Navigate,

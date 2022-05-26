@@ -14,20 +14,20 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Camps from "../api/camps";
+import Camps, { ICamp } from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
 
-function getAvg(arr) {
-  const total = arr.reduce((acc, c) => acc + c, 0);
-  return total / arr.length;
-}
+const getAvg = (arr: number[]) =>
+  arr.reduce((acc, c) => acc + c, 0) / arr.length;
 
-function getSum(arr) {
-  return arr.reduce((acc, c) => acc + c, 0);
-}
+const getSum = (arr: number[]) => arr.reduce((acc, c) => acc + c, 0);
 
-function createTrend(data, xKey, yKey) {
+function createTrend<XK extends string, YK extends string>(
+  data: Record<XK | YK, number>[],
+  xKey: XK,
+  yKey: YK,
+) {
   const xData = data.map((value) => value[xKey]);
   const yData = data.map((value) => value[yKey]);
 
@@ -58,7 +58,7 @@ function createTrend(data, xKey, yKey) {
   return {
     slope: b1,
     yStart: b0,
-    calcY: (x) => b0 + b1 * x,
+    calcY: (x: number) => b0 + b1 * x,
   };
 }
 
@@ -69,23 +69,30 @@ export default function CampByCamp() {
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
 
   const { data: sales, loading: salesLoading } = useMongoFetch(Sales, []);
-  const longestCamp = camps.reduce((memo, camp) => {
+  const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
     if (!memo) {
       memo = camp;
     } else {
-      if (camp.end - camp.start > memo.end - memo.start) memo = camp;
+      if (
+        Number(camp.end) - Number(camp.start) >
+        Number(memo.end) - Number(memo.start)
+      )
+        memo = camp;
     }
     return memo;
   }, null);
+
   const longestCampHours = longestCamp
-    ? Math.ceil((longestCamp.end - longestCamp.start) / (3600 * 1000))
-    : null;
+    ? Math.ceil(
+        (Number(longestCamp.end) - Number(longestCamp.start)) / (3600 * 1000),
+      )
+    : 0;
 
   const [data, campTotals] = useMemo(() => {
     const data = [];
-    let campTotals = {};
+    let campTotals: Record<string, number> = {};
     for (let i = 0; i < longestCampHours; i++) {
-      const datapoint = { hour: i };
+      const datapoint: { hour: number; [key: string]: number } = { hour: i };
       camps.forEach((camp) => {
         const count = sales
           .filter((sale) =>
@@ -165,7 +172,7 @@ export default function CampByCamp() {
           />
           <YAxis
             domain={["dataMin", "dataMax"]}
-            tickFormatter={(amount) => ~~amount}
+            tickFormatter={(amount: number) => String(~~amount)}
             label={{
               value: "Revenue (HAX)",
               angle: -90,
@@ -180,7 +187,6 @@ export default function CampByCamp() {
                 Math.ceil(hour / 24),
               ).padStart(2, "0")}`
             }
-            fill="#000"
             contentStyle={{ background: "#000" }}
           />
           <Legend />

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { HTMLProps } from "react";
 
-export default function Fire(props) {
+export default function Fire(props: HTMLProps<HTMLDivElement>) {
   return (
     <>
       <style
