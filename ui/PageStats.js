@@ -111,7 +111,7 @@ export default function PageStats() {
       ).sort(([, a], [, b]) => b - a),
     [sales],
   );
-  if (salesLoading || productsLoading || campsLoading) return "Loading...";
+  if (salesLoading || productsLoading || campsLoading) return <>Loading...</>;
 
   return (
     <div

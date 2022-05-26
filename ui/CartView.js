@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { css } from "emotion";
 import React, { useState } from "react";
-import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import { useParams } from "react-router-dom";
 import useSound from "use-sound";
 import Products from "../api/products";
 import Sales from "../api/sales";

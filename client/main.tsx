@@ -1,18 +1,17 @@
 import { Accounts } from "meteor/accounts-base";
 import { Meteor } from "meteor/meteor";
-import React from "react";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import React from "react";
 import "../api/accounts";
 import UI from "../ui";
 
 Accounts.ui.config({ requestPermissions: { bornhack: ["read"] } });
 
 Meteor.startup(() =>
-  render(
+  createRoot(document.getElementById("react-target")!).render(
     <BrowserRouter>
       <UI />
     </BrowserRouter>,
-    document.getElementById("react-target"),
   ),
 );

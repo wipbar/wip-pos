@@ -1,30 +1,50 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { isUserInTeam } from "./accounts";
-import Locations from "./locations";
-import Products from "./products";
+import Locations, { ILocation } from "./locations";
+import Products, { IProduct } from "./products";
 
-const Sales = new Mongo.Collection("sales");
+export interface ISale {
+  userId?: string;
+  locationId: string;
+  currency?: string;
+  country?: string;
+  amount?: number;
+  timestamp: Date;
+  products: IProduct[];
+}
+
+const Sales = new Mongo.Collection<ISale>("sales");
 
 if (Meteor.isServer)
   Meteor.startup(() => {
     if (Sales.find().count() === 0) {
-      Sales.insert({ products: [{ _id: "blahh", name: "some rodut" }] });
+      Sales.insert({
+        timestamp: new Date(),
+        locationId: Locations.findOne({ slug: "bar" })!._id,
+        products: [{ createdAt: new Date(), _id: "blahh", name: "some rodut" }],
+      });
     }
-    if (Sales.find({ locationId: { $exists: 0 } }).count()) {
+    if (Sales.find({ locationId: { $exists: false } }).count()) {
       console.log(
         "Setting any Sale without locationId's locationId to the bar.",
       );
       Sales.update(
-        { locationId: { $exists: 0 } },
-        { $set: { locationId: Locations.findOne({ slug: "bar" })._id } },
+        { locationId: { $exists: false } },
+        { $set: { locationId: Locations.findOne({ slug: "bar" })!._id } },
         { multi: true },
       );
     }
   });
 
 Meteor.methods({
-  "Sales.sellProducts"({ locationSlug, productIds }) {
+  "Sales.sellProducts"({
+    locationSlug,
+    productIds,
+  }: {
+    locationSlug: ILocation["slug"];
+    productIds: IProduct["_id"][];
+  }) {
     if (this.isSimulation) return;
     if (!locationSlug || !productIds) throw new Meteor.Error("misisng");
     const { userId } = this;
@@ -41,11 +61,11 @@ Meteor.methods({
       currency: "HAX",
       country: "DK",
       amount: productIds.reduce(
-        (m, _id) => m + +Products.findOne({ _id }).salePrice,
+        (m: number, _id) => m + Number(Products.findOne({ _id })?.salePrice),
         0,
       ),
       timestamp: new Date(),
-      products: productIds.map((_id) => Products.findOne({ _id })),
+      products: productIds.map((_id) => Products.findOne({ _id })!),
     };
     return Sales.insert(newSale);
   },
@@ -53,4 +73,5 @@ Meteor.methods({
 
 export default Sales;
 
+//@ts-expect-error
 if (Meteor.isClient) window.Sales = Sales;

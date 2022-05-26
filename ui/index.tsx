@@ -1,17 +1,17 @@
 import { css } from "emotion";
+import { useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
-import React, { useEffect } from "react";
+import React from "react";
+import { useEffect } from "react";
 import {
   Link,
-  Redirect,
+  Navigate,
   Route,
-  Switch,
-  useHistory,
-  useRouteMatch,
+  Routes,
+  useMatch,
+  useNavigate,
 } from "react-router-dom";
-import { useTracker } from "meteor/react-meteor-data";
-
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -28,24 +28,25 @@ import PageTend from "./PageTend";
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
 export default function UI() {
-  console.log("UI");
-  const history = useHistory();
+  const navigate = useNavigate();
   const GALAXY_APP_VERSION_ID = useTracker(
     () => Session.get("GALAXY_APP_VERSION_ID") || "420",
   );
-  const { params: { locationSlug, 0: pageSlug } = {} } =
-    useRouteMatch("/:locationSlug/*") || {};
+  const match = useMatch("/:locationSlug/*");
+  const locationSlug = match?.params.locationSlug;
+  const pageSlug = (match?.params as any)["*"] as string | undefined;
+
   const user = useCurrentUser();
   const { data: locations, loading } = useMongoFetch(Locations);
-  const userLocations = locations.filter(({ teamName }) =>
+  const userLocations = locations?.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );
-  const currentLocation = useCurrentLocation()?.location || locations[0];
+  const currentLocation = useCurrentLocation()?.location || locations?.[0];
   useEffect(() => {
-    if (userLocations.length && !locationSlug) {
-      history.push("/" + userLocations[0].slug + "/");
+    if (userLocations?.length && !locationSlug) {
+      navigate("/" + userLocations[0].slug + "/");
     }
-  }, [history, locationSlug, userLocations]);
+  }, [navigate, locationSlug, userLocations]);
   const [, setTitle] = useSession("DocumentTitle");
   useEffect(() => {
     if (currentLocation && pageSlug) {
@@ -61,7 +62,8 @@ export default function UI() {
     }
   }, [currentLocation, setTitle, pageSlug, locationSlug]);
 
-  if (!currentLocation || loading) return "Loading...";
+  if (!currentLocation || loading) return <>Loading...</>;
+
   return (
     <div
       className={css`
@@ -100,17 +102,17 @@ export default function UI() {
             }
           `}
         >
-          {user && userLocations.length > 1 ? (
+          {user && userLocations && userLocations.length > 1 ? (
             <select
               onChange={(event) =>
-                history.push("/" + event.target.value + "/" + pageSlug)
+                navigate("/" + event.target.value + "/" + pageSlug)
               }
               value={locationSlug}
               className={css`
                 font-size: larger;
               `}
             >
-              {userLocations.map(({ name, slug }) => (
+              {userLocations?.map(({ name, slug }) => (
                 <option key={slug} value={slug}>
                   {name}
                 </option>
@@ -143,59 +145,58 @@ export default function UI() {
           <AccountsUIWrapper />
         </nav>
       </div>
-      <Switch>
+      <Routes>
         <Route
-          exact
           path="/:locationSlug"
-          component={() => <Redirect to={`/${locationSlug}/tend`} />}
+          element={<Navigate to={`/${locationSlug}/tend`} />}
         />
-        <Route exact path="/:locationSlug/tend" component={PageTend} />
-        <Route exact path="/:locationSlug/stock" component={PageStock} />
-        <Route exact path="/:locationSlug/sales" component={PageSales} />
-        <Route exact path="/:locationSlug/stats" component={PageStats} />
-        <Route exact path="/:locationSlug/menu" component={PageMenu} />
+        <Route path="/:locationSlug/tend" element={<PageTend />} />
+        <Route path="/:locationSlug/stock" element={<PageStock />} />
+        <Route path="/:locationSlug/sales" element={<PageSales />} />
+        <Route path="/:locationSlug/stats" element={<PageStats />} />
+        <Route path="/:locationSlug/menu" element={<PageMenu />} />
         <Route
-          exact
           path="/"
-          component={() => {
-            return (
-              <center>
-                <br />
-                <ul
-                  className={css`
-                    padding: 0;
-                    margin: 0;
-                    list-style: none;
-                    display: flex;
-                    font-size: 3em;
-                    justify-content: space-evenly;
-                  `}
-                >
-                  {locations.map((location) => (
-                    <li
-                      key={location._id}
-                      className={css`
-                        margin-bottom: 16px;
-                      `}
-                    >
-                      {location.name}
-                      <br />
-                      <Link to={`/${location.slug}/stats`}>Stats</Link>
-                      <br />
-                      <Link to={`/${location.slug}/menu`}>Menu</Link>
-                    </li>
-                  ))}
-                </ul>
-              </center>
-            );
-          }}
+          element={
+            <div
+              className={css`
+                text-align: center;
+              `}
+            >
+              <br />
+              <ul
+                className={css`
+                  padding: 0;
+                  margin: 0;
+                  list-style: none;
+                  display: flex;
+                  font-size: 3em;
+                  justify-content: space-evenly;
+                `}
+              >
+                {locations?.map((location) => (
+                  <li
+                    key={location._id}
+                    className={css`
+                      margin-bottom: 16px;
+                    `}
+                  >
+                    {location.name}
+                    <br />
+                    <Link to={`/${location.slug}/stats`}>Stats</Link>
+                    <br />
+                    <Link to={`/${location.slug}/menu`}>Menu</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          }
         />
         <Route
-          exact
           path="/signin"
-          component={() =>
+          element={
             user ? (
-              <Redirect to="/" />
+              <Navigate to="/" />
             ) : (
               <div>
                 <AccountsUIWrapper />
@@ -203,10 +204,18 @@ export default function UI() {
             )
           }
         />
-        <>
-          <center>not found</center>
-        </>
-      </Switch>
+        <Route
+          element={
+            <div
+              className={css`
+                text-align: center;
+              `}
+            >
+              not found
+            </div>
+          }
+        />
+      </Routes>
     </div>
   );
 }

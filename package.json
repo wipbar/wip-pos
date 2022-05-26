@@ -9,43 +9,48 @@
     "visualize": "meteor --production --extra-packages bundle-visualizer"
   },
   "dependencies": {
-    "@babel/runtime": "^7.11.2",
-    "@fortawesome/free-solid-svg-icons": "^5.14.0",
-    "bcrypt": "^5.0.0",
+    "@babel/runtime": "^7.18.3",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "bcrypt": "^5.0.1",
     "date-fns": "^1.30.1",
     "emotion": "^10.0.27",
-    "history": "^5.0.0",
-    "jquery": "^3.5.1",
-    "lodash": "^4.17.19",
-    "meteor-node-stubs": "^1.0.1",
-    "react": "^16.13.1",
-    "react-countdown": "^2.2.1",
-    "react-dom": "^16.13.1",
+    "history": "^5.3.0",
+    "jquery": "^3.6.0",
+    "lodash": "^4.17.21",
+    "meteor-node-stubs": "^1.2.3",
+    "react": "^18.1.0",
+    "react-countdown": "^2.3.2",
+    "react-dom": "^18.1.0",
     "react-hook-form": "^6.3.1",
-    "react-masonry-css": "^1.0.14",
+    "react-masonry-css": "^1.0.16",
     "react-meteor-hooks": "^0.3.1",
-    "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0",
-    "react-select": "^3.1.0",
-    "recharts": "^1.7.0",
-    "simpl-schema": "^1.9.0",
+    "react-router": "^6.3.0",
+    "react-router-dom": "^6.3.0",
+    "react-select": "^5.3.2",
+    "recharts": "^2.1.10",
+    "simpl-schema": "^1.12.1",
     "tdigest": "^0.1.1",
     "use-sound": "^4.0.1"
   },
   "meteor": {
     "mainModule": {
-      "client": "client/main.js",
-      "server": "server/main.js"
+      "client": "client/main.tsx",
+      "server": "server/main.ts"
     },
-    "testModule": "tests/main.js"
+    "testModule": "tests/main.ts"
   },
   "devDependencies": {
+    "@types/fibers": "^3.1.1",
+    "@types/meteor": "^2.6.3",
+    "@types/mocha": "^9.1.1",
+    "@types/react": "^18.0.9",
+    "@types/react-dom": "^18.0.5",
     "babel-eslint": "^10.1.0",
-    "eslint": "^7.6.0",
-    "eslint-config-prettier": "^6.11.0",
+    "eslint": "^8.16.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-babel": "^5.3.1",
-    "eslint-plugin-prettier": "^3.1.4",
-    "eslint-plugin-react": "^7.20.5",
-    "eslint-plugin-react-hooks": "^4.0.8"
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.30.0",
+    "eslint-plugin-react-hooks": "^4.5.0"
   }
 }

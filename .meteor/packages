@@ -34,3 +34,4 @@ jquery
 session@1.2.0
 hot-module-replacement@0.5.1
 deps
+typescript

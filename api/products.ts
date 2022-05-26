@@ -3,12 +3,27 @@ import { Mongo } from "meteor/mongo";
 import { assertUserInAnyTeam } from "./accounts";
 import Locations from "./locations";
 
-const Products = new Mongo.Collection("products");
-const addProduct = (product) => Products.insert(product);
+export interface IProduct {
+  _id: string;
+  createdAt: Date;
+  brandName?: string;
+  name: string;
+  description?: string;
+  salePrice?: number;
+  unitSize?: number;
+  sizeUnit?: string;
+  abv?: number;
+  tags?: string[];
+  shopPrices?: { buyPrice: number; timestamp: Date }[];
+}
+
+const Products = new Mongo.Collection<IProduct>("products");
+
 if (Meteor.isServer)
   Meteor.startup(() => {
     if (Products.find().count() === 0) {
-      addProduct({
+      Products.insert({
+        createdAt: new Date(),
         name: "øl",
         salePrice: 25,
         unitSize: 500,
@@ -21,21 +36,24 @@ if (Meteor.isServer)
       const products = Products.find({ isOnMenu: { $exists: 1 } }).fetch();
       products.forEach(({ _id }) =>
         Products.update(_id, {
-          $set: { locationIds: [Locations.findOne({ slug: "bar" })._id] },
+          $set: { locationIds: [Locations.findOne({ slug: "bar" })?._id] },
           $unset: { isOnMenu: "" },
         }),
       );
     }
-    const stringTagsProductsQuery = {
+
+    const stringTagsProductsCursor = Products.find({
       tags: { $type: "string", $not: { $type: "array" } },
-    };
-    if (Products.find(stringTagsProductsQuery).count()) {
-      const products = Products.find(stringTagsProductsQuery).fetch();
+    });
+    if (stringTagsProductsCursor.count()) {
+      const products = stringTagsProductsCursor.fetch();
       console.log(
         `Migrating ${products.length} products from string to array tags.`,
       );
       products.forEach(({ _id, tags }) =>
-        Products.update(_id, { $set: { tags: tags ? tags.split(",") : [] } }),
+        Products.update(_id, {
+          $set: { tags: tags ? (tags as unknown as string).split(",") : [] },
+        }),
       );
     }
   });
@@ -54,7 +72,7 @@ Meteor.methods({
       unitSize: data.unitSize && Number(data.unitSize.trim()),
       sizeUnit: data.sizeUnit.trim(),
       abv: data.abv?.trim() && Number(data.abv.trim()),
-      tags: data.tags?.map((tag) => tag.trim().toLowerCase()) || [],
+      tags: data.tags?.map((tag: string) => tag.trim().toLowerCase()) || [],
       shopPrices: data.buyPrice
         ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: new Date() }]
         : undefined,
@@ -67,7 +85,7 @@ Meteor.methods({
       $set: {
         ...updatedProduct,
         shopPrices: buyPrice?.trim()
-          ? (oldProduct.shopPrices || []).concat([
+          ? (oldProduct?.shopPrices || []).concat([
               { buyPrice: +buyPrice.trim(), timestamp: new Date() },
             ])
           : undefined,
@@ -82,9 +100,10 @@ Meteor.methods({
   },
 });
 
+// @ts-expect-error
 if (Meteor.isClient) window.Products = Products;
 
-export function isAlcoholic(product) {
+export function isAlcoholic(product: IProduct) {
   if (
     product.tags?.includes("cocktail") ||
     product.tags?.includes("beer") ||

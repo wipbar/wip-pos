@@ -6,8 +6,11 @@ import ProductPicker from "./ProductPicker";
 
 export default function PageTend() {
   const { error, loading } = useCurrentLocation(true);
-  if (loading) return "Loading...";
+
+  if (loading) return <>Loading...</>;
+
   if (error) return error;
+
   return (
     <div
       className={css`

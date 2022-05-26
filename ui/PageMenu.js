@@ -139,15 +139,18 @@ export default function PageMenu() {
             return memo;
           }, []),
       ),
-    [location.curfew, products],
+    [location?.curfew, products],
   );
 
-  if (productsLoading || locationLoading || salesLoading) return "Loading...";
+  if (productsLoading || locationLoading || salesLoading)
+    return <>Loading...</>;
+
   if (error) return error;
+
   const randomIndex = getRandomInt(0, productsGroupedByTags?.length - 1);
   const randomIndex2 = getRandomInt(0, productsGroupedByTags?.length - 1);
 
-  if (!productsGroupedByTags.length)
+  if (!productsGroupedByTags.length) {
     return (
       <marquee scrollAmount="20">
         <big
@@ -171,6 +174,7 @@ export default function PageMenu() {
         </center>
       </marquee>
     );
+  }
   return (
     <div className="my-masonry-grid">
       {productsGroupedByTags

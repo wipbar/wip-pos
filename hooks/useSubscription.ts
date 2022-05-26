@@ -2,15 +2,15 @@ import { Tracker } from "meteor/tracker";
 import { useEffect, useState } from "react";
 import SubsManager from "../SubsManager";
 
-console.log(SubsManager);
-export default function useSubscription(pubName, ...subOpts) {
+export default function useSubscription(pubName: string, ...subOpts: any[]) {
   const [loading, setLoading] = useState(true);
-  let comp = null;
-  let handle = null;
+  let comp: ReturnType<typeof Tracker.autorun> | null = null;
+  let handle: ReturnType<typeof SubsManager.subscribe> | null = null;
 
   const stopComp = () => {
-    comp?.stop?.();
-    handle?.stop?.();
+    comp?.stop();
+    if (handle && "stop" in handle) handle.stop();
+
     comp = null;
     handle = null;
   };

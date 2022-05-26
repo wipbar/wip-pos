@@ -90,7 +90,7 @@ export default function PageStock() {
     [showOnlyMenuItems, showRemoved, location?._id, sortBy],
   );
 
-  if (loading || locationLoading) return "Loading...";
+  if (loading || locationLoading) return <>Loading...</>;
 
   if (error) return error;
 

@@ -2,13 +2,22 @@ import { endOfDay, startOfDay } from "date-fns";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 
-const Camps = new Mongo.Collection("camps");
-const addCamp = (camps) => Camps.insert(camps);
+export interface ICamp {
+  name: string;
+  slug: string;
+  buildup: Date;
+  start: Date;
+  end: Date;
+  color: string;
+}
+
+const Camps = new Mongo.Collection<ICamp>("camps");
+
 if (Meteor.isServer) {
   Meteor.startup(() => {
     if (Camps.find().count() === 0) {
       console.log("Seeding camps");
-      addCamp({
+      Camps.insert({
         name: "BornHack 2019",
         slug: "bornhack-2019",
         buildup: new Date(2019, 7, 5, 12),
@@ -16,7 +25,7 @@ if (Meteor.isServer) {
         end: endOfDay(new Date(2019, 7, 15)),
         color: "#FFED00",
       });
-      addCamp({
+      Camps.insert({
         name: "BornHack 2020",
         slug: "bornhack-2020",
         buildup: new Date(2020, 7, 7, 12),
@@ -26,7 +35,7 @@ if (Meteor.isServer) {
       });
     }
     if (!Camps.findOne({ slug: "bornhack-2021" })) {
-      addCamp({
+      Camps.insert({
         name: "BornHack 2021",
         slug: "bornhack-2021",
         buildup: new Date(2021, 7, 13, 12),
@@ -36,7 +45,7 @@ if (Meteor.isServer) {
       });
     }
     if (!Camps.findOne({ slug: "bornhack-2022" })) {
-      addCamp({
+      Camps.insert({
         name: "BornHack 2022",
         slug: "bornhack-2022",
         buildup: new Date(2022, 6, 30, 12),
@@ -48,4 +57,6 @@ if (Meteor.isServer) {
   });
 }
 export default Camps;
+
+// @ts-expect-error
 if (Meteor.isClient) window.Camps = Camps;

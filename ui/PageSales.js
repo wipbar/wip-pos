@@ -66,7 +66,7 @@ export default function PageSales() {
     [sales],
   );
 
-  if (salesLoading || productsLoading) return "Loading...";
+  if (salesLoading || productsLoading) return <>Loading...</>;
 
   if (error) return error;
 

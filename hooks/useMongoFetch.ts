@@ -1,15 +1,21 @@
 import { Mongo } from "meteor/mongo";
 import { useTracker } from "meteor/react-meteor-data";
+import { DependencyList } from "react";
 import useSubscription from "./useSubscription";
 
-const emptyArray = [];
-export default function useMongoFetch(query, deps = emptyArray) {
+const emptyArray: [] = [];
+export default function useMongoFetch<T>(
+  query: Mongo.Collection<T> | Mongo.Cursor<T>,
+  deps: DependencyList = emptyArray,
+) {
   return {
     loading: useSubscription(
       query instanceof Mongo.Collection
-        ? query._name
+        ? //@ts-expect-error
+          query._name
         : query instanceof Mongo.Cursor
-        ? query.collection.name
+        ? //@ts-expect-error
+          query.collection.name
         : false,
     ),
     data: useTracker(() => {
