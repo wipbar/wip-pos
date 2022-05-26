@@ -108,30 +108,32 @@ export default function CampByCamp() {
   }, [camps, longestCampHours, sales]);
   if (campsLoading || salesLoading) return "Loading...";
   let prev = 0;
-  const weights = data.map((data) => (prev = data["bornhack-2021"] || prev));
+  const weights = data.map((data) => (prev = data[currentCamp.slug] || prev));
   const yMax = Math.max(...weights);
   const timestamps = data.map((data) => data.hour);
   const xMax = Math.max(...timestamps);
   const nowHour = Math.max(
-    ...data.filter((d) => d["bornhack-2021"]).map((data) => data.hour),
+    ...data.filter((d) => d[currentCamp.slug]).map((data) => data.hour),
   );
 
   const trendData = (() => {
     const trend = createTrend(
-      data.filter((d) => d["bornhack-2021"]),
+      data.filter((d) => d[currentCamp.slug]),
       "hour",
-      "bornhack-2021",
+      currentCamp.slug,
     );
 
     return [
       {
-        "bornhack-2021-trend": data.find(
-          (d) => d["bornhack-2021"] && d.hour === nowHour,
-        )?.["bornhack-2021"],
+        [currentCamp.slug + "-trend"]: data.find(
+          (d) => d[currentCamp.slug] && d.hour === nowHour,
+        )?.[currentCamp.slug],
         hour: nowHour,
       },
       {
-        "bornhack-2021-trend": trend.calcY(Math.min(xMax, nowHour + 24)),
+        [currentCamp.slug + "-trend"]: trend.calcY(
+          Math.min(xMax, nowHour + 24),
+        ),
         hour: Math.min(xMax, nowHour + 24),
       },
     ];
