@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Layer,
   Rectangle,
@@ -7,10 +7,9 @@ import {
   Sankey,
   Tooltip,
 } from "recharts";
-import { useTracker } from "meteor/react-meteor-data";
 import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
-import Camps, { ICamp } from "../api/camps";
+import { ICamp } from "../api/camps";
 import { isPast } from "date-fns";
 import useMongoFetch from "../hooks/useMongoFetch";
 import { SankeyLink, SankeyNode } from "recharts/types/util/types";
@@ -118,24 +117,24 @@ function Link({
     />
   );
 }
-export default function SalesSankey() {
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-
-  const data = useTracker(() => {
-    const sales = Sales.find({
-      timestamp: {
+export default function SalesSankey({ currentCamp }: { currentCamp: ICamp }) {
+  const { data: sales } = useMongoFetch(
+    Sales.find({
+      timestamp: currentCamp && {
         $gte: isPast(currentCamp?.start)
           ? currentCamp?.start
           : currentCamp?.buildup,
         $lte: currentCamp?.end,
       },
-    }).fetch();
+    }),
+  );
+  const { data: products } = useMongoFetch(Products);
+
+  const data = useMemo(() => {
     const productsSold = sales.reduce<IProduct[]>((memo, sale) => {
       memo.push(
         ...sale.products
-          .map((product) => Products.findOne(product._id))
+          .map((product) => products.find(({ _id }) => _id === product._id))
           .filter((product): product is IProduct => Boolean(product)),
       );
       return memo;
@@ -267,7 +266,7 @@ export default function SalesSankey() {
     };
 
     return data0;
-  }, []);
+  }, [sales, products]);
 
   return (
     <ResponsiveContainer width={"100%"} height={350}>
