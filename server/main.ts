@@ -23,16 +23,16 @@ Meteor.startup(() => {
           product.brandName?.toLowerCase().includes("ærø") ||
           product.brandName?.toLowerCase().includes("pilsner"))
       ) {
-        Products.update(product._id, { $set: { tags: "beer,bottle" } });
+        Products.update(product._id, { $set: { tags: ["beer", "bottle"] } });
         if (product.name.toLowerCase().includes("tap:")) {
-          Products.update(product._id, { $set: { tags: "beer,tap" } });
+          Products.update(product._id, { $set: { tags: ["beer", "tap"] } });
         }
       }
       if (
         !product.tags &&
         product.brandName?.toLowerCase().includes("naturfrisk")
       ) {
-        Products.update(product._id, { $set: { tags: "soda,bottle" } });
+        Products.update(product._id, { $set: { tags: ["soda", "bottle"] } });
       }
     });
   /*

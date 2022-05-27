@@ -346,6 +346,11 @@
   dependencies:
     "@types/sizzle" "*"
 
+"@types/lodash@^4.14.182":
+  "integrity" "sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q=="
+  "resolved" "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.182.tgz"
+  "version" "4.14.182"
+
 "@types/meteor@^2.6.3":
   "integrity" "sha512-T2AQEqGpNUefkD0tWOKtG6FOfXDVwl1OjZIJRtFHtRCctkohHVu4MB7FmqnjsP7eItBW2M7FJrRH1/VVNQLjkA=="
   "resolved" "https://registry.npmjs.org/@types/meteor/-/meteor-2.6.3.tgz"

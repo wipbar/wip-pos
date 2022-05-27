@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@types/fibers": "^3.1.1",
+    "@types/lodash": "^4.14.182",
     "@types/meteor": "^2.6.3",
     "@types/mocha": "^9.1.1",
     "@types/react": "^18.0.9",

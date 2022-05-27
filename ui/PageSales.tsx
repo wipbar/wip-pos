@@ -1,16 +1,16 @@
 import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
 import { css } from "emotion";
 import { groupBy } from "lodash";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Camps from "../api/camps";
-import Products from "../api/products";
-import Sales from "../api/sales";
+import Products, { IProduct } from "../api/products";
+import Sales, { ISale } from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 
 const rolloverOffset = 5;
 
-function saveAs(blob, type, name) {
+function saveAs(blob: string, type: string, name: string) {
   const a = window.document.createElement("a");
   a.href = window.URL.createObjectURL(new Blob([blob], { type }));
   a.download = name;
@@ -19,13 +19,13 @@ function saveAs(blob, type, name) {
   document.body.removeChild(a);
 }
 
-const getSaleExpenses = (sale, products) =>
+const getSaleExpenses = (sale: ISale, products: IProduct[]) =>
   sale.products.reduce((m, saleProduct) => {
     const currentProduct =
       products.find(({ _id }) => _id === saleProduct._id) || saleProduct;
     const shopPrice = (currentProduct.shopPrices || [])
       .filter(({ timestamp }) => timestamp < sale.timestamp)
-      .sort((a, b) => b.timestamp - a.timestamp)?.[0]?.buyPrice;
+      .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))?.[0]?.buyPrice;
 
     if (!shopPrice) return m + Number(currentProduct.salePrice);
 
@@ -51,7 +51,7 @@ export default function PageSales() {
     ),
     [location, selectedCamp],
   );
-  const { data: products, productsLoading } = useMongoFetch(
+  const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const salesByDay = useMemo(
@@ -61,8 +61,8 @@ export default function PageSales() {
           startOfDay(subHours(timestamp, rolloverOffset)).toISOString(),
         ),
       )
-        .map(([date, data]) => [new Date(date), data])
-        .sort(([a], [b]) => a - b),
+        .map(([date, data]) => [new Date(date), data] as const)
+        .sort(([a], [b]) => Number(a) - Number(b)),
     [sales],
   );
 
@@ -91,13 +91,13 @@ export default function PageSales() {
       >
         {salesByDay.map(([day, salesOfDay], i) => (
           <li
-            key={day}
+            key={Number(day)}
             className={css`
               padding: 0 4px;
               border: 2px solid red;
             `}
           >
-            <details open={i === salesByDay.length - 1 ? "open" : undefined}>
+            <details open={i === salesByDay.length - 1 ? true : undefined}>
               <summary
                 className={css`
                   white-space: nowrap;
@@ -125,6 +125,7 @@ export default function PageSales() {
                 <small>
                   <button
                     type="button"
+                    disabled={!location}
                     onClick={() => {
                       const statements = salesOfDay.map((sale) => ({
                         timestamp: sale.timestamp,
@@ -135,7 +136,7 @@ export default function PageSales() {
                       saveAs(
                         JSON.stringify(statements),
                         "application/json;charset=utf-8;",
-                        `${location.slug}-${format(day, "YYYY-MM-DD")}.json`,
+                        `${location?.slug}-${format(day, "YYYY-MM-DD")}.json`,
                       );
                     }}
                   >

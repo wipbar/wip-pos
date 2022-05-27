@@ -1,5 +1,5 @@
 import { isPast, isWithinRange, min, subHours } from "date-fns";
-import { useMemo } from "react";
+import { ComponentProps, useMemo } from "react";
 import Camps from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
@@ -13,7 +13,7 @@ export default function ProductTrend({
   ...props
 }: {
   product: IProduct;
-}) {
+} & ComponentProps<typeof Fire>) {
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));

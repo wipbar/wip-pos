@@ -2,8 +2,8 @@ import { css } from "emotion";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
-import Locations from "../api/locations";
-import Products from "../api/products";
+import Locations, { ILocation } from "../api/locations";
+import Products, { IProduct } from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
@@ -40,7 +40,13 @@ const Label = ({ label, children }) => (
     </div>
   </label>
 );
-export default function PageStockItem({ onCancel, product }) {
+export default function PageStockItem({
+  onCancel,
+  product,
+}: {
+  onCancel: () => void;
+  product?: IProduct;
+}) {
   const { data: locations } = useMongoFetch(Locations);
   const { location } = useCurrentLocation();
   const [addProduct] = useMethod("Products.addProduct");
@@ -51,14 +57,14 @@ export default function PageStockItem({ onCancel, product }) {
       product.tags?.forEach((tag) => memo.add(tag.trim()));
 
       return memo;
-    }, new Set()),
+    }, new Set<string>()),
   ].filter(Boolean);
   const allBrandNames = [
     ...products.reduce((memo, product) => {
-      memo.add(product.brandName);
+      if (product.brandName) memo.add(product.brandName);
 
       return memo;
-    }, new Set()),
+    }, new Set<string>()),
   ].filter(Boolean);
 
   const {
@@ -85,7 +91,9 @@ export default function PageStockItem({ onCancel, product }) {
   };
   const mostRecentShopPrice =
     product?.shopPrices &&
-    [...product.shopPrices].sort((a, b) => b.timestamp - a.timestamp)[0];
+    [...product.shopPrices].sort(
+      (a, b) => Number(b.timestamp) - Number(a.timestamp),
+    )[0];
 
   return (
     <form
@@ -257,7 +265,7 @@ export default function PageStockItem({ onCancel, product }) {
             {product?.locationIds
               ?.filter((id) => id !== location?._id)
               .map((id) => locations.find(({ _id }) => id === _id))
-              .filter(Boolean)
+              .filter((location): location is ILocation => Boolean(location))
               .map(({ slug, name }) => (
                 <span key={slug}>{name}</span>
               ))}

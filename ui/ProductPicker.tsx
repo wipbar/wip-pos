@@ -1,15 +1,17 @@
 import { css } from "emotion";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { HTMLProps, useCallback, useEffect, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor, stringToColour } from "../util";
 
-const removeItem = (items, i) =>
-  items.slice(0, i).concat(items.slice(i + 1, items.length));
-const tagsToString = (tags = []) => [...tags].sort().join(",");
-export default function ProductPicker(props) {
+function removeItem<T>(items: T[], i: number) {
+  return items.slice(0, i).concat(items.slice(i + 1, items.length));
+}
+const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
+
+export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   const { location } = useCurrentLocation();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
   const [showItemDetails, setShowItemDetails] = useState(true);
@@ -21,8 +23,8 @@ export default function ProductPicker(props) {
     () => setShowItemDetails(!showItemDetails),
     [showItemDetails],
   );
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [pickedProductIds, setPickedProductIds] = useSession(
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [pickedProductIds, setPickedProductIds] = useSession<string[]>(
     "pickedProductIds",
     [],
   );
@@ -38,7 +40,7 @@ export default function ProductPicker(props) {
     Products.find({ removedAt: { $exists: false } }),
   );
   const toggleTag = useCallback(
-    (tag) =>
+    (tag: string) =>
       setActiveFilters(
         activeFilters.includes(tag.trim())
           ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
@@ -49,15 +51,19 @@ export default function ProductPicker(props) {
   const allTags = [
     ...products
       .filter((product) =>
-        showOnlyMenuItems ? product.locationIds?.includes(location._id) : true,
+        showOnlyMenuItems && location
+          ? product.locationIds?.includes(location._id)
+          : true,
       )
       .reduce((memo, product) => {
         product.tags?.forEach((tag) => memo.add(tag.trim()));
 
         return memo;
-      }, new Set()),
+      }, new Set<string>()),
   ];
-  if (loading) return "Loading...";
+
+  if (loading) return <>Loading...</>;
+
   return (
     <div {...props}>
       <div
@@ -163,10 +169,12 @@ export default function ProductPicker(props) {
         `}
       >
         {[...products]
-          .filter((product) => (location.curfew ? !isAlcoholic(product) : true))
+          .filter((product) =>
+            location?.curfew ? !isAlcoholic(product) : true,
+          )
           .sort((a, b) => a.name.localeCompare(b.name))
           .sort((a, b) => a.brandName.localeCompare(b.brandName))
-          .sort((a, b) => a.tap?.localeCompare(b.tap) || 0)
+          .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
           .sort((a, b) =>
             tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
           )
@@ -175,11 +183,11 @@ export default function ProductPicker(props) {
             if (!product.tags) return true;
 
             return activeFilters.every((filter) =>
-              product.tags.map((tag) => tag.trim()).includes(filter.trim()),
+              product.tags?.map((tag) => tag.trim()).includes(filter.trim()),
             );
           })
           .filter((product) =>
-            showOnlyMenuItems
+            showOnlyMenuItems && location
               ? product.locationIds?.includes(location._id)
               : true,
           )

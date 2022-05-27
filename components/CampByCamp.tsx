@@ -113,7 +113,9 @@ export default function CampByCamp() {
     }
     return [data, campTotals];
   }, [camps, longestCampHours, sales]);
-  if (campsLoading || salesLoading) return "Loading...";
+
+  if (campsLoading || salesLoading) return <>Loading...</>;
+
   let prev = 0;
   const weights = data.map((data) => (prev = data[currentCamp.slug] || prev));
   const yMax = Math.max(...weights);

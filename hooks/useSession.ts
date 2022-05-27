@@ -2,11 +2,19 @@ import { Session } from "meteor/session";
 import { useCallback, useEffect } from "react";
 import { useTracker } from "meteor/react-meteor-data";
 
-export default function useSession<T = unknown>(
+type NoFunctionValue =
+  | boolean
+  | string
+  | number
+  | null
+  | undefined
+  | NoFunctionValue[];
+
+export default function useSession<T extends NoFunctionValue = any>(
   sessionName: string,
   defaultValue?: T,
 ) {
-  const currentValue = useTracker(
+  const currentValue = useTracker<T>(
     () => Session.get(sessionName),
     [sessionName],
   );
@@ -16,12 +24,12 @@ export default function useSession<T = unknown>(
     }
   }, [currentValue, defaultValue, sessionName]);
   const setValue = useCallback(
-    (value: T) =>
+    (value: T | ((value: T) => T)) =>
       Session.set(
         sessionName,
         typeof value === "function" ? value(currentValue) : value,
       ),
     [currentValue, sessionName],
   );
-  return [currentValue, setValue];
+  return [currentValue, setValue] as const;
 }

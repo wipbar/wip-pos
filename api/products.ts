@@ -6,7 +6,7 @@ import Locations from "./locations";
 export interface IProduct {
   _id: string;
   createdAt: Date;
-  brandName?: string;
+  brandName: string;
   name: string;
   description?: string;
   salePrice?: number;
@@ -15,6 +15,8 @@ export interface IProduct {
   abv?: number;
   tags?: string[];
   shopPrices?: { buyPrice: number; timestamp: Date }[];
+  locationIds?: string[];
+  tap?: string;
 }
 
 const Products = new Mongo.Collection<IProduct>("products");
@@ -25,6 +27,7 @@ if (Meteor.isServer)
       Products.insert({
         createdAt: new Date(),
         name: "øl",
+        brandName: "ølhanen",
         salePrice: 25,
         unitSize: 500,
         sizeUnit: "ml",
@@ -36,7 +39,7 @@ if (Meteor.isServer)
       const products = Products.find({ isOnMenu: { $exists: 1 } }).fetch();
       products.forEach(({ _id }) =>
         Products.update(_id, {
-          $set: { locationIds: [Locations.findOne({ slug: "bar" })?._id] },
+          $set: { locationIds: [Locations.findOne({ slug: "bar" })!._id] },
           $unset: { isOnMenu: "" },
         }),
       );

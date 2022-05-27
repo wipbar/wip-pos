@@ -1,7 +1,7 @@
 import { Meteor } from "meteor/meteor";
 import { useCallback, useReducer } from "react";
 
-export default function useMethod<Input extends any[] = any[], Output = any>(
+export default function useMethod<Input extends any = any, Output = any>(
   method: string | Function,
 ) {
   const [{ isLoading, error, data }, dispatch] = useReducer(
@@ -41,7 +41,7 @@ export default function useMethod<Input extends any[] = any[], Output = any>(
   );
 
   const call = useCallback(
-    (...args: Input) =>
+    (params: Input) =>
       new Promise((resolve, reject) => {
         dispatch({ type: "loading" });
         const callbackHandler = (err: Error, result: Output) => {
@@ -55,11 +55,11 @@ export default function useMethod<Input extends any[] = any[], Output = any>(
         };
 
         typeof method === "function"
-          ? method.call(args, callbackHandler)
-          : Meteor.call(method, ...args, callbackHandler);
+          ? method.call(params, callbackHandler)
+          : Meteor.call(method, params, callbackHandler);
       }),
     [method],
   );
 
-  return [call, { isLoading, data, error }];
+  return [call, { isLoading, data, error }] as const;
 }

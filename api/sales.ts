@@ -5,11 +5,12 @@ import Locations, { ILocation } from "./locations";
 import Products, { IProduct } from "./products";
 
 export interface ISale {
+  _id: string;
   userId?: string;
   locationId: string;
   currency?: string;
   country?: string;
-  amount?: number;
+  amount: number;
   timestamp: Date;
   products: IProduct[];
 }
@@ -21,8 +22,16 @@ if (Meteor.isServer)
     if (Sales.find().count() === 0) {
       Sales.insert({
         timestamp: new Date(),
+        amount: 0,
         locationId: Locations.findOne({ slug: "bar" })!._id,
-        products: [{ createdAt: new Date(), _id: "blahh", name: "some rodut" }],
+        products: [
+          {
+            createdAt: new Date(),
+            _id: "blahh",
+            brandName: "the abrand",
+            name: "some rodut",
+          },
+        ],
       });
     }
     if (Sales.find({ locationId: { $exists: false } }).count()) {

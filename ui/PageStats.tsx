@@ -20,7 +20,15 @@ import useCurrentDate from "../hooks/useCurrentDate";
 import DayByDay from "../components/DayByDay";
 
 const rolloverOffset = 5;
-const renderer = ({ hours, minutes, seconds, completed }) => {
+const renderer = ({
+  hours,
+  minutes,
+  seconds,
+}: {
+  hours: number;
+  minutes: number;
+  seconds: number;
+}) => {
   return (
     <span
       className={css`
@@ -52,7 +60,11 @@ function CurfewCountdown() {
     [currentDate],
   );
   return (
-    <center>
+    <div
+      className={css`
+        text-align: center;
+      `}
+    >
       <big>
         <Countdown date={next2am} renderer={renderer} daysInHours />
         <br />
@@ -64,7 +76,7 @@ function CurfewCountdown() {
           TILL CURFEW
         </span>
       </big>
-    </center>
+    </div>
   );
 }
 
@@ -102,7 +114,7 @@ export default function PageStats() {
   const mostSold = useMemo(
     () =>
       Object.entries(
-        sales.reduce((m, sale) => {
+        sales.reduce<Record<string, number>>((m, sale) => {
           sale.products.forEach((product) => {
             m[product._id] = m[product._id] ? m[product._id] + 1 : 1;
           });

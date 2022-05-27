@@ -1,6 +1,16 @@
-import React from "react";
+import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import React, { SVGProps } from "react";
 
-const FontAwesomeIcon = ({ icon, size, className = "", ...elProps }) => {
+const FontAwesomeIcon = ({
+  icon,
+  size,
+  className = "",
+  ...elProps
+}: {
+  icon: IconDefinition;
+  size?: number;
+  className?: string;
+} & SVGProps<SVGSVGElement>) => {
   if (!icon) return null;
 
   const {
@@ -26,7 +36,11 @@ const FontAwesomeIcon = ({ icon, size, className = "", ...elProps }) => {
       xmlns="http://www.w3.org/2000/svg"
       {...elProps}
     >
-      <path d={d} fill="currentColor" />
+      {Array.isArray(d) ? (
+        d.map((D) => <path d={D} fill="currentColor" />)
+      ) : (
+        <path d={d} fill="currentColor" />
+      )}
     </svg>
   );
 };

@@ -9,9 +9,9 @@ import {
   subHours,
 } from "date-fns";
 import { css } from "emotion";
-import React, { useMemo } from "react";
+import React, { SVGProps, useMemo } from "react";
 import Camps from "../api/camps";
-import Products, { isAlcoholic } from "../api/products";
+import Products, { IProduct, isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentDate from "../hooks/useCurrentDate";
@@ -24,9 +24,10 @@ function SparkLine({
   strokeWidth = 1,
   stroke = "transparent",
   fill = "#E22028",
-  minMaxY,
   ...props
-}) {
+}: {
+  data: [number, number][];
+} & SVGProps<SVGSVGElement>) {
   //  console.log(data);
   const viewBoxWidth = 1000;
   const viewBoxHeight = 10;
@@ -35,24 +36,25 @@ function SparkLine({
     if (data.length) {
       const xOffset = -1;
       const yOffset = viewBoxHeight;
-      let minX,
-        maxX,
-        minY,
-        maxY = minMaxY;
+      let minX: number | null = null,
+        maxX: number | null = null,
+        minY: number | null = null,
+        maxY: number | null = null;
+
       for (let [x, y] of data) {
         if (!minX || x < minX) minX = x;
         if (!maxX || x > maxX) maxX = x;
         if (!minY || y < minY) minY = y;
         if (!maxY || y > maxY) maxY = y;
       }
-      const XDelta = maxX - minX;
-      const YDelta = maxY - minY;
+      const XDelta = maxX! - minX!;
+      const YDelta = maxY! - minY!;
       let dataPoints = data
         .map(([x, y]) =>
           [
             "L",
-            xOffset + ((x - minX) / XDelta) * (viewBoxWidth + 1),
-            yOffset - ((y - minY) / YDelta) * viewBoxHeight,
+            xOffset + ((x - minX!) / XDelta) * (viewBoxWidth + 1),
+            yOffset - ((y - minY!) / YDelta) * viewBoxHeight,
           ].join(" "),
         )
         .join(" ");
@@ -60,7 +62,7 @@ function SparkLine({
       const lastPoint = `L ${xOffset + (viewBoxWidth + 1)} ${viewBoxHeight}`;
       return `M ${xOffset} ${yOffset} ${firstPoint} ${dataPoints} ${lastPoint}`;
     }
-  }, [data, minMaxY]);
+  }, [data]);
 
   return (
     <svg
@@ -78,7 +80,7 @@ function SparkLine({
 }
 
 const rolloverOffset = 5;
-function getRandomInt(min, max) {
+function getRandomInt(min: number, max: number) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -117,6 +119,7 @@ export default function PageMenu() {
     Products.find(
       {
         removedAt: { $exists: false },
+        // @ts-expect-error
         locationIds: { $elemMatch: { $eq: location?._id } },
       },
       { sort: { brandName: 1, name: 1 } },
@@ -128,8 +131,8 @@ export default function PageMenu() {
     () =>
       Object.entries(
         products
-          .filter((product) => (location.curfew ? isAlcoholic(product) : true))
-          .reduce((memo, product) => {
+          .filter((product) => (location?.curfew ? isAlcoholic(product) : true))
+          .reduce<Record<string, IProduct[]>>((memo, product) => {
             const key = [...(product.tags || [])].sort()?.join(",") || "other";
             if (memo[key]) {
               memo[key].push(product);
@@ -137,13 +140,14 @@ export default function PageMenu() {
               memo[key] = [product];
             }
             return memo;
-          }, []),
+          }, {}),
       ),
     [location?.curfew, products],
   );
 
-  if (productsLoading || locationLoading || salesLoading)
+  if (productsLoading || locationLoading || salesLoading) {
     return <>Loading...</>;
+  }
 
   if (error) return error;
 
@@ -182,26 +186,32 @@ export default function PageMenu() {
         .sort((a, b) => b[1].length - a[1].length)
         .map(([tags, products], i) => {
           const productsByBrandName = Object.entries(
-            products.reduce((m, product) => {
-              if (m[product.brandName]) {
-                m[product.brandName].push(product);
-              } else {
-                m[product.brandName] = [product];
-              }
+            products.reduce<Record<string, IProduct[]>>((m, product) => {
+              if (product.brandName)
+                if (m[product.brandName]) {
+                  m[product.brandName].push(product);
+                } else {
+                  m[product.brandName] = [product];
+                }
               return m;
             }, {}),
           )
             .sort(([, a], [, b]) => b.length - a.length)
-            .map(([brand, products]) => [
-              brand,
-              products
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .sort((a, b) => a.tap?.localeCompare(b.tap) || 0),
-            ])
+            .map(
+              ([brand, products]) =>
+                [
+                  brand,
+                  products
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0),
+                ] as const,
+            )
             .sort(
               ([, aProducts], [, bProducts]) =>
-                aProducts?.[0]?.tap?.localeCompare(bProducts?.[0]?.tap) || 0,
+                aProducts?.[0]?.tap?.localeCompare(bProducts?.[0]?.tap || "") ||
+                0,
             );
+
           return (
             <>
               <div key={tags} className={css``}>
@@ -211,7 +221,7 @@ export default function PageMenu() {
                     padding: 8px;
                   `}
                 >
-                  {tags?.join?.(", ") || tags}
+                  {tags}
                 </h3>
                 <ul
                   className={css`

@@ -4,7 +4,7 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { css } from "emotion";
-import React, { useState } from "react";
+import { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Products, { isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
@@ -14,8 +14,15 @@ import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import { getCorrectTextColor, stringToColour } from "../util";
 import PageStockItem from "./PageStockItem";
+import { ILocation } from "/api/locations";
 
-const Modal = ({ children, onDismiss }) => (
+const Modal = ({
+  children,
+  onDismiss,
+}: {
+  children: ReactNode | ReactNode[];
+  onDismiss?: () => void;
+}) => (
   <div
     onClick={onDismiss}
     className={css`
@@ -49,8 +56,10 @@ const Modal = ({ children, onDismiss }) => (
     </div>
   </div>
 );
-function CurfewButton({ location }) {
-  const [toggleCurfew] = useMethod("Locations.toggleCurfew");
+function CurfewButton({ location }: { location: ILocation }) {
+  const [toggleCurfew] = useMethod<{ locationId: string }>(
+    "Locations.toggleCurfew",
+  );
   return (
     <button
       type="button"
@@ -73,20 +82,23 @@ export default function PageStock() {
     loading: locationLoading,
   } = useCurrentLocation(true);
   const [showRemoved] = useState(false);
-  const [isEditing, setIsEditing] = useState(null);
+  const [isEditing, setIsEditing] = useState<null | string | typeof NEW>(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
-  const [sortBy, setSortBy] = useState(undefined);
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
   const { data: products, loading } = useMongoFetch(
-    Products.find(
-      {
-        removedAt: { $exists: showRemoved },
-        ...(showOnlyMenuItems
-          ? { locationIds: { $elemMatch: { $eq: location?._id } } }
-          : undefined),
-      },
-      { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
-    ),
+    location
+      ? Products.find(
+          // @ts-expect-error
+          {
+            removedAt: { $exists: showRemoved },
+            ...(showOnlyMenuItems
+              ? { locationIds: { $elemMatch: { $eq: location?._id } } }
+              : undefined),
+          },
+          { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
+        )
+      : undefined,
     [showOnlyMenuItems, showRemoved, location?._id, sortBy],
   );
 
@@ -130,7 +142,7 @@ export default function PageStock() {
             ))
           : null}
       </select>
-      <CurfewButton location={location} />
+      {location ? <CurfewButton location={location} /> : null}
       <hr />
       <table>
         <thead>
@@ -149,7 +161,8 @@ export default function PageStock() {
         </thead>
         <tbody>
           {products.map((product) => {
-            const isOnMenu = product.locationIds?.includes(location?._id);
+            const isOnMenu =
+              location && product.locationIds?.includes(location?._id);
             return (
               <tr key={product._id}>
                 <td>
@@ -157,7 +170,7 @@ export default function PageStock() {
                     onClick={() =>
                       editProduct({
                         productId: product._id,
-                        data: product.locationIds?.includes(location?._id)
+                        data: isOnMenu
                           ? {
                               locationIds: product.locationIds?.filter(
                                 (id) => id !== location?._id,
