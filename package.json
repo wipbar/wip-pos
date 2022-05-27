@@ -4,6 +4,7 @@
   "scripts": {
     "start": "meteor run --settings settings.json",
     "start-prod": "meteor run --settings production-settings.json",
+    "dump-prod": "mongodump --uri=\"$(jq '.\"galaxy.meteor.com\".env.MONGO_URL' production-settings.json)\" --out=\"mongodump/$(date '+%Y-%m-%d %H:%M:%S')\"",
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "visualize": "meteor --production --extra-packages bundle-visualizer"
