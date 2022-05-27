@@ -133,7 +133,11 @@ export default function SalesSankey() {
       },
     }).fetch();
     const productsSold = sales.reduce<IProduct[]>((memo, sale) => {
-      memo.push(...sale.products.map(({ _id }) => Products.findOne(_id)!));
+      memo.push(
+        ...sale.products
+          .map((product) => Products.findOne(product._id))
+          .filter((product): product is IProduct => Boolean(product)),
+      );
       return memo;
     }, []);
     const nodes = [
