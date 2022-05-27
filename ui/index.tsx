@@ -36,7 +36,7 @@ export default function UI() {
   const pageSlug = (match?.params as any)["*"] as string | undefined;
 
   const user = useCurrentUser();
-  const { data: locations, loading } = useMongoFetch(Locations);
+  const { data: locations } = useMongoFetch(Locations);
   const userLocations = locations?.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );
@@ -60,8 +60,6 @@ export default function UI() {
       );
     }
   }, [currentLocation, setTitle, pageSlug, locationSlug]);
-
-  if (!currentLocation || loading) return <>Loading...</>;
 
   return (
     <div
@@ -124,11 +122,16 @@ export default function UI() {
                   color: white;
                 `}
               >
-                {locationSlug ? currentLocation.name : "WIP POS"}
+                {locationSlug && currentLocation
+                  ? currentLocation.name
+                  : "WIP POS"}
               </span>
             </big>
           )}
-          {user && isUserInTeam(user, currentLocation.teamName) ? (
+          {user &&
+          locationSlug &&
+          currentLocation &&
+          isUserInTeam(user, currentLocation.teamName) ? (
             <>
               <Link to={`/${locationSlug}/tend`}>Tend</Link>
               <Link to={`/${locationSlug}/stock`}>Stock</Link>

@@ -28,7 +28,9 @@ export default function DayByDay() {
   const {
     data: [camp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const numberOfDaysInCurrentCamp = differenceInDays(camp.end, camp.start);
+  const numberOfDaysInCurrentCamp = camp
+    ? differenceInDays(camp.end, camp.start)
+    : 7; // Mostly they're 7 days
 
   const data = useMemo(
     () =>
@@ -39,7 +41,11 @@ export default function DayByDay() {
         }>(
           (memo, _, j) => {
             const hour = j * 24 + i;
+
+            if (!camp) return memo;
+
             if (isFuture(addHours(camp.start, hour + 6))) return memo;
+
             return {
               ...memo,
               [j]:
@@ -69,7 +75,7 @@ export default function DayByDay() {
           { x: i },
         ),
       ),
-    [camp.start, numberOfDaysInCurrentCamp, sales],
+    [camp, numberOfDaysInCurrentCamp, sales],
   );
 
   return (
@@ -137,7 +143,7 @@ export default function DayByDay() {
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
               strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 4 : 3}
-              stroke={camp.color}
+              stroke={camp?.color}
               strokeOpacity={1 - (numberOfDaysInCurrentCamp - 1 - i) / 10}
               style={{
                 opacity: 1 - (numberOfDaysInCurrentCamp - 1 - i) / 10,
@@ -158,7 +164,7 @@ export default function DayByDay() {
                 key={i + "individual"}
                 dataKey={i + "individual"}
                 name={`ΔD${i + 1}`}
-                fill={camp.color}
+                fill={camp?.color}
                 fillOpacity={0.5}
               />
             ) : null,

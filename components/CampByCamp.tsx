@@ -63,12 +63,12 @@ function createTrend<XK extends string, YK extends string>(
 }
 
 export default function CampByCamp() {
-  const { data: camps, loading: campsLoading } = useMongoFetch(Camps, []);
+  const { data: camps } = useMongoFetch(Camps, []);
   const {
     data: [currentCamp],
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
 
-  const { data: sales, loading: salesLoading } = useMongoFetch(Sales, []);
+  const { data: sales } = useMongoFetch(Sales, []);
   const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
     if (!memo) {
       memo = camp;
@@ -114,33 +114,31 @@ export default function CampByCamp() {
     return [data, campTotals];
   }, [camps, longestCampHours, sales]);
 
-  if (campsLoading || salesLoading) return <>Loading...</>;
-
   let prev = 0;
-  const weights = data.map((data) => (prev = data[currentCamp.slug] || prev));
+  const weights = data.map((data) => (prev = data[currentCamp?.slug] || prev));
   const yMax = Math.max(...weights);
   const timestamps = data.map((data) => data.hour);
   const xMax = Math.max(...timestamps);
   const nowHour = Math.max(
-    ...data.filter((d) => d[currentCamp.slug]).map((data) => data.hour),
+    ...data.filter((d) => d[currentCamp?.slug]).map((data) => data.hour),
   );
 
   const trendData = (() => {
     const trend = createTrend(
-      data.filter((d) => d[currentCamp.slug]),
+      data.filter((d) => d[currentCamp?.slug]),
       "hour",
-      currentCamp.slug,
+      currentCamp?.slug,
     );
 
     return [
       {
-        [currentCamp.slug + "-trend"]: data.find(
-          (d) => d[currentCamp.slug] && d.hour === nowHour,
-        )?.[currentCamp.slug],
+        [currentCamp?.slug + "-trend"]: data.find(
+          (d) => d[currentCamp?.slug] && d.hour === nowHour,
+        )?.[currentCamp?.slug],
         hour: nowHour,
       },
       {
-        [currentCamp.slug + "-trend"]: trend.calcY(
+        [currentCamp?.slug + "-trend"]: trend.calcY(
           Math.min(xMax, nowHour + 24),
         ),
         hour: Math.min(xMax, nowHour + 24),
@@ -242,16 +240,16 @@ export default function CampByCamp() {
           />
           <Bar
             yAxisId="right"
-            key={currentCamp.slug + "individual"}
-            dataKey={currentCamp.slug + "individual"}
-            name={"Δ" + currentCamp.name}
-            fill={currentCamp.color}
+            key={currentCamp?.slug + "individual"}
+            dataKey={currentCamp?.slug + "individual"}
+            name={"Δ" + currentCamp?.name}
+            fill={currentCamp?.color}
             fillOpacity={0.5}
           />
           <Line
-            key={currentCamp.slug + "-trend"}
-            dataKey={currentCamp.slug + "-trend"}
-            stroke={currentCamp.color}
+            key={currentCamp?.slug + "-trend"}
+            dataKey={currentCamp?.slug + "-trend"}
+            stroke={currentCamp?.color}
             strokeWidth={2}
             strokeDasharray="4 2"
             dot={false}
