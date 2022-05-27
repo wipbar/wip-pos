@@ -22,6 +22,8 @@ export default function useSubscription(pubName: string, ...subOpts: any[]) {
       if (pubName) {
         handle = SubsManager.subscribe(pubName, ...subOpts);
         setLoading(!handle.ready());
+      } else {
+        setLoading(false);
       }
     });
     return stopComp;
