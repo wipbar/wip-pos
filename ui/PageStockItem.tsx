@@ -1,6 +1,6 @@
 import { BarcodeFormat } from "@zxing/library";
 import { css } from "emotion";
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
 import Locations, { ILocation } from "../api/locations";
@@ -11,10 +11,16 @@ import useMongoFetch from "../hooks/useMongoFetch";
 import { Modal } from "./PageStock";
 import BarcodeScannerComponent from "/components/BarcodeScanner";
 
-const toOptions = (items) =>
+const toOptions = (items: any[]) =>
   items.map((item) => ({ label: item, value: item }));
 
-const Label = ({ label, children }) => (
+const Label = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode | ReactNode[];
+}) => (
   <label
     className={css`
       display: flex;
@@ -76,11 +82,10 @@ export default function PageStockItem({
     register,
     control,
     reset,
-    errors,
-    formState: { isDirty, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
     setValue,
-  } = useForm();
-  const onSubmit2 = async (data) => {
+  } = useForm<Partial<IProduct> & { buyPrice: number }>();
+  const onSubmit2 = async (data: Partial<IProduct> & { buyPrice: number }) => {
     console.log(data);
     if (!product) {
       await addProduct({ data: { ...data, tap: data.tap || null } });
@@ -114,7 +119,7 @@ export default function PageStockItem({
           control={control}
           rules={{ required: true }}
           defaultValue={product?.brandName || ""}
-          render={({ onBlur, value }) => (
+          render={({ field: { onBlur, value } }) => (
             <CreatableSelect
               value={value ? { value, label: value } : null}
               isClearable
@@ -136,58 +141,51 @@ export default function PageStockItem({
       <Label label="Name">
         <input
           type="text"
-          name="name"
           defaultValue={product?.name || ""}
-          ref={register({ required: true })}
+          {...register("name", { required: true })}
         />
       </Label>
       <Label label="Price">
         <input
           type="number"
-          name="salePrice"
           defaultValue={product?.salePrice || ""}
-          ref={register({ required: true })}
+          {...register("salePrice", { required: true })}
         />
       </Label>
       <Label label="Unit Size">
         <input
           type="number"
-          name="unitSize"
           defaultValue={product?.unitSize || ""}
-          ref={register}
+          {...register("unitSize")}
         />
       </Label>
       <Label label="Size Unit">
         <input
           type="text"
-          name="sizeUnit"
           defaultValue={product?.sizeUnit || ""}
-          ref={register}
+          {...register("sizeUnit")}
         />
       </Label>
       <Label label="Alcohol %">
         <input
           type="number"
-          name="abv"
           step="any"
           defaultValue={product?.abv || ""}
-          ref={register}
+          {...register("abv")}
         />
       </Label>
       <Label label="Description">
         <input
           type="text"
-          name="description"
           defaultValue={product?.description || ""}
-          ref={register}
+          {...register("description")}
         />
       </Label>
       <Label label="Bar Code">
         <input
           type="text"
-          name="barCode"
           defaultValue={product?.barCode || ""}
-          ref={register}
+          {...register("barCode")}
         />
         {scanningBarcode ? (
           <Modal onDismiss={() => setScanningBarcode(false)}>
@@ -214,7 +212,7 @@ export default function PageStockItem({
         )}
       </Label>
       <Label label="Tap">
-        <select name="tap" ref={register} defaultValue={product?.tap || ""}>
+        <select defaultValue={product?.tap || ""} {...register("tap")}>
           <option value="">---</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -229,7 +227,7 @@ export default function PageStockItem({
           name="tags"
           control={control}
           defaultValue={product?.tags}
-          render={({ onBlur, value }) => (
+          render={({ field: { onBlur, value } }) => (
             <CreatableSelect
               value={value ? toOptions(value) : null}
               options={toOptions(allTags || [])}
@@ -250,7 +248,6 @@ export default function PageStockItem({
       <Label label="Unit Cost">
         <input
           type="number"
-          name="buyPrice"
           placeholder={
             mostRecentShopPrice &&
             `${mostRecentShopPrice.buyPrice} on ${new Intl.DateTimeFormat(
@@ -266,7 +263,7 @@ export default function PageStockItem({
             ).format(mostRecentShopPrice.timestamp)}`
           }
           step="any"
-          ref={register}
+          {...register("buyPrice")}
         />
       </Label>
       <hr />
@@ -285,7 +282,7 @@ export default function PageStockItem({
         >
           {product ? "Update" : "Create"} {isSubmitting ? "..." : ""}
         </button>
-        <button disabled={!isDirty} type="button" onClick={reset}>
+        <button disabled={!isDirty} type="button" onClick={() => reset()}>
           Reset
         </button>
         <button type="button" onClick={onCancel}>
