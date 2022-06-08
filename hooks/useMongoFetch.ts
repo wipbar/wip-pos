@@ -4,7 +4,7 @@ import { DependencyList } from "react";
 import useSubscription from "./useSubscription";
 
 const emptyArray: [] = [];
-export default function useMongoFetch<T>(
+export default function useMongoFetch<T extends object>(
   query: Mongo.Collection<T> | Mongo.Cursor<T> | undefined,
   deps: DependencyList = emptyArray,
 ) {
