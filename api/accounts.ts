@@ -153,7 +153,7 @@ if (Meteor.isClient) {
     forOtherUsers: ["services.bornhack.username"],
   });
 }
-export const isUserAdmin = (userOrId: string | Meteor.User) => {
+export const isUserAdmin = (userOrId: string | Meteor.User | null) => {
   if (!userOrId) return false;
 
   const user = Meteor.users.findOne(
