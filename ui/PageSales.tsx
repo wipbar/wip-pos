@@ -1,7 +1,7 @@
 import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
 import { css } from "emotion";
 import { groupBy } from "lodash";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Camps from "../api/camps";
 import Products, { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
@@ -38,7 +38,7 @@ export default function PageSales() {
   const [campSlug, setCampSlug] = useState(camps?.[0]?.slug);
   const selectedCamp =
     camps?.find((camp) => camp.slug === campSlug) || camps?.[0];
-  const { data: sales, loading: salesLoading } = useMongoFetch(
+  const { data: sales } = useMongoFetch(
     Sales.find(
       {
         locationId: location?._id,
@@ -51,7 +51,7 @@ export default function PageSales() {
     ),
     [location, selectedCamp],
   );
-  const { data: products, loading: productsLoading } = useMongoFetch(
+  const { data: products } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const salesByDay = useMemo(
@@ -65,8 +65,6 @@ export default function PageSales() {
         .sort(([a], [b]) => Number(a) - Number(b)),
     [sales],
   );
-
-  if (salesLoading || productsLoading) return <>Loading...</>;
 
   if (error) return error;
 

@@ -4,7 +4,7 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { css } from "emotion";
-import { ReactNode, useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Products, { isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
@@ -16,7 +16,7 @@ import { getCorrectTextColor, stringToColour } from "../util";
 import PageStockItem from "./PageStockItem";
 import { ILocation } from "/api/locations";
 
-const Modal = ({
+export const Modal = ({
   children,
   onDismiss,
 }: {

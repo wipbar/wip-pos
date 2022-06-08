@@ -17,6 +17,7 @@ export interface IProduct {
   shopPrices?: { buyPrice: number; timestamp: Date }[];
   locationIds?: string[];
   tap?: string;
+  barCode?: string;
 }
 
 const Products = new Mongo.Collection<IProduct>("products");

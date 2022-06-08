@@ -1,6 +1,7 @@
+import { BarcodeFormat, Result } from "@zxing/library";
 import { format } from "date-fns";
 import { css } from "emotion";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSound from "use-sound";
 import Products from "../api/products";
@@ -10,6 +11,7 @@ import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
+import BarcodeScannerComponent from "/components/BarcodeScanner";
 
 function MostRecentSale() {
   const { location, loading: locationLoading } = useCurrentLocation(true);
@@ -129,8 +131,9 @@ function CartViewProductsItem({ product, onRemoveClick }) {
   );
 }
 
-const removeItem = (items, i) =>
-  items.slice(0, i - 1).concat(items.slice(i, items.length));
+function removeItem<T extends any>(items: T[], i: number): T[] {
+  return items.slice(0, i - 1).concat(items.slice(i, items.length));
+}
 
 export default function CartView() {
   const [playCrank] = useSound("/cashregistercrank.mp3");
@@ -142,7 +145,7 @@ export default function CartView() {
   const { data: products, loading: productsLoading } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
-  const [pickedProductIds, setPickedProductIds] = useSession(
+  const [pickedProductIds, setPickedProductIds] = useSession<string[]>(
     "pickedProductIds",
     [],
   );
@@ -150,8 +153,22 @@ export default function CartView() {
   const [doSellProducts] = useMethod("Sales.sellProducts");
 
   const haxTotal = pickedProductIds?.reduce(
-    (m, id) => m + +products.find(({ _id }) => id == _id)?.salePrice,
+    (m, id) => m + Number(products.find(({ _id }) => id == _id)?.salePrice),
     0,
+  );
+
+  const handleBarCode = useCallback(
+    (result: Result) => {
+      console.log(result);
+      console.log(BarcodeFormat[result.getBarcodeFormat()]);
+      const foundProduct = products.find(
+        ({ barCode }) => result.getText() === barCode,
+      );
+      console.log(foundProduct);
+      if (foundProduct)
+        setPickedProductIds([...pickedProductIds, foundProduct._id]);
+    },
+    [pickedProductIds],
   );
 
   if (productsLoading) return null;
@@ -167,6 +184,11 @@ export default function CartView() {
         border-left: 1px solid rgba(255, 255, 255, 0.4);
       `}
     >
+      <BarcodeScannerComponent
+        width={250}
+        height={250}
+        onResult={handleBarCode}
+      />
       {pickedProductIds?.length ? (
         <>
           <ul

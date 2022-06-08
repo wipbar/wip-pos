@@ -1,5 +1,6 @@
+import { BarcodeFormat } from "@zxing/library";
 import { css } from "emotion";
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
 import Locations, { ILocation } from "../api/locations";
@@ -7,6 +8,8 @@ import Products, { IProduct } from "../api/products";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
+import { Modal } from "./PageStock";
+import BarcodeScannerComponent from "/components/BarcodeScanner";
 
 const toOptions = (items) =>
   items.map((item) => ({ label: item, value: item }));
@@ -48,6 +51,7 @@ export default function PageStockItem({
   product?: IProduct;
 }) {
   const { data: locations } = useMongoFetch(Locations);
+  const [scanningBarcode, setScanningBarcode] = useState(false);
   const { location } = useCurrentLocation();
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
@@ -177,6 +181,37 @@ export default function PageStockItem({
           defaultValue={product?.description || ""}
           ref={register}
         />
+      </Label>
+      <Label label="Bar Code">
+        <input
+          type="text"
+          name="barCode"
+          defaultValue={product?.barCode || ""}
+          ref={register}
+        />
+        {scanningBarcode ? (
+          <Modal onDismiss={() => setScanningBarcode(false)}>
+            <BarcodeScannerComponent
+              width={500}
+              height={500}
+              onResult={(result) => {
+                console.log(result);
+                console.log(BarcodeFormat[result.getBarcodeFormat()]);
+                setValue("barCode", result.getText());
+                setScanningBarcode(false);
+              }}
+            />
+          </Modal>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setScanningBarcode(true);
+            }}
+          >
+            Scan
+          </button>
+        )}
       </Label>
       <Label label="Tap">
         <select name="tap" ref={register} defaultValue={product?.tap || ""}>
