@@ -1,4 +1,5 @@
 import { css } from "emotion";
+import { useTracker } from "meteor/react-meteor-data";
 import React from "react";
 import { useMatch } from "react-router-dom";
 import { isUserInTeam } from "../api/accounts";
@@ -12,7 +13,10 @@ export default function useCurrentLocation(authorized?: boolean) {
   const locationSlug = match?.params.locationSlug;
 
   const loading = useSubscription("locations");
-  const location = Locations.findOne({ slug: locationSlug });
+  const location = useTracker(
+    () => Locations.findOne({ slug: locationSlug }),
+    [locationSlug],
+  );
 
   const user = useCurrentUser();
   const error =
