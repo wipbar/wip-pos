@@ -32,8 +32,8 @@
     "react-router-dom": "^6.3.0",
     "react-select": "^5.3.2",
     "recharts": "^2.1.10",
-    "simpl-schema": "^1.12.1",
-    "tdigest": "^0.1.1",
+    "simpl-schema": "^1.12.2",
+    "tdigest": "^0.1.2",
     "use-sound": "^4.0.1"
   },
   "meteor": {
@@ -48,10 +48,10 @@
     "@types/lodash": "^4.14.182",
     "@types/meteor": "^2.6.3",
     "@types/mocha": "^9.1.1",
-    "@types/react": "^18.0.9",
+    "@types/react": "^18.0.12",
     "@types/react-dom": "^18.0.5",
     "babel-eslint": "^10.1.0",
-    "eslint": "^8.16.0",
+    "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-babel": "^5.3.1",
     "eslint-plugin-prettier": "^4.0.0",
