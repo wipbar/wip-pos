@@ -1,3 +1,4 @@
+import { isPast } from "date-fns";
 import React, { useMemo } from "react";
 import {
   Layer,
@@ -7,12 +8,11 @@ import {
   Sankey,
   Tooltip,
 } from "recharts";
+import type { SankeyLink, SankeyNode } from "recharts/types/util/types";
+import type { ICamp } from "../api/camps";
 import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
-import { ICamp } from "../api/camps";
-import { isPast } from "date-fns";
 import useMongoFetch from "../hooks/useMongoFetch";
-import { SankeyLink, SankeyNode } from "recharts/types/util/types";
 
 function Node({
   x,
@@ -28,8 +28,18 @@ function Node({
   index?: number;
   payload?: SankeyNode & { name: string };
   containerWidth?: number;
+  width?: number;
+  height?: number;
 }) {
-  const isOut = x + width + 6 > containerWidth;
+  if (
+    typeof width !== "number" ||
+    typeof height !== "number" ||
+    typeof x !== "number" ||
+    typeof y !== "number"
+  )
+    return null;
+
+  const isOut = x + width + 6 > (containerWidth || 0);
 
   return (
     <Layer key={`CustomNode${index}`}>
@@ -87,10 +97,21 @@ function Link({
   targetControlX,
   linkWidth,
   payload,
+  sourceRelativeY,
+  targetRelativeY,
   ...others
 }: {
   payload?: SankeyLink & { target: { name: string } };
   camp: ICamp;
+  sourceX?: number;
+  sourceY?: number;
+  sourceControlX?: number;
+  targetX?: number;
+  targetY?: number;
+  targetControlX?: number;
+  sourceRelativeY?: number;
+  targetRelativeY?: number;
+  linkWidth?: number;
 }) {
   return (
     <path
@@ -117,14 +138,30 @@ function Link({
     />
   );
 }
+
+const nodes = [
+  { name: "Sales" },
+  { name: "Alcoholic" },
+  { name: "Beer" },
+  { name: "Tap" },
+  { name: "Non-Tap" },
+  { name: "Non-Beer" },
+  { name: "Non-Alcoholic" },
+  { name: "Mate" },
+  { name: "Non-Mate" },
+  { name: "Non-Cocktail" },
+  { name: "Cocktail" },
+];
+const getNode = (name: string) => nodes.findIndex((node) => node.name === name);
+
 export default function SalesSankey({ currentCamp }: { currentCamp: ICamp }) {
   const { data: sales } = useMongoFetch(
     Sales.find({
-      timestamp: currentCamp && {
-        $gte: isPast(currentCamp?.start)
-          ? currentCamp?.start
-          : currentCamp?.buildup,
-        $lte: currentCamp?.end,
+      timestamp: {
+        $gte: isPast(currentCamp.start)
+          ? currentCamp.start
+          : currentCamp.buildup,
+        $lte: currentCamp.end,
       },
     }),
   );
@@ -139,21 +176,6 @@ export default function SalesSankey({ currentCamp }: { currentCamp: ICamp }) {
       );
       return memo;
     }, []);
-    const nodes = [
-      { name: "Sales" },
-      { name: "Alcoholic" },
-      { name: "Beer" },
-      { name: "Tap" },
-      { name: "Non-Tap" },
-      { name: "Non-Beer" },
-      { name: "Non-Alcoholic" },
-      { name: "Mate" },
-      { name: "Non-Mate" },
-      { name: "Non-Cocktail" },
-      { name: "Cocktail" },
-    ];
-    const getNode = (name: string) =>
-      nodes.findIndex((node) => node.name === name);
     const data0 = {
       nodes,
       links: [
@@ -269,7 +291,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp: ICamp }) {
   }, [sales, products]);
 
   return (
-    <ResponsiveContainer width={"100%"} height={350}>
+    <ResponsiveContainer width="100%" height={350}>
       <Sankey
         height={320}
         data={data}
