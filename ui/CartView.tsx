@@ -1,10 +1,9 @@
-import { BarcodeFormat, Result } from "@zxing/library";
 import { format } from "date-fns";
 import { css } from "emotion";
 import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSound from "use-sound";
-import Products from "../api/products";
+import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
@@ -58,7 +57,13 @@ function MostRecentSale() {
   );
 }
 
-function CartViewProductsItem({ product, onRemoveClick }) {
+function CartViewProductsItem({
+  product,
+  onRemoveClick,
+}: {
+  product: IProduct;
+  onRemoveClick: () => any;
+}) {
   if (!product) null;
   return (
     <li
@@ -158,15 +163,10 @@ export default function CartView() {
   );
 
   const handleBarCode = useCallback(
-    (result: Result) => {
-      console.log(result);
-      console.log(BarcodeFormat[result.getBarcodeFormat()]);
-      const foundProduct = products.find(
-        ({ barCode }) => result.getText() === barCode,
-      );
-      console.log(foundProduct);
-      if (foundProduct)
-        setPickedProductIds([...pickedProductIds, foundProduct._id]);
+    (resultBarCode: string) => {
+      const product = products.find(({ barCode }) => resultBarCode === barCode);
+      console.log({ resultBarCode, product });
+      if (product) setPickedProductIds([...pickedProductIds, product._id]);
     },
     [pickedProductIds],
   );
@@ -184,11 +184,6 @@ export default function CartView() {
         border-left: 1px solid rgba(255, 255, 255, 0.4);
       `}
     >
-      <BarcodeScannerComponent
-        width={250}
-        height={250}
-        onResult={handleBarCode}
-      />
       {pickedProductIds?.length ? (
         <>
           <ul
@@ -202,15 +197,18 @@ export default function CartView() {
               max-height: calc(100vh - 230px);
             `}
           >
-            {pickedProductIds.map((id, i) => (
-              <CartViewProductsItem
-                key={id + i}
-                product={products.find(({ _id }) => id == _id)}
-                onRemoveClick={() =>
-                  setPickedProductIds(removeItem(pickedProductIds, i + 1))
-                }
-              />
-            ))}
+            {pickedProductIds.map((id, i) => {
+              const product = products.find(({ _id }) => id == _id);
+              return product ? (
+                <CartViewProductsItem
+                  key={id + i}
+                  product={product}
+                  onRemoveClick={() =>
+                    setPickedProductIds(removeItem(pickedProductIds, i + 1))
+                  }
+                />
+              ) : null;
+            })}
           </ul>
           <div
             className={css`
@@ -226,6 +224,7 @@ export default function CartView() {
               background: black;
             `}
           >
+            <BarcodeScannerComponent onResult={handleBarCode} />
             <big>
               <big>
                 <b>
@@ -263,6 +262,7 @@ export default function CartView() {
             flex-direction: column;
           `}
         >
+          <BarcodeScannerComponent onResult={handleBarCode} />
           <MostRecentSale />
         </div>
       )}
@@ -304,8 +304,8 @@ export default function CartView() {
             <ul>
               {pickedProductIds.map((id, i) => (
                 <li key={i + id}>
-                  {products.find(({ _id }) => _id === id).brandName}{" "}
-                  {products.find(({ _id }) => _id === id).name}
+                  {products.find(({ _id }) => _id === id)?.brandName}{" "}
+                  {products.find(({ _id }) => _id === id)?.name}
                 </li>
               ))}
             </ul>

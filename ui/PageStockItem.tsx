@@ -1,6 +1,5 @@
-import { BarcodeFormat } from "@zxing/library";
 import { css } from "emotion";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
 import Locations, { ILocation } from "../api/locations";
@@ -104,6 +103,11 @@ export default function PageStockItem({
       (a, b) => Number(b.timestamp) - Number(a.timestamp),
     )[0];
 
+  const handleBarCode = useCallback((resultBarCode: string) => {
+    setValue("barCode", resultBarCode);
+    setScanningBarcode(false);
+  }, []);
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit2)}
@@ -189,24 +193,10 @@ export default function PageStockItem({
         />
         {scanningBarcode ? (
           <Modal onDismiss={() => setScanningBarcode(false)}>
-            <BarcodeScannerComponent
-              width={500}
-              height={500}
-              onResult={(result) => {
-                console.log(result);
-                console.log(BarcodeFormat[result.getBarcodeFormat()]);
-                setValue("barCode", result.getText());
-                setScanningBarcode(false);
-              }}
-            />
+            <BarcodeScannerComponent onResult={handleBarCode} />
           </Modal>
         ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setScanningBarcode(true);
-            }}
-          >
+          <button type="button" onClick={() => setScanningBarcode(true)}>
             Scan
           </button>
         )}
