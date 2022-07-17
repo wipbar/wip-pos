@@ -54,7 +54,10 @@ function Node({
           x={isOut ? x - 6 : x + width + 6}
           y={y + height / 2}
           fontSize="14"
-          stroke={camp.color}
+          fill="white"
+          stroke="black"
+          strokeWidth={0.3}
+          strokeOpacity={0.6}
         >
           {payload.name}
         </text>
@@ -65,8 +68,10 @@ function Node({
           x={isOut ? x - 6 : x + width + 6}
           y={y + height / 2 + 13}
           fontSize="12"
-          stroke={camp.color}
-          strokeOpacity="0.5"
+          fill="white"
+          stroke="black"
+          strokeWidth={0.3}
+          strokeOpacity={0.6}
         >
           {~~payload.value} units
         </text>
@@ -146,11 +151,10 @@ export default function SalesSankey({ currentCamp }: { currentCamp: ICamp }) {
 
   const data = useMemo(() => {
     const productsSold = sales.reduce<IProduct[]>((memo, sale) => {
-      memo.push(
-        ...sale.products
-          .map((product) => products.find(({ _id }) => _id === product._id))
-          .filter((product): product is IProduct => Boolean(product)),
-      );
+      for (const saleProduct of sale.products) {
+        const product = products.find(({ _id }) => _id === saleProduct._id);
+        if (product) memo.push(product);
+      }
       return memo;
     }, []);
     const data0 = {
