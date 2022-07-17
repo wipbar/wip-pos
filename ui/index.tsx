@@ -83,9 +83,13 @@ export default function UI() {
         value={currentCampSlug || ""}
         onChange={(event) => setCurrentCampSlug(event.target.value || null)}
       >
-        <option value="">Auto</option>
+        <option value="" key="">
+          Auto
+        </option>
         {camps.map((camp) => (
-          <option value={camp.slug}>{camp.name}</option>
+          <option value={camp.slug} key={camp.slug}>
+            {camp.name}
+          </option>
         ))}
       </select>
       <style>{`
