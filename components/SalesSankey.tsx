@@ -23,7 +23,7 @@ function Node({
   payload,
   camp,
 }: RectangleProps & {
-  camp: ICamp;
+  camp?: ICamp;
   index?: number;
   payload?: SankeyNode & { name: string; sourceLinks: any[]; color?: string };
   width?: number;
@@ -94,7 +94,7 @@ function Link({
   ...others
 }: {
   payload?: SankeyLink & { target: { name: string; color?: string } };
-  camp: ICamp;
+  camp?: ICamp;
   sourceX?: number;
   sourceY?: number;
   sourceControlX?: number;
@@ -136,16 +136,17 @@ const nodes = [
 ];
 const getNode = (name: string) => nodes.findIndex((node) => node.name === name);
 
-export default function SalesSankey({ currentCamp }: { currentCamp: ICamp }) {
+export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
   const { data: sales } = useMongoFetch(
-    Sales.find({
-      timestamp: {
-        $gte: isPast(currentCamp.start)
-          ? currentCamp.start
-          : currentCamp.buildup,
-        $lte: currentCamp.end,
-      },
-    }),
+    currentCamp &&
+      Sales.find({
+        timestamp: {
+          $gte: isPast(currentCamp.start)
+            ? currentCamp.start
+            : currentCamp.buildup,
+          $lte: currentCamp.end,
+        },
+      }),
   );
   const { data: products } = useMongoFetch(Products);
 

@@ -140,7 +140,7 @@ export default function PageStats() {
           min-width: 400px;
         `}
       >
-        {currentCamp ? <SalesSankey currentCamp={currentCamp} /> : null}
+        <SalesSankey currentCamp={currentCamp} />
         <div
           className={css`
             display: flex;
