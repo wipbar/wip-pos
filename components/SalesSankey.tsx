@@ -123,12 +123,12 @@ function Link({
 
 const nodes = [
   { color: "", name: "Sales" },
-  { color: "", name: "Alcoholic" },
+  { color: "#FFED00", name: "Alcoholic" },
   { color: "#FFED00", name: "Beer" },
   { color: "#FFED00", name: "Tap" },
   { color: "#FFED00", name: "Non-Tap" },
   { color: "#D2691E", name: "Non-Beer" },
-  { color: "", name: "Non-Alcoholic" },
+  { color: "#193781", name: "Non-Alcoholic" },
   { color: "#193781", name: "Mate" },
   { color: "#16503f", name: "Non-Mate" },
   { color: "#D2691E", name: "Non-Cocktail" },
@@ -147,6 +147,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
           $lte: currentCamp.end,
         },
       }),
+    [currentCamp],
   );
   const { data: products } = useMongoFetch(Products);
 

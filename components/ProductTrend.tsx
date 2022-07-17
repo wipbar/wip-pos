@@ -21,10 +21,10 @@ export default function ProductTrend({
         {
           products: { $elemMatch: { _id: product._id } },
           timestamp: {
-            $gte: isPast(currentCamp?.start)
-              ? currentCamp?.start
-              : currentCamp?.buildup,
-            $lte: currentCamp?.end,
+            $gte: isPast(currentCamp.start)
+              ? currentCamp.start
+              : currentCamp.buildup,
+            $lte: currentCamp.end,
           },
         },
         { sort: { timestamp: 1 } },
