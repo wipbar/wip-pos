@@ -4,7 +4,6 @@ import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
-import useWhyDidYouUpdate from "../hooks/useWhyDidYouUpdate";
 import Fire from "./Fire";
 
 const f = 0.25;
@@ -16,20 +15,20 @@ export default function ProductTrend({
 } & ComponentProps<typeof Fire>) {
   const currentCamp = useCurrentCamp();
 
-  useWhyDidYouUpdate("ProductTrend", { product, ...props, currentCamp });
   const { data } = useMongoFetch(
-    Sales.find(
-      {
-        products: { $elemMatch: { _id: product._id } },
-        timestamp: {
-          $gte: isPast(currentCamp?.start)
-            ? currentCamp?.start
-            : currentCamp?.buildup,
-          $lte: currentCamp?.end,
+    currentCamp &&
+      Sales.find(
+        {
+          products: { $elemMatch: { _id: product._id } },
+          timestamp: {
+            $gte: isPast(currentCamp?.start)
+              ? currentCamp?.start
+              : currentCamp?.buildup,
+            $lte: currentCamp?.end,
+          },
         },
-      },
-      { sort: { timestamp: 1 } },
-    ),
+        { sort: { timestamp: 1 } },
+      ),
     [product, currentCamp],
   );
   const productSales = useMemo(

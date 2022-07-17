@@ -25,6 +25,7 @@ import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
+import Camps from "/api/camps";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
@@ -37,6 +38,7 @@ export default function UI() {
   const locationSlug = match?.params.locationSlug;
   const pageSlug = (match?.params as any)["*"] as string | undefined;
 
+  const { data: camps } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
   const currentCamp = useCurrentCamp();
   const user = useCurrentUser();
   const { data: locations } = useMongoFetch(Locations);
@@ -64,6 +66,11 @@ export default function UI() {
     }
   }, [currentLocation, setTitle, pageSlug, locationSlug]);
 
+  const [currentCampSlug, setCurrentCampSlug] = useSession<string | null>(
+    "currentCampSlug",
+    null,
+  );
+
   return (
     <div
       className={css`
@@ -72,10 +79,21 @@ export default function UI() {
         flex-direction: column;
       `}
     >
+      <select
+        value={currentCampSlug || ""}
+        onChange={(event) => setCurrentCampSlug(event.target.value || null)}
+      >
+        <option value="">Auto</option>
+        {camps.map((camp) => (
+          <option value={camp.slug}>{camp.name}</option>
+        ))}
+      </select>
       <style>{`
         body {
           color: ${currentCamp?.color};
-          background-color: ${getCorrectTextColor(currentCamp?.color)};
+          background-color: ${
+            currentCamp && getCorrectTextColor(currentCamp.color)
+          };
         }
         a {
           color: ${currentCamp?.color};

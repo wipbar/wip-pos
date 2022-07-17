@@ -96,7 +96,7 @@ export default function DayByDay() {
               angle: -90,
               offset: 70,
               position: "insideLeft",
-              style: { fill: currentCamp.color },
+              style: { fill: currentCamp?.color },
             }}
           />
           <Tooltip
@@ -118,11 +118,11 @@ export default function DayByDay() {
                     ? "left"
                     : "insideBottomRight",
                 offset: 8,
-                style: { fill: currentCamp.color },
+                style: { fill: currentCamp?.color },
               }}
-              fill={currentCamp.color}
+              fill={currentCamp?.color}
               r={4}
-              stroke={currentCamp.color}
+              stroke={currentCamp?.color}
             />
           ))}
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
@@ -135,7 +135,7 @@ export default function DayByDay() {
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
               strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 4 : 3}
-              stroke={currentCamp.color}
+              stroke={currentCamp?.color}
               strokeOpacity={1 - (numberOfDaysInCurrentCamp - 1 - i) / 10}
               style={{
                 opacity: 1 - (numberOfDaysInCurrentCamp - 1 - i) / 10,
@@ -156,7 +156,7 @@ export default function DayByDay() {
                 key={i + "individual"}
                 dataKey={i + "individual"}
                 name={`ΔD${i + 1}`}
-                fill={currentCamp.color}
+                fill={currentCamp?.color}
                 fillOpacity={0.5}
               />
             ) : null,

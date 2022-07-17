@@ -85,11 +85,10 @@ export default function PageStats() {
   const currentCamp = useCurrentCamp();
   const from = useMemo(
     () =>
+      currentCamp &&
       startOfHour(
         setHours(
-          isPast(currentCamp?.start)
-            ? currentCamp?.start
-            : currentCamp?.buildup,
+          isPast(currentCamp.start) ? currentCamp.start : currentCamp.buildup,
           rolloverOffset,
         ),
       ),
@@ -97,12 +96,13 @@ export default function PageStats() {
   );
   const to = useMemo(
     () =>
-      endOfHour(min(setHours(currentCamp?.end, rolloverOffset), currentDate)),
+      currentCamp &&
+      endOfHour(min(setHours(currentCamp.end, rolloverOffset), currentDate)),
     [currentCamp, currentDate],
   );
 
   const { data: sales } = useMongoFetch(
-    Sales.find({ timestamp: { $gt: from, $lt: to } }),
+    from && to && Sales.find({ timestamp: { $gt: from, $lt: to } }),
     [from, to],
   );
   const { data: products } = useMongoFetch(

@@ -79,7 +79,6 @@ function SparkLine({
   );
 }
 
-const rolloverOffset = 5;
 function getRandomInt(min: number, max: number) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -89,25 +88,8 @@ function getRandomInt(min: number, max: number) {
 export default function PageMenu() {
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(60000);
-  const from = useMemo(
-    () =>
-      subHours(currentDate, 24) ||
-      startOfHour(
-        setHours(
-          isPast(currentCamp?.start)
-            ? currentCamp?.start
-            : currentCamp?.buildup,
-          rolloverOffset,
-        ),
-      ),
-    [currentCamp, currentDate],
-  );
-  const to = useMemo(
-    () =>
-      currentDate ||
-      endOfHour(min(setHours(currentCamp?.end, rolloverOffset), currentDate)),
-    [currentCamp, currentDate],
-  );
+  const from = useMemo(() => subHours(currentDate, 24), [currentDate]);
+  const to = useMemo(() => currentDate, [currentCamp, currentDate]);
   const { location, loading: locationLoading, error } = useCurrentLocation();
   const { data: sales, loading: salesLoading } = useMongoFetch(
     Sales.find({ timestamp: { $gte: from, $lte: to } }),
@@ -343,9 +325,9 @@ export default function PageMenu() {
                           </div>
                           <SparkLine
                             className={css`
-                              border-bottom: ${currentCamp.color} 1px solid;
+                              border-bottom: ${currentCamp?.color} 1px solid;
                             `}
-                            fill={currentCamp.color}
+                            fill={currentCamp?.color}
                             data={Array.from({ length: 24 }, (_, i) => [
                               23 - i,
                               sales.reduce(

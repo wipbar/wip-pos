@@ -225,7 +225,8 @@ export default function CartView() {
               align-items: center;
               padding-bottom: 1em;
               box-shadow: ${currentCamp?.color} 0 0 10px 0px;
-              background: ${getCorrectTextColor(currentCamp?.color)};
+              background: ${currentCamp &&
+              getCorrectTextColor(currentCamp.color)};
             `}
           >
             <BarcodeScannerComponent onResult={handleBarCode} />
@@ -247,7 +248,8 @@ export default function CartView() {
                   display: block;
 
                   background-color: ${currentCamp?.color};
-                  color: ${getCorrectTextColor(currentCamp?.color)};
+                  color: ${currentCamp &&
+                  getCorrectTextColor(currentCamp.color)};
 
                   margin-top: 1em;
                   padding: 1em;
@@ -289,7 +291,8 @@ export default function CartView() {
         >
           <div
             className={css`
-              background-color: ${getCorrectTextColor(currentCamp?.color)};
+              background-color: ${currentCamp &&
+              getCorrectTextColor(currentCamp.color)};
               color: ${currentCamp?.color};
               padding: 1em;
               text-align: center;
@@ -323,7 +326,7 @@ export default function CartView() {
                 margin-top: 1em;
 
                 background-color: ${currentCamp?.color};
-                color: ${getCorrectTextColor(currentCamp?.color)};
+                color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
 
                 padding: 1em;
                 width: 100%;
