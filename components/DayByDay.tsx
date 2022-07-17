@@ -18,17 +18,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Camps from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useCurrentCamp from "/hooks/useCurrentCamp";
 
 export default function DayByDay() {
   const { data: sales } = useMongoFetch(Sales);
-  const {
-    data: [camp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const numberOfDaysInCurrentCamp = camp
-    ? differenceInDays(camp.end, camp.start)
+  const currentCamp = useCurrentCamp();
+  const numberOfDaysInCurrentCamp = currentCamp
+    ? differenceInDays(currentCamp.end, currentCamp.start)
     : 7; // Mostly they're 7 days
 
   const data = useMemo(
@@ -41,9 +39,9 @@ export default function DayByDay() {
           (memo, _, j) => {
             const hour = j * 24 + i;
 
-            if (!camp) return memo;
+            if (!currentCamp) return memo;
 
-            if (isFuture(addHours(camp.start, hour + 6))) return memo;
+            if (isFuture(addHours(currentCamp.start, hour + 6))) return memo;
 
             return {
               ...memo,
@@ -52,8 +50,8 @@ export default function DayByDay() {
                   .filter((sale) =>
                     isWithinRange(
                       sale.timestamp,
-                      addHours(camp.start, j * 24 + 6),
-                      endOfHour(addHours(camp.start, hour + 6)),
+                      addHours(currentCamp.start, j * 24 + 6),
+                      endOfHour(addHours(currentCamp.start, hour + 6)),
                     ),
                   )
                   .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
@@ -63,8 +61,8 @@ export default function DayByDay() {
                   .filter((sale) =>
                     isWithinRange(
                       sale.timestamp,
-                      addHours(camp.start, hour + 6),
-                      endOfHour(addHours(camp.start, hour + 6)),
+                      addHours(currentCamp.start, hour + 6),
+                      endOfHour(addHours(currentCamp.start, hour + 6)),
                     ),
                   )
                   .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
@@ -74,7 +72,7 @@ export default function DayByDay() {
           { x: i },
         ),
       ),
-    [camp, numberOfDaysInCurrentCamp, sales],
+    [currentCamp, numberOfDaysInCurrentCamp, sales],
   );
 
   return (
@@ -98,7 +96,7 @@ export default function DayByDay() {
               angle: -90,
               offset: 70,
               position: "insideLeft",
-              style: { fill: camp?.color },
+              style: { fill: currentCamp.color },
             }}
           />
           <Tooltip
@@ -120,11 +118,11 @@ export default function DayByDay() {
                     ? "left"
                     : "insideBottomRight",
                 offset: 8,
-                style: { fill: camp?.color },
+                style: { fill: currentCamp.color },
               }}
-              fill={camp?.color}
+              fill={currentCamp.color}
               r={4}
-              stroke={camp?.color}
+              stroke={currentCamp.color}
             />
           ))}
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
@@ -137,7 +135,7 @@ export default function DayByDay() {
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
               strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 4 : 3}
-              stroke={camp?.color}
+              stroke={currentCamp.color}
               strokeOpacity={1 - (numberOfDaysInCurrentCamp - 1 - i) / 10}
               style={{
                 opacity: 1 - (numberOfDaysInCurrentCamp - 1 - i) / 10,
@@ -158,7 +156,7 @@ export default function DayByDay() {
                 key={i + "individual"}
                 dataKey={i + "individual"}
                 name={`ΔD${i + 1}`}
-                fill={camp?.color}
+                fill={currentCamp.color}
                 fillOpacity={0.5}
               />
             ) : null,
