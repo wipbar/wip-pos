@@ -6,6 +6,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { css } from "emotion";
 import React, { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
+import type { ILocation } from "../api/locations";
 import Products, { isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -14,7 +15,6 @@ import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import { getCorrectTextColor, stringToColour } from "../util";
 import PageStockItem from "./PageStockItem";
-import { ILocation } from "/api/locations";
 
 export const Modal = ({
   children,

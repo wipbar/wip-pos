@@ -1,11 +1,11 @@
 import { isPast, isWithinRange, min, subHours } from "date-fns";
-import { ComponentProps, useMemo } from "react";
-import Camps from "../api/camps";
+import React, { ComponentProps, useMemo } from "react";
+import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useWhyDidYouUpdate from "../hooks/useWhyDidYouUpdate";
 import Fire from "./Fire";
-import { IProduct } from "/api/products";
 
 const f = 0.25;
 export default function ProductTrend({
@@ -14,9 +14,7 @@ export default function ProductTrend({
 }: {
   product: IProduct;
 } & ComponentProps<typeof Fire>) {
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const currentCamp = useCurrentCamp();
 
   useWhyDidYouUpdate("ProductTrend", { product, ...props, currentCamp });
   const { data } = useMongoFetch(

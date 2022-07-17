@@ -13,18 +13,18 @@ import {
 } from "react-router-dom";
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
+import { getCorrectTextColor } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
 import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
-import Camps from "/api/camps";
-import { getCorrectTextColor } from "/util";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
@@ -37,9 +37,7 @@ export default function UI() {
   const locationSlug = match?.params.locationSlug;
   const pageSlug = (match?.params as any)["*"] as string | undefined;
 
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const currentCamp = useCurrentCamp();
   const user = useCurrentUser();
   const { data: locations } = useMongoFetch(Locations);
   const userLocations = locations?.filter(({ teamName }) =>

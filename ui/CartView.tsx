@@ -5,14 +5,14 @@ import { useParams } from "react-router-dom";
 import useSound from "use-sound";
 import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
+import BarcodeScannerComponent from "../components/BarcodeScanner";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import Camps from "/api/camps";
-import BarcodeScannerComponent from "/components/BarcodeScanner";
-import { getCorrectTextColor } from "/util";
+import { getCorrectTextColor } from "../util";
 
 function MostRecentSale() {
   const { location, loading: locationLoading } = useCurrentLocation(true);
@@ -96,7 +96,7 @@ function CartViewProductsItem({
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            border:0;
+            border: 0;
           `}
           onClick={onRemoveClick}
         >
@@ -143,9 +143,7 @@ function removeItem<T extends any>(items: T[], i: number): T[] {
 }
 
 export default function CartView() {
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const currentCamp = useCurrentCamp();
 
   const [playCrank] = useSound("/cashregistercrank.mp3");
   const [playDing] = useSound("/cashregisterding.mp3");

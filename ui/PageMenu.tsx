@@ -9,11 +9,11 @@ import {
   subHours,
 } from "date-fns";
 import { css } from "emotion";
-import React, { SVGProps, useMemo } from "react";
-import Camps from "../api/camps";
+import React, { Fragment, SVGProps, useMemo } from "react";
 import Products, { IProduct, isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
@@ -87,9 +87,7 @@ function getRandomInt(min: number, max: number) {
 }
 
 export default function PageMenu() {
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(60000);
   const from = useMemo(
     () =>
@@ -318,10 +316,10 @@ export default function PageMenu() {
                                 ]
                                   .filter(Boolean)
                                   .map((thing, i) => (
-                                    <React.Fragment key={thing}>
+                                    <Fragment key={thing}>
                                       {i > 0 ? ", " : null}
                                       <small key={thing}>{thing}</small>
-                                    </React.Fragment>
+                                    </Fragment>
                                   ))}
                               </small>
                             </span>

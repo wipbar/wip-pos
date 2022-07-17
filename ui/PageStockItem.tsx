@@ -4,11 +4,11 @@ import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
 import Locations, { ILocation } from "../api/locations";
 import Products, { IProduct } from "../api/products";
+import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import { Modal } from "./PageStock";
-import BarcodeScannerComponent from "/components/BarcodeScanner";
 
 const toOptions = (items: any[]) =>
   items.map((item) => ({ label: item, value: item }));

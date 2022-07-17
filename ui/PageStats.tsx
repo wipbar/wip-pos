@@ -10,12 +10,12 @@ import {
 import { css } from "emotion";
 import React, { useMemo } from "react";
 import Countdown from "react-countdown";
-import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
 import SalesSankey from "../components/SalesSankey";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useMongoFetch from "../hooks/useMongoFetch";
 
@@ -82,9 +82,7 @@ function CurfewCountdown() {
 
 export default function PageStats() {
   const currentDate = useCurrentDate(2000);
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const currentCamp = useCurrentCamp();
   const from = useMemo(
     () =>
       startOfHour(

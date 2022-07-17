@@ -1,11 +1,11 @@
 import { css } from "emotion";
 import React, { HTMLProps, useCallback, useEffect, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor, stringToColour } from "../util";
-import Camps from "/api/camps";
 
 function removeItem<T>(items: T[], i: number) {
   return items.slice(0, i).concat(items.slice(i + 1, items.length));
@@ -14,9 +14,7 @@ const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
 
 export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   const { location } = useCurrentLocation();
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const currentCamp = useCurrentCamp();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
   const [showItemDetails, setShowItemDetails] = useState(true);
   const toggleOnlyMenuItems = useCallback(

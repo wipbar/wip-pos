@@ -16,6 +16,7 @@ import {
 import Camps, { ICamp } from "../api/camps";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 
 const getAvg = (arr: number[]) =>
   arr.reduce((acc, c) => acc + c, 0) / arr.length;
@@ -63,9 +64,7 @@ function createTrend<XK extends string, YK extends string>(
 
 export default function CampByCamp() {
   const { data: camps } = useMongoFetch(Camps, []);
-  const {
-    data: [currentCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const currentCamp = useCurrentCamp();
 
   const { data: sales } = useMongoFetch(Sales, []);
   const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
@@ -114,32 +113,39 @@ export default function CampByCamp() {
   }, [camps, longestCampHours, sales]);
 
   let prev = 0;
-  const weights = data.map((data) => (prev = data[currentCamp?.slug] || prev));
+  const weights = data.map(
+    (data) => (prev = (currentCamp && data[currentCamp.slug]) || prev),
+  );
   const yMax = Math.max(...weights);
   const timestamps = data.map((data) => data.hour);
   const xMax = Math.max(...timestamps);
   const nowHour = Math.max(
-    ...data.filter((d) => d[currentCamp?.slug]).map((data) => data.hour),
+    ...data
+      .filter((d) => currentCamp && d[currentCamp.slug])
+      .map((data) => data.hour),
   );
 
   const trendData = (() => {
-    const trend = createTrend(
-      data.filter((d) => d[currentCamp?.slug]),
-      "hour",
-      currentCamp?.slug,
-    );
+    const trend =
+      currentCamp &&
+      createTrend(
+        data.filter((d) => d[currentCamp.slug]),
+        "hour",
+        currentCamp.slug,
+      );
 
     return [
       {
-        [currentCamp?.slug + "-trend"]: data.find(
-          (d) => d[currentCamp?.slug] && d.hour === nowHour,
-        )?.[currentCamp?.slug],
+        [currentCamp?.slug + "-trend"]:
+          trend &&
+          data.find((d) => d[currentCamp.slug] && d.hour === nowHour)?.[
+            currentCamp.slug
+          ],
         hour: nowHour,
       },
       {
-        [currentCamp?.slug + "-trend"]: trend.calcY(
-          Math.min(xMax, nowHour + 24),
-        ),
+        [currentCamp?.slug + "-trend"]:
+          trend && trend.calcY(Math.min(xMax, nowHour + 24)),
         hour: Math.min(xMax, nowHour + 24),
       },
     ];
