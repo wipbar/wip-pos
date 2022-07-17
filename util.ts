@@ -41,8 +41,9 @@ const hexToB = (h: string) => parseInt(cutHex(h)?.substring(4, 6), 16);
 export function getCorrectTextColor(hex: string) {
   const threshold = 170; /* about half of 256. Lower threshold equals more dark text on dark background  */
   let hRed, hGreen, hBlue;
-  if (hex?.startsWith("rgba(")) {
-    const [, vals] = hex.match(/^rgba\((.+)\)$/) || [];
+  if (hex?.startsWith("rgba(") || hex?.startsWith("rgb(")) {
+    const [, vals] =
+      hex.match(/^rgba\((.+)\)$/) || hex.match(/^rgb\((.+)\)$/) || [];
     if (vals) [hRed, hGreen, hBlue] = vals.split(",");
   } else {
     hRed = hexToR(hex);
@@ -51,7 +52,7 @@ export function getCorrectTextColor(hex: string) {
   }
 
   return (Number(hRed) * 299 + Number(hGreen) * 587 + Number(hBlue) * 114) /
-    1000 >
+    500 >
     threshold
     ? "#000000"
     : "#ffffff";
