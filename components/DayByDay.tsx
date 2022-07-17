@@ -5,7 +5,6 @@ import {
   isFuture,
   isWithinRange,
 } from "date-fns";
-import { css } from "emotion";
 import React, { useMemo } from "react";
 import {
   Bar,
@@ -79,12 +78,7 @@ export default function DayByDay() {
   );
 
   return (
-    <div
-      className={css`
-        flex: 0.5;
-        min-width: 250px;
-      `}
-    >
+    <div>
       <ResponsiveContainer width="100%" height={350}>
         <ComposedChart
           data={data}

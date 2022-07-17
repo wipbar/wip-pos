@@ -21,13 +21,11 @@ function Node({
   height,
   index,
   payload,
-  containerWidth,
   camp,
 }: RectangleProps & {
   camp: ICamp;
   index?: number;
-  payload?: SankeyNode & { name: string };
-  containerWidth?: number;
+  payload?: SankeyNode & { name: string; sourceLinks: any[] };
   width?: number;
   height?: number;
 }) {
@@ -39,8 +37,7 @@ function Node({
   )
     return null;
 
-  const isOut = x + width + 6 > (containerWidth || 0);
-
+  const isOut = Boolean(payload?.sourceLinks.length);
   return (
     <Layer key={`CustomNode${index}`}>
       <Rectangle
@@ -295,8 +292,6 @@ export default function SalesSankey({ currentCamp }: { currentCamp: ICamp }) {
       <Sankey
         height={320}
         data={data}
-        nodePadding={10}
-        margin={{ left: 100, right: 100, bottom: 25 }}
         link={<Link camp={currentCamp} />}
         node={<Node camp={currentCamp} />}
       >

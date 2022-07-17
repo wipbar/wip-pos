@@ -14,10 +14,10 @@ import Camps from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
-import SalesSankey from "../components/SalesSankey";
-import useMongoFetch from "../hooks/useMongoFetch";
-import useCurrentDate from "../hooks/useCurrentDate";
 import DayByDay from "../components/DayByDay";
+import SalesSankey from "../components/SalesSankey";
+import useCurrentDate from "../hooks/useCurrentDate";
+import useMongoFetch from "../hooks/useMongoFetch";
 
 const rolloverOffset = 5;
 const renderer = ({
@@ -84,7 +84,6 @@ export default function PageStats() {
   const currentDate = useCurrentDate(2000);
   const {
     data: [currentCamp],
-    loading: campsLoading,
   } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
   const from = useMemo(
     () =>
@@ -104,11 +103,11 @@ export default function PageStats() {
     [currentCamp, currentDate],
   );
 
-  const { data: sales, loading: salesLoading } = useMongoFetch(
+  const { data: sales } = useMongoFetch(
     Sales.find({ timestamp: { $gt: from, $lt: to } }),
     [from, to],
   );
-  const { data: products, loading: productsLoading } = useMongoFetch(
+  const { data: products } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
   );
   const mostSold = useMemo(
@@ -148,6 +147,15 @@ export default function PageStats() {
           className={css`
             display: flex;
             flex-wrap: wrap;
+            > * {
+              width: 100%;
+            }
+
+            @media (min-width: 900px) {
+              > * {
+                width: 50%;
+              }
+            }
           `}
         >
           <CampByCamp />
