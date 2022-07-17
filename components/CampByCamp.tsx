@@ -15,8 +15,8 @@ import {
 } from "recharts";
 import Camps, { ICamp } from "../api/camps";
 import Sales from "../api/sales";
-import useMongoFetch from "../hooks/useMongoFetch";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import useMongoFetch from "../hooks/useMongoFetch";
 
 const getAvg = (arr: number[]) =>
   arr.reduce((acc, c) => acc + c, 0) / arr.length;
@@ -238,23 +238,28 @@ export default function CampByCamp() {
             domain={["dataMin", "dataMax"]}
             strokeOpacity={0.5}
           />
-          <Bar
-            yAxisId="right"
-            key={currentCamp?.slug + "individual"}
-            dataKey={currentCamp?.slug + "individual"}
-            name={"Δ" + currentCamp?.name}
-            fill={currentCamp?.color}
-            fillOpacity={0.5}
-          />
-          <Line
-            key={currentCamp?.slug + "-trend"}
-            dataKey={currentCamp?.slug + "-trend"}
-            stroke={currentCamp?.color}
-            strokeWidth={2}
-            strokeDasharray="4 2"
-            dot={false}
-            connectNulls
-          />
+
+          {currentCamp ? (
+            <>
+              <Bar
+                yAxisId="right"
+                key={currentCamp.slug + "individual"}
+                dataKey={currentCamp.slug + "individual"}
+                name={"Δ" + currentCamp.name}
+                fill={currentCamp?.color}
+                fillOpacity={0.5}
+              />
+              <Line
+                key={currentCamp.slug + "-trend"}
+                dataKey={currentCamp.slug + "-trend"}
+                stroke={currentCamp.color}
+                strokeWidth={2}
+                strokeDasharray="4 2"
+                dot={false}
+                connectNulls
+              />
+            </>
+          ) : null}
         </ComposedChart>
       </ResponsiveContainer>
     </div>

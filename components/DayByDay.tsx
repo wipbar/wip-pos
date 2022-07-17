@@ -19,59 +19,60 @@ import {
   YAxis,
 } from "recharts";
 import Sales from "../api/sales";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
-import useCurrentCamp from "/hooks/useCurrentCamp";
 
 export default function DayByDay() {
   const { data: sales } = useMongoFetch(Sales);
   const currentCamp = useCurrentCamp();
   const numberOfDaysInCurrentCamp = currentCamp
     ? differenceInDays(currentCamp.end, currentCamp.start)
-    : 7; // Mostly they're 7 days
+    : 0;
 
   const data = useMemo(
     () =>
-      Array.from({ length: 24 }, (_, i) =>
-        Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
-          x: number;
-          [key: string]: number | null;
-        }>(
-          (memo, _, j) => {
-            const hour = j * 24 + i;
+      currentCamp
+        ? Array.from({ length: 24 }, (_, i) =>
+            Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
+              x: number;
+              [key: string]: number | null;
+            }>(
+              (memo, _, j) => {
+                const hour = j * 24 + i;
 
-            if (!currentCamp) return memo;
+                if (isFuture(addHours(currentCamp.start, hour + 6)))
+                  return memo;
 
-            if (isFuture(addHours(currentCamp.start, hour + 6))) return memo;
-
-            return {
-              ...memo,
-              [j]:
-                sales
-                  .filter((sale) =>
-                    isWithinRange(
-                      sale.timestamp,
-                      addHours(currentCamp.start, j * 24 + 6),
-                      endOfHour(addHours(currentCamp.start, hour + 6)),
-                    ),
-                  )
-                  .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
-                null,
-              [j + "individual"]:
-                sales
-                  .filter((sale) =>
-                    isWithinRange(
-                      sale.timestamp,
-                      addHours(currentCamp.start, hour + 6),
-                      endOfHour(addHours(currentCamp.start, hour + 6)),
-                    ),
-                  )
-                  .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
-                null,
-            };
-          },
-          { x: i },
-        ),
-      ),
+                return {
+                  ...memo,
+                  [j]:
+                    sales
+                      .filter((sale) =>
+                        isWithinRange(
+                          sale.timestamp,
+                          addHours(currentCamp.start, j * 24 + 6),
+                          endOfHour(addHours(currentCamp.start, hour + 6)),
+                        ),
+                      )
+                      .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
+                    null,
+                  [j + "individual"]:
+                    sales
+                      .filter((sale) =>
+                        isWithinRange(
+                          sale.timestamp,
+                          addHours(currentCamp.start, hour + 6),
+                          endOfHour(addHours(currentCamp.start, hour + 6)),
+                        ),
+                      )
+                      .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
+                    null,
+                };
+              },
+              { x: i },
+            ),
+          )
+        : [],
     [currentCamp, numberOfDaysInCurrentCamp, sales],
   );
 

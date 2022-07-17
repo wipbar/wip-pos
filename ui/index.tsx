@@ -12,6 +12,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { isUserInTeam } from "../api/accounts";
+import Camps from "../api/camps";
 import Locations from "../api/locations";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -25,7 +26,6 @@ import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
-import Camps from "/api/camps";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 

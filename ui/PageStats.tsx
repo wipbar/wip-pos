@@ -10,6 +10,7 @@ import {
 import { css } from "emotion";
 import React, { useMemo } from "react";
 import Countdown from "react-countdown";
+import Camps, { ICamp } from "../api/camps";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
@@ -21,10 +22,12 @@ import useMongoFetch from "../hooks/useMongoFetch";
 
 const rolloverOffset = 5;
 const renderer = ({
+  days,
   hours,
   minutes,
   seconds,
 }: {
+  days: number;
   hours: number;
   minutes: number;
   seconds: number;
@@ -33,6 +36,7 @@ const renderer = ({
     <span
       className={css`
         font-size: 5em;
+        white-space: nowrap;
         display: inline-block;
         transform-origin: 50% 50%;
         ${hours == 0 && minutes <= 4
@@ -44,14 +48,25 @@ const renderer = ({
           : ""}
       `}
     >
-      {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
-      {String(seconds).padStart(2, "0")}
+      {days ? (
+        <>{days} DAYS TILL</>
+      ) : (
+        <>
+          {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
+          {String(seconds).padStart(2, "0")}
+        </>
+      )}
     </span>
   );
 };
 
 function CurfewCountdown() {
   const currentDate = useCurrentDate(50);
+  const currentCamp = useCurrentCamp();
+  const {
+    data: [newestCamp],
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const camp: ICamp | undefined = currentCamp || newestCamp;
   const next2am = useMemo(
     () =>
       isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
@@ -59,6 +74,16 @@ function CurfewCountdown() {
         : startOfHour(setHours(addDays(currentDate, 1), 2)),
     [currentDate],
   );
+  const countDownTo = useMemo(
+    () =>
+      (camp && isAfter(camp.buildup, currentDate) && camp.buildup) ||
+      (camp && isAfter(camp.start, currentDate) && camp.start) ||
+      next2am,
+    [next2am, camp],
+  );
+
+  if (!newestCamp) return null;
+
   return (
     <div
       className={css`
@@ -66,14 +91,23 @@ function CurfewCountdown() {
       `}
     >
       <big>
-        <Countdown date={next2am} renderer={renderer} daysInHours />
+        <Countdown date={countDownTo} renderer={renderer} daysInHours />
         <br />
         <span
           className={css`
             font-size: 3.5em;
+            white-space: nowrap;
           `}
         >
-          TILL CURFEW
+          {next2am !== countDownTo ? (
+            <>
+              {camp.name.toUpperCase()}
+              <br />
+              {countDownTo === camp.buildup ? " BUILDUP" : " START"}
+            </>
+          ) : (
+            <>TILL CURFEW</>
+          )}
         </span>
       </big>
     </div>
@@ -102,7 +136,7 @@ export default function PageStats() {
   );
 
   const { data: sales } = useMongoFetch(
-    from && to && Sales.find({ timestamp: { $gt: from, $lt: to } }),
+    Sales.find(from && to ? { timestamp: { $gt: from, $lt: to } } : {}),
     [from, to],
   );
   const { data: products } = useMongoFetch(
@@ -168,7 +202,11 @@ export default function PageStats() {
       >
         <CurfewCountdown />
         <hr />
-        <big>Most sold @ {currentCamp?.name}:</big>
+        {currentCamp ? (
+          <big>Most sold @ {currentCamp.name}:</big>
+        ) : (
+          <big>Most sold of all time:</big>
+        )}
         <ul
           className={css`
             padding: 0;
@@ -199,8 +237,7 @@ export default function PageStats() {
                   </div>
                   <div>
                     {product.brandName ? <>{product.brandName} - </> : null}
-                    {product.name}({product.unitSize}
-                    {product.sizeUnit})
+                    {product.name}({product.unitSize} {product.sizeUnit})
                   </div>
                 </li>
               );
