@@ -23,6 +23,8 @@ import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
+import Camps from "/api/camps";
+import { getCorrectTextColor } from "/util";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
@@ -35,6 +37,9 @@ export default function UI() {
   const locationSlug = match?.params.locationSlug;
   const pageSlug = (match?.params as any)["*"] as string | undefined;
 
+  const {
+    data: [currentCamp],
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
   const user = useCurrentUser();
   const { data: locations } = useMongoFetch(Locations);
   const userLocations = locations?.filter(({ teamName }) =>
@@ -69,6 +74,24 @@ export default function UI() {
         flex-direction: column;
       `}
     >
+      <style>{`
+        body {
+          color: ${currentCamp?.color};
+          background-color: ${getCorrectTextColor(currentCamp?.color)};
+        }
+        a {
+          color: ${currentCamp?.color};
+        }
+        .my-masonry-grid > div {
+          border-color: ${currentCamp?.color};
+        }
+
+        #login-buttons-bornhack,
+        #login-buttons-logout {
+          background: ${currentCamp?.color} !important;
+          border-color: ${currentCamp?.color} !important;
+        }
+      `}</style>
       <div
         className={css`
           position: absolute;
@@ -117,15 +140,9 @@ export default function UI() {
             </select>
           ) : (
             <big>
-              <span
-                className={css`
-                  color: white;
-                `}
-              >
-                {locationSlug && currentLocation
-                  ? currentLocation.name
-                  : "WIP POS"}
-              </span>
+              {locationSlug && currentLocation
+                ? currentLocation.name
+                : "WIP POS"}
             </big>
           )}
           {user &&

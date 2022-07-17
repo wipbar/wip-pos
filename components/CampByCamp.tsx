@@ -156,7 +156,7 @@ export default function CampByCamp() {
               ? { ...d, ...trendData[1] }
               : d,
           )}
-          margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+          margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -172,7 +172,7 @@ export default function CampByCamp() {
               angle: -90,
               offset: 70,
               position: "insideLeft",
-              style: { fill: "yellow" },
+              style: { fill: currentCamp?.color },
             }}
           />
           <Tooltip

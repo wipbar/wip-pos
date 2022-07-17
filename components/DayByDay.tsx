@@ -82,7 +82,7 @@ export default function DayByDay() {
       <ResponsiveContainer width="100%" height={350}>
         <ComposedChart
           data={data}
-          margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+          margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -98,14 +98,14 @@ export default function DayByDay() {
               angle: -90,
               offset: 70,
               position: "insideLeft",
-              style: { fill: "yellow" },
+              style: { fill: camp?.color },
             }}
           />
           <Tooltip
             labelFormatter={(hour) =>
               `H${String((hour + 8) % 24).padStart(2, "0")}`
             }
-            contentStyle={{ background: "#000" }}
+            contentStyle={{ background: "#000", color: "#FFF" }}
           />
           <Legend />
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (

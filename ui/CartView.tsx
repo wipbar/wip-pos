@@ -10,7 +10,9 @@ import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
+import Camps from "/api/camps";
 import BarcodeScannerComponent from "/components/BarcodeScanner";
+import { getCorrectTextColor } from "/util";
 
 function MostRecentSale() {
   const { location, loading: locationLoading } = useCurrentLocation(true);
@@ -85,20 +87,20 @@ function CartViewProductsItem({
         <button
           className={css`
             display: flex;
-            background: white;
-            color: red;
             border-radius: 100%;
             margin-right: 5px;
             width: 32px;
             height: 32px;
+            font-size: 32px;
             font-family: sans-serif;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            border:0;
           `}
           onClick={onRemoveClick}
         >
-          X
+          🚮
         </button>
         <div
           className={css`
@@ -141,6 +143,10 @@ function removeItem<T extends any>(items: T[], i: number): T[] {
 }
 
 export default function CartView() {
+  const {
+    data: [currentCamp],
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+
   const [playCrank] = useSound("/cashregistercrank.mp3");
   const [playDing] = useSound("/cashregisterding.mp3");
 
@@ -220,8 +226,8 @@ export default function CartView() {
               flex-direction: column;
               align-items: center;
               padding-bottom: 1em;
-              box-shadow: #ffed00 0 0 10px 0px;
-              background: black;
+              box-shadow: ${currentCamp?.color} 0 0 10px 0px;
+              background: ${getCorrectTextColor(currentCamp?.color)};
             `}
           >
             <BarcodeScannerComponent onResult={handleBarCode} />
@@ -241,8 +247,10 @@ export default function CartView() {
                 onClick={() => setConfirmOpen(true)}
                 className={css`
                   display: block;
-                  background-color: #ffed00;
-                  color: black;
+
+                  background-color: ${currentCamp?.color};
+                  color: ${getCorrectTextColor(currentCamp?.color)};
+
                   margin-top: 1em;
                   padding: 1em;
                 `}
@@ -283,8 +291,8 @@ export default function CartView() {
         >
           <div
             className={css`
-              background: white;
-              color: black;
+              background-color: ${getCorrectTextColor(currentCamp?.color)};
+              color: ${currentCamp?.color};
               padding: 1em;
               text-align: center;
             `}
@@ -315,8 +323,10 @@ export default function CartView() {
               className={css`
                 display: inline-block;
                 margin-top: 1em;
-                background-color: #ffed00;
-                color: black;
+
+                background-color: ${currentCamp?.color};
+                color: ${getCorrectTextColor(currentCamp?.color)};
+
                 padding: 1em;
                 width: 100%;
               `}

@@ -23,7 +23,7 @@ function SparkLine({
   data,
   strokeWidth = 1,
   stroke = "transparent",
-  fill = "#E22028",
+  fill,
   ...props
 }: {
   data: [number, number][];
@@ -345,8 +345,9 @@ export default function PageMenu() {
                           </div>
                           <SparkLine
                             className={css`
-                              border-bottom: #e22028 1px solid;
+                              border-bottom: ${currentCamp.color} 1px solid;
                             `}
+                            fill={currentCamp.color}
                             data={Array.from({ length: 24 }, (_, i) => [
                               23 - i,
                               sales.reduce(

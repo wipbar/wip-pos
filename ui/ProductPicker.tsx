@@ -5,6 +5,7 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor, stringToColour } from "../util";
+import Camps from "/api/camps";
 
 function removeItem<T>(items: T[], i: number) {
   return items.slice(0, i).concat(items.slice(i + 1, items.length));
@@ -13,6 +14,9 @@ const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
 
 export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   const { location } = useCurrentLocation();
+  const {
+    data: [currentCamp],
+  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
   const [showItemDetails, setShowItemDetails] = useState(true);
   const toggleOnlyMenuItems = useCallback(
@@ -77,8 +81,8 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
             className={css`
               display: inline-flex;
               align-items: center;
-              background: rgba(255, 255, 255, 0.4);
-              color: white;
+              background-color: ${currentCamp?.color};
+              color: ${getCorrectTextColor(currentCamp?.color)};
               padding: 0 6px;
               border-radius: 4px;
               margin-right: 2px;
@@ -100,8 +104,8 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
             className={css`
               display: inline-flex;
               align-items: center;
-              background: rgba(255, 255, 255, 0.4);
-              color: white;
+              background-color: ${currentCamp?.color};
+              color: ${getCorrectTextColor(currentCamp?.color)};
               padding: 0 6px;
               border-radius: 4px;
               margin-right: 2px;
@@ -213,9 +217,8 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
                 }
                 background: ${stringToColour(
                   [...(product.tags || [])].sort().join(","),
-                  0.4,
+                  0.69,
                 ) || "rgba(255, 255, 255, 1)"};
-                color: white;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;

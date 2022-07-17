@@ -25,7 +25,7 @@ function Node({
 }: RectangleProps & {
   camp: ICamp;
   index?: number;
-  payload?: SankeyNode & { name: string; sourceLinks: any[] };
+  payload?: SankeyNode & { name: string; sourceLinks: any[]; color?: string };
   width?: number;
   height?: number;
 }) {
@@ -45,17 +45,7 @@ function Node({
         y={y}
         width={width}
         height={height}
-        fill={
-          payload?.name === "Mate"
-            ? "#193781"
-            : payload?.name === "Beer"
-            ? "#FFED00"
-            : payload?.name === "Non-Beer"
-            ? "#D2691E"
-            : payload?.name === "Non-Mate"
-            ? "#16503f"
-            : camp?.color || "#5192ca"
-        }
+        fill={payload?.color || camp?.color}
         fillOpacity="1"
       />
       {payload?.name ? (
@@ -64,7 +54,7 @@ function Node({
           x={isOut ? x - 6 : x + width + 6}
           y={y + height / 2}
           fontSize="14"
-          stroke="#FFED00"
+          stroke={camp.color}
         >
           {payload.name}
         </text>
@@ -75,7 +65,7 @@ function Node({
           x={isOut ? x - 6 : x + width + 6}
           y={y + height / 2 + 13}
           fontSize="12"
-          stroke="#FFED00"
+          stroke={camp.color}
           strokeOpacity="0.5"
         >
           {~~payload.value} units
@@ -98,7 +88,7 @@ function Link({
   targetRelativeY,
   ...others
 }: {
-  payload?: SankeyLink & { target: { name: string } };
+  payload?: SankeyLink & { target: { name: string; color?: string } };
   camp: ICamp;
   sourceX?: number;
   sourceY?: number;
@@ -118,17 +108,7 @@ function Link({
         C${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}
       `}
       fill="none"
-      stroke={
-        payload?.target.name === "Mate"
-          ? "#193781"
-          : payload?.target.name === "Beer"
-          ? "#FFED00"
-          : payload?.target.name === "Non-Beer"
-          ? "#D2691E"
-          : payload?.target.name === "Non-Mate"
-          ? "#16503f"
-          : camp?.color || "#77c878"
-      }
+      stroke={payload?.target?.color || camp?.color}
       strokeWidth={linkWidth}
       strokeOpacity="0.5"
       {...others}
@@ -137,17 +117,17 @@ function Link({
 }
 
 const nodes = [
-  { name: "Sales" },
-  { name: "Alcoholic" },
-  { name: "Beer" },
-  { name: "Tap" },
-  { name: "Non-Tap" },
-  { name: "Non-Beer" },
-  { name: "Non-Alcoholic" },
-  { name: "Mate" },
-  { name: "Non-Mate" },
-  { name: "Non-Cocktail" },
-  { name: "Cocktail" },
+  { color: "", name: "Sales" },
+  { color: "", name: "Alcoholic" },
+  { color: "#FFED00", name: "Beer" },
+  { color: "#FFED00", name: "Tap" },
+  { color: "#FFED00", name: "Non-Tap" },
+  { color: "#D2691E", name: "Non-Beer" },
+  { color: "", name: "Non-Alcoholic" },
+  { color: "#193781", name: "Mate" },
+  { color: "#16503f", name: "Non-Mate" },
+  { color: "#D2691E", name: "Non-Cocktail" },
+  { color: "#D2691E", name: "Cocktail" },
 ];
 const getNode = (name: string) => nodes.findIndex((node) => node.name === name);
 
