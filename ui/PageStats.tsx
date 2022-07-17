@@ -55,8 +55,8 @@ function CurfewCountdown() {
   const next2am = useMemo(
     () =>
       isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
-        ? startOfHour(setHours(currentDate, 4))
-        : startOfHour(setHours(addDays(currentDate, 1), 4)),
+        ? startOfHour(setHours(currentDate, 2))
+        : startOfHour(setHours(addDays(currentDate, 1), 2)),
     [currentDate],
   );
   return (
