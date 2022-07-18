@@ -79,19 +79,6 @@ export default function UI() {
         flex-direction: column;
       `}
     >
-      <select
-        value={currentCampSlug || ""}
-        onChange={(event) => setCurrentCampSlug(event.target.value || null)}
-      >
-        <option value="" key="">
-          Auto
-        </option>
-        {camps.map((camp) => (
-          <option value={camp.slug} key={camp.slug}>
-            {camp.name}
-          </option>
-        ))}
-      </select>
       <style>{`
         body {
           color: ${currentCamp?.color};
@@ -142,15 +129,29 @@ export default function UI() {
             }
           `}
         >
+          {user ? (
+            <select
+              value={currentCampSlug || ""}
+              onChange={(event) =>
+                setCurrentCampSlug(event.target.value || null)
+              }
+            >
+              <option value="" key="">
+                Auto
+              </option>
+              {camps.map((camp) => (
+                <option value={camp.slug} key={camp.slug}>
+                  {camp.name}
+                </option>
+              ))}
+            </select>
+          ) : null}
           {user && userLocations && userLocations.length > 1 ? (
             <select
               onChange={(event) =>
                 navigate("/" + event.target.value + "/" + pageSlug)
               }
               value={locationSlug}
-              className={css`
-                font-size: larger;
-              `}
             >
               {userLocations?.map(({ name, slug }) => (
                 <option key={slug} value={slug}>
