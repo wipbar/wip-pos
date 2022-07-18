@@ -15,8 +15,37 @@ const Camps = new Mongo.Collection<ICamp>("camps");
 
 if (Meteor.isServer) {
   Meteor.startup(() => {
-    if (Camps.find().count() === 0) {
-      console.log("Seeding camps");
+    if (!Camps.findOne({ slug: "bornhack-2016" })) {
+      Camps.insert({
+        name: "BornHack 2016",
+        slug: "bornhack-2016",
+        buildup: new Date(2016, 7, 25, 16),
+        start: startOfDay(new Date(2016, 7, 27)),
+        end: endOfDay(new Date(2016, 8, 3)),
+        color: "#004dff",
+      });
+    }
+    if (!Camps.findOne({ slug: "bornhack-2017" })) {
+      Camps.insert({
+        name: "BornHack 2017",
+        slug: "bornhack-2017",
+        buildup: new Date(2017, 7, 20, 16),
+        start: startOfDay(new Date(2017, 7, 22)),
+        end: endOfDay(new Date(2017, 7, 29)),
+        color: "#750787",
+      });
+    }
+    if (!Camps.findOne({ slug: "bornhack-2018" })) {
+      Camps.insert({
+        name: "BornHack 2018",
+        slug: "bornhack-2018",
+        buildup: new Date(2018, 7, 12, 12),
+        start: startOfDay(new Date(2018, 7, 16)),
+        end: endOfDay(new Date(2018, 7, 23)),
+        color: "#008026",
+      });
+    }
+    if (!Camps.findOne({ slug: "bornhack-2019" })) {
       Camps.insert({
         name: "BornHack 2019",
         slug: "bornhack-2019",
@@ -25,13 +54,15 @@ if (Meteor.isServer) {
         end: endOfDay(new Date(2019, 7, 15)),
         color: "#FFED00",
       });
+    }
+    if (!Camps.findOne({ slug: "bornhack-2020" })) {
       Camps.insert({
         name: "BornHack 2020",
         slug: "bornhack-2020",
         buildup: new Date(2020, 7, 7, 12),
         start: startOfDay(new Date(2020, 7, 11)),
         end: endOfDay(new Date(2020, 7, 18)),
-        color: "#FD8B25",
+        color: "#FF8C00",
       });
     }
     if (!Camps.findOne({ slug: "bornhack-2021" })) {
