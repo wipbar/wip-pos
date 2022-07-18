@@ -13,6 +13,8 @@ require("tls").DEFAULT_ECDH_CURVE = "auto";
 
 Accounts.config({ forbidClientAccountCreation: true });
 const service = "bornhack";
+const code_verifier = "1IwjXGI5H56e8vWKLHJwLn615KuGr8_yQeCLFgftTJ4";
+const code_challenge = "pAiuYdomi8XWR3KVWRQaHCqvtkFhX0Sjw5aCw6E--gI";
 
 if (Meteor.isClient) {
 } else {
@@ -33,6 +35,9 @@ if (Meteor.isClient) {
           },
           params: {
             code,
+            code_verifier,
+            code_challenge,
+            code_challenge_method: "S256",
             grant_type: "authorization_code",
             client_id: config.clientId,
             client_secret: OAuth.openSecret(config.secret),
@@ -135,6 +140,9 @@ if (Meteor.isClient) {
       "state",
       OAuth._stateParam(loginStyle, credentialToken),
     );
+    loginUrl.searchParams.set("code_challenge_method", "S256");
+    loginUrl.searchParams.set("code_challenge", code_challenge);
+    loginUrl.searchParams.set("code_verifier", code_verifier);
 
     OAuth.launchLogin({
       loginService: service,
