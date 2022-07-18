@@ -13,6 +13,7 @@ export interface IProduct {
   unitSize?: number;
   sizeUnit?: string;
   abv?: number;
+  ibu?: number;
   tags?: string[];
   shopPrices?: { buyPrice: number; timestamp: Date }[];
   locationIds?: string[];
