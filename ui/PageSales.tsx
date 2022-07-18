@@ -1,12 +1,12 @@
 import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
 import { css } from "emotion";
 import { groupBy } from "lodash";
-import React, { useMemo, useState } from "react";
-import Camps from "../api/camps";
+import React, { useMemo } from "react";
 import Products, { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useCurrentCamp from "/hooks/useCurrentCamp";
 
 const rolloverOffset = 5;
 
@@ -34,10 +34,7 @@ const getSaleExpenses = (sale: ISale, products: IProduct[]) =>
 
 export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
-  const { data: camps } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
-  const [campSlug, setCampSlug] = useState(camps?.[0]?.slug);
-  const selectedCamp =
-    camps?.find((camp) => camp.slug === campSlug) || camps?.[0];
+  const selectedCamp = useCurrentCamp();
   const { data: sales } = useMongoFetch(
     Sales.find(
       {
@@ -70,16 +67,6 @@ export default function PageSales() {
 
   return (
     <div>
-      <select
-        value={campSlug || camps?.[0]?.slug}
-        onChange={({ target }) => setCampSlug(target.value)}
-      >
-        {camps.map(({ slug, name }) => (
-          <option key={slug} value={slug}>
-            {name}
-          </option>
-        ))}
-      </select>
       <ul
         className={css`
           padding: 0;
