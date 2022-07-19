@@ -79,8 +79,10 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
             className={css`
               display: inline-flex;
               align-items: center;
-              background-color: ${currentCamp?.color};
-              color: ${getCorrectTextColor(currentCamp?.color)};
+              background-color: ${currentCamp?.color || "initial"};
+              color: ${(currentCamp &&
+                getCorrectTextColor(currentCamp?.color)) ||
+              "initial"};
               padding: 0 6px;
               border-radius: 4px;
               margin-right: 2px;
@@ -102,8 +104,10 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
             className={css`
               display: inline-flex;
               align-items: center;
-              background-color: ${currentCamp?.color};
-              color: ${getCorrectTextColor(currentCamp?.color)};
+              background-color: ${currentCamp?.color || "initial"};
+              color: ${(currentCamp &&
+                getCorrectTextColor(currentCamp?.color)) ||
+              "initial"};
               padding: 0 6px;
               border-radius: 4px;
               margin-right: 2px;
