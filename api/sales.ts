@@ -17,35 +17,6 @@ export interface ISale {
 
 const Sales = new Mongo.Collection<ISale>("sales");
 
-if (Meteor.isServer)
-  Meteor.startup(() => {
-    if (Sales.find().count() === 0) {
-      Sales.insert({
-        timestamp: new Date(),
-        amount: 0,
-        locationId: Locations.findOne({ slug: "bar" })!._id,
-        products: [
-          {
-            createdAt: new Date(),
-            _id: "blahh",
-            brandName: "the abrand",
-            name: "some rodut",
-          },
-        ],
-      });
-    }
-    if (Sales.find({ locationId: { $exists: false } }).count()) {
-      console.log(
-        "Setting any Sale without locationId's locationId to the bar.",
-      );
-      Sales.update(
-        { locationId: { $exists: false } },
-        { $set: { locationId: Locations.findOne({ slug: "bar" })!._id } },
-        { multi: true },
-      );
-    }
-  });
-
 Meteor.methods({
   "Sales.sellProducts"({
     locationSlug,
