@@ -1,7 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { assertUserInAnyTeam } from "./accounts";
-import Locations from "./locations";
 
 export interface IProduct {
   _id: string;
@@ -10,7 +9,7 @@ export interface IProduct {
   name: string;
   description?: string;
   salePrice?: number;
-  unitSize?: number;
+  unitSize?: number | string;
   sizeUnit?: string;
   abv?: number;
   ibu?: number;
@@ -22,46 +21,6 @@ export interface IProduct {
 }
 
 const Products = new Mongo.Collection<IProduct>("products");
-
-if (Meteor.isServer)
-  Meteor.startup(() => {
-    if (Products.find().count() === 0) {
-      Products.insert({
-        createdAt: new Date(),
-        name: "øl",
-        brandName: "ølhanen",
-        salePrice: 25,
-        unitSize: 500,
-        sizeUnit: "ml",
-        shopPrices: [{ buyPrice: 10, timestamp: new Date() }],
-      });
-    }
-    if (Products.find({ isOnMenu: { $exists: 1 } }).count()) {
-      console.log("Migrating isOnMenu to locationIds.");
-      const products = Products.find({ isOnMenu: { $exists: 1 } }).fetch();
-      products.forEach(({ _id }) =>
-        Products.update(_id, {
-          $set: { locationIds: [Locations.findOne({ slug: "bar" })!._id] },
-          $unset: { isOnMenu: "" },
-        }),
-      );
-    }
-
-    const stringTagsProductsCursor = Products.find({
-      tags: { $type: "string", $not: { $type: "array" } },
-    });
-    if (stringTagsProductsCursor.count()) {
-      const products = stringTagsProductsCursor.fetch();
-      console.log(
-        `Migrating ${products.length} products from string to array tags.`,
-      );
-      products.forEach(({ _id, tags }) =>
-        Products.update(_id, {
-          $set: { tags: tags ? (tags as unknown as string).split(",") : [] },
-        }),
-      );
-    }
-  });
 
 export default Products;
 
