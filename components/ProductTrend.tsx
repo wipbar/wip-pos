@@ -5,6 +5,7 @@ import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
 import Fire from "./Fire";
+import useCurrentDate from "/hooks/useCurrentDate";
 
 const f = 0.25;
 export default function ProductTrend({
@@ -14,6 +15,7 @@ export default function ProductTrend({
   product: IProduct;
 } & ComponentProps<typeof Fire>) {
   const currentCamp = useCurrentCamp();
+  const currentDate = useCurrentDate();
 
   const { data } = useMongoFetch(
     currentCamp &&
@@ -47,7 +49,7 @@ export default function ProductTrend({
     () =>
       currentCamp && firstSale
         ? productSales.reduce((memo, sale) => sale.products.length + memo, 0) /
-          ((Number(min(currentCamp.end, new Date())) -
+          ((Number(min(currentCamp.end, currentDate)) -
             Number(
               firstSale.timestamp ||
                 (isPast(currentCamp.start)
@@ -56,16 +58,16 @@ export default function ProductTrend({
             )) /
             3600000)
         : 0,
-    [currentCamp, firstSale, productSales],
+    [currentCamp, currentDate, firstSale, productSales],
   );
   const salesInPastHour = useMemo(
     () =>
       productSales
         .filter((sale) =>
-          isWithinRange(sale.timestamp, subHours(new Date(), 2), new Date()),
+          isWithinRange(sale.timestamp, subHours(currentDate, 2), currentDate),
         )
         .reduce((memo, sale) => sale.products.length + memo, 0),
-    [productSales],
+    [currentDate, productSales],
   );
 
   const number = Number(
