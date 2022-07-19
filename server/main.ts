@@ -8,7 +8,7 @@ import Stocks from "../api/stocks";
 import "./metrics";
 
 Meteor.publish("products", () => Products.find());
-Meteor.publish("camps", () => Camps.find());
-Meteor.publish("sales", () => Sales.find());
+Meteor.publish("camps", () => Camps.find({}, { sort: { end: -1 } }));
+Meteor.publish("sales", () => Sales.find({}, { sort: { timestamp: -1 } }));
 Meteor.publish("stocks", () => Stocks.find());
 Meteor.publish("locations", () => Locations.find());
