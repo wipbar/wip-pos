@@ -97,11 +97,6 @@ export default function PageStockItem({
     onCancel?.();
     reset();
   };
-  const mostRecentShopPrice =
-    product?.shopPrices &&
-    [...product.shopPrices].sort(
-      (a, b) => Number(b.timestamp) - Number(a.timestamp),
-    )[0];
 
   const handleBarCode = useCallback((resultBarCode: string) => {
     setValue("barCode", resultBarCode);
