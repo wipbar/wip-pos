@@ -1,4 +1,4 @@
-import { css } from "emotion";
+import { css } from "@emotion/css";
 import React, { HTMLProps, useCallback, useEffect, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";

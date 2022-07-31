@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import {
   addHours,
   endOfHour,
@@ -8,7 +9,6 @@ import {
   startOfHour,
   subHours,
 } from "date-fns";
-import { css } from "emotion";
 import React, { Fragment, SVGProps, useMemo } from "react";
 import Products, { IProduct, isAlcoholic } from "../api/products";
 import Sales from "../api/sales";

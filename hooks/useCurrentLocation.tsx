@@ -1,4 +1,4 @@
-import { css } from "emotion";
+import { css } from "@emotion/css";
 import { useTracker } from "meteor/react-meteor-data";
 import React from "react";
 import { useMatch } from "react-router-dom";

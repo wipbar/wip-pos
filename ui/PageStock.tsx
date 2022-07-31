@@ -1,9 +1,9 @@
+import { css } from "@emotion/css";
 import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
-import { css } from "emotion";
 import React, { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import type { ILocation } from "../api/locations";

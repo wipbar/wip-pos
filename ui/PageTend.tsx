@@ -1,4 +1,4 @@
-import { css } from "emotion";
+import { css } from "@emotion/css";
 import React from "react";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import CartView from "./CartView";
