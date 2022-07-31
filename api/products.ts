@@ -5,6 +5,7 @@ import { assertUserInAnyTeam } from "./accounts";
 export interface IProduct {
   _id: string;
   createdAt: Date;
+  updatedAt?: Date;
   brandName: string;
   name: string;
   description?: string;
@@ -27,8 +28,10 @@ export default Products;
 Meteor.methods({
   "Products.addProduct"({ data }) {
     assertUserInAnyTeam(this.userId);
+    const createdAt = new Date();
     return Products.insert({
-      createdAt: new Date(),
+      createdAt,
+      updatedAt: createdAt,
       brandName: data.brandName.trim(),
       name: data.name.trim(),
       description: data.description?.trim(),
@@ -38,22 +41,23 @@ Meteor.methods({
       abv: data.abv?.trim() && Number(data.abv.trim()),
       tags: data.tags?.map((tag: string) => tag.trim().toLowerCase()) || [],
       shopPrices: data.buyPrice
-        ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: new Date() }]
+        ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: createdAt }]
         : undefined,
     });
   },
   "Products.editProduct"({ productId, data: { buyPrice, ...updatedProduct } }) {
     assertUserInAnyTeam(this.userId);
     const oldProduct = Products.findOne({ _id: productId });
+    const updatedAt = new Date();
     return Products.update(productId, {
       $set: {
         ...updatedProduct,
+        updatedAt,
         shopPrices: buyPrice?.trim()
           ? (oldProduct?.shopPrices || []).concat([
-              { buyPrice: +buyPrice.trim(), timestamp: new Date() },
+              { buyPrice: +buyPrice.trim(), timestamp: updatedAt },
             ])
           : undefined,
-        updatedAt: new Date(),
       },
     });
   },
