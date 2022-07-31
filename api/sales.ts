@@ -18,7 +18,7 @@ export interface ISale {
   products: IProduct[];
 }
 
-if (Meteor.isServer)
+if (Meteor.isServer && false)
   Meteor.startup(() => {
     interface IZettleSale {
       Tid: Date;
