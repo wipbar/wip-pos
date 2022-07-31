@@ -1,4 +1,3 @@
-import { isPast } from "date-fns";
 import React, { useMemo } from "react";
 import {
   Layer,
@@ -123,30 +122,40 @@ function Link({
   );
 }
 
-const nodes = [
-  { color: "", name: "Sales" },
-  { color: "#FFED00", name: "Alcoholic" },
-  { color: "#FFED00", name: "Beer" },
-  { color: "#FFED00", name: "Tap" },
-  { color: "#FFED00", name: "Non-Tap" },
-  { color: "#D2691E", name: "Non-Beer" },
-  { color: "#D2691E", name: "Cocktail" },
-  { color: "#D2691E", name: "Non-Cocktail" },
-  { color: "#193781", name: "Non-Alcoholic" },
-  { color: "#193781", name: "Mate" },
-  { color: "#16503f", name: "Non-Mate" },
-];
-const getNode = (name: string) => nodes.findIndex((node) => node.name === name);
-
 export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
-  const { data: sales } = useMongoFetch(
-    Sales.find(
-      currentCamp
-        ? { timestamp: { $gte: currentCamp.start, $lte: currentCamp.end } }
-        : {},
-    ),
+  const { data: campSales } = useMongoFetch(
+    currentCamp
+      ? Sales.find({
+          timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+        })
+      : undefined,
     [currentCamp],
   );
+  const { data: allSales } = useMongoFetch(Sales.find({}), [currentCamp]);
+  const sales = useMemo(
+    () => (campSales?.length ? campSales : allSales),
+    [campSales, allSales],
+  );
+  const salesNode =
+    currentCamp && campSales?.length
+      ? `Sales (${currentCamp.name})`
+      : "Sales (all time)";
+  const nodes = [
+    { color: "", name: salesNode },
+    { color: "#FFED00", name: "Alcoholic" },
+    { color: "#FFED00", name: "Beer" },
+    { color: "#FFED00", name: "Tap" },
+    { color: "#FFED00", name: "Non-Tap" },
+    { color: "#D2691E", name: "Non-Beer" },
+    { color: "#D2691E", name: "Cocktail" },
+    { color: "#D2691E", name: "Non-Cocktail" },
+    { color: "#193781", name: "Non-Alcoholic" },
+    { color: "#193781", name: "Mate" },
+    { color: "#16503f", name: "Non-Mate" },
+  ];
+  const getNode = (name: string) =>
+    nodes.findIndex((node) => node.name === name);
+
   const { data: products } = useMongoFetch(Products);
 
   const data = useMemo(() => {
@@ -159,7 +168,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
     }, []);
     const links = [
       {
-        source: getNode("Sales"),
+        source: getNode(salesNode),
         target: getNode("Alcoholic"),
         value: productsSold.filter(
           ({ tags }) =>
@@ -214,7 +223,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
         ).length,
       },
       {
-        source: getNode("Sales"),
+        source: getNode(salesNode),
         target: getNode("Non-Alcoholic"),
         value: productsSold.filter(
           ({ tags }) =>
@@ -260,7 +269,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
       links,
       nodes: nodes.filter(
         ({ name }) =>
-          name === "Sales" ||
+          name === salesNode ||
           links.some(({ target }) => target === getNode(name)),
       ),
     };

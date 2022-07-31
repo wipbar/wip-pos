@@ -135,9 +135,14 @@ export default function PageStats() {
     [currentCamp, currentDate],
   );
 
-  const { data: sales } = useMongoFetch(
-    Sales.find(from && to ? { timestamp: { $gt: from, $lt: to } } : {}),
+  const { data: allSales } = useMongoFetch(Sales.find({}), [from, to]);
+  const { data: campSales } = useMongoFetch(
+    from && to ? Sales.find({ timestamp: { $gt: from, $lt: to } }) : undefined,
     [from, to],
+  );
+  const sales = useMemo(
+    () => (campSales?.length ? campSales : allSales),
+    [campSales, allSales],
   );
   const { data: products } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),
@@ -202,7 +207,7 @@ export default function PageStats() {
       >
         <CurfewCountdown />
         <hr />
-        {currentCamp ? (
+        {currentCamp && campSales?.length ? (
           <big>Most sold @ {currentCamp.name}:</big>
         ) : (
           <big>Most sold of all time:</big>
