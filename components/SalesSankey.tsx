@@ -12,6 +12,7 @@ import type { ICamp } from "../api/camps";
 import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
+import { getCorrectTextColor } from "/util";
 
 function Node({
   x,
@@ -54,9 +55,9 @@ function Node({
           y={y + height / 2}
           fontSize="16"
           fontWeight="800"
-          fill="white"
-          stroke="black"
-          strokeWidth={0.3}
+          fill={getCorrectTextColor(camp?.color || "edab00", true)}
+          stroke={getCorrectTextColor(camp?.color || "edab00", false)}
+          strokeWidth={0.5}
           strokeOpacity={1}
         >
           {payload.name}
@@ -69,9 +70,9 @@ function Node({
           y={y + height / 2 + 13}
           fontSize="14"
           fontWeight="800"
-          fill="white"
-          stroke="black"
-          strokeWidth={0.3}
+          fill={getCorrectTextColor(camp?.color || "edab00", true)}
+          stroke={getCorrectTextColor(camp?.color || "edab00", false)}
+          strokeWidth={0.5}
           strokeOpacity={1}
         >
           {~~payload.value} units
