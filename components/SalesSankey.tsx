@@ -117,7 +117,7 @@ function Link({
       fill="none"
       stroke={payload?.target?.color || camp?.color}
       strokeWidth={linkWidth}
-      strokeOpacity="0.5"
+      strokeOpacity="0.75"
       {...others}
     />
   );
@@ -142,14 +142,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
   const { data: sales } = useMongoFetch(
     Sales.find(
       currentCamp
-        ? {
-            timestamp: {
-              $gte: isPast(currentCamp.start)
-                ? currentCamp.start
-                : currentCamp.buildup,
-              $lte: currentCamp.end,
-            },
-          }
+        ? { timestamp: { $gte: currentCamp.start, $lte: currentCamp.end } }
         : {},
     ),
     [currentCamp],

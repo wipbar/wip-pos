@@ -11,7 +11,7 @@ export default function useCurrentCamp(): ICamp | undefined {
     currentCampSlug
       ? Camps.find({ slug: currentCampSlug })
       : Camps.find({
-          buildup: { $lte: currentDate },
+          start: { $lte: currentDate },
           end: { $gte: currentDate },
         }),
     [currentCampSlug, currentDate],

@@ -146,42 +146,43 @@ export default function UI() {
               ))}
             </select>
           ) : null}
-          {user && userLocations && userLocations.length > 1 ? (
-            <select
-              onChange={(event) =>
-                navigate("/" + event.target.value + "/" + pageSlug)
-              }
-              value={locationSlug}
-            >
-              {userLocations?.map(({ name, slug }) => (
-                <option key={slug} value={slug}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <big>
-              {locationSlug && currentLocation
-                ? currentLocation.name
-                : "WIP POS"}
-            </big>
-          )}
-          {user &&
-          locationSlug &&
-          currentLocation &&
-          isUserInTeam(user, currentLocation.teamName) ? (
-            <>
-              <Link to={`/${locationSlug}/tend`}>Tend</Link>
-              <Link to={`/${locationSlug}/stock`}>Stock</Link>
-              <Link to={`/${locationSlug}/sales`}>Sales</Link>
-            </>
-          ) : null}
           {locationSlug ? (
             <>
-              <Link to={`/${locationSlug}/stats`}>Stats</Link>
+              {locationSlug !== "stats" ? (
+                user && userLocations && userLocations.length > 1 ? (
+                  <select
+                    onChange={(event) => {
+                      navigate("/" + event.target.value + "/" + pageSlug);
+                    }}
+                    value={locationSlug}
+                  >
+                    {userLocations?.map(({ name, slug }) => (
+                      <option key={slug} value={slug}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <big>
+                    {locationSlug && currentLocation
+                      ? currentLocation.name
+                      : "WIP POS"}
+                  </big>
+                )
+              ) : null}
+              {user &&
+              currentLocation &&
+              isUserInTeam(user, currentLocation.teamName) ? (
+                <>
+                  <Link to={`/${locationSlug}/tend`}>Tend</Link>
+                  <Link to={`/${locationSlug}/stock`}>Stock</Link>
+                  <Link to={`/${locationSlug}/sales`}>Sales</Link>
+                </>
+              ) : null}
               <Link to={`/${locationSlug}/menu`}>Menu</Link>
             </>
           ) : null}
+          <Link to={`/stats`}>Stats</Link>
           <AccountsUIWrapper />
         </nav>
       </div>
@@ -193,8 +194,8 @@ export default function UI() {
         <Route path="/:locationSlug/tend" element={<PageTend />} />
         <Route path="/:locationSlug/stock" element={<PageStock />} />
         <Route path="/:locationSlug/sales" element={<PageSales />} />
-        <Route path="/:locationSlug/stats" element={<PageStats />} />
         <Route path="/:locationSlug/menu" element={<PageMenu />} />
+        <Route path="/stats" element={<PageStats />} />
         <Route
           path="/"
           element={
@@ -223,9 +224,9 @@ export default function UI() {
                   >
                     {location.name}
                     <br />
-                    <Link to={`/${location.slug}/stats`}>Stats</Link>
-                    <br />
                     <Link to={`/${location.slug}/menu`}>Menu</Link>
+                    <br />
+                    <Link to={`/stats`}>Stats</Link>
                   </li>
                 ))}
               </ul>

@@ -17,6 +17,7 @@ import Camps, { ICamp } from "../api/camps";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
+import { getCorrectTextColor } from "../util";
 
 const getAvg = (arr: number[]) =>
   arr.reduce((acc, c) => acc + c, 0) / arr.length;
@@ -204,30 +205,38 @@ export default function CampByCamp() {
             r={4}
             stroke={currentCamp?.color}
           />
-          {camps.map((camp, i) =>
-            i < camps.length - 1 ? (
+          {camps.map((camp) =>
+            camp.slug !== currentCamp?.slug ? (
               <ReferenceLine
                 y={campTotals[camp.slug]}
                 key={camp.slug + "-ReferenceLine"}
                 label={{
                   value: "Max " + camp.start?.getFullYear(),
-                  position: "top",
-                  style: { fill: camp.color },
+                  position: { x: 100, y: 0 },
+                  angle: 0.5,
+                  style: {
+                    fill: camp.color,
+                    stroke: getCorrectTextColor(camp.color),
+                    strokeWidth: 0.2,
+                  },
                 }}
                 stroke={camp.color}
                 strokeDasharray="3 3"
               />
             ) : null,
           )}
-          {camps.map((camp, i) => (
+          {camps.map((camp) => (
             <Line
               type="monotone"
               key={camp.slug}
               dataKey={camp.slug}
               name={"Σ" + camp.name}
               stroke={camp.color}
-              strokeDasharray={camps.length - 1 === i ? undefined : "3 3"}
-              strokeWidth={4}
+              fill={getCorrectTextColor(camp.color)}
+              strokeDasharray={
+                camp.slug === currentCamp?.slug ? undefined : "3 3"
+              }
+              strokeWidth={camp.slug === currentCamp?.slug ? 2 : 1}
               dot={false}
               connectNulls
             />
@@ -253,6 +262,7 @@ export default function CampByCamp() {
                 key={currentCamp.slug + "-trend"}
                 dataKey={currentCamp.slug + "-trend"}
                 stroke={currentCamp.color}
+                fill={getCorrectTextColor(currentCamp?.color)}
                 strokeWidth={2}
                 strokeDasharray="4 2"
                 dot={false}
