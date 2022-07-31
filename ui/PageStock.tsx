@@ -15,6 +15,8 @@ import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import { getCorrectTextColor, stringToColour } from "../util";
 import PageStockItem from "./PageStockItem";
+import useCurrentCamp from "/hooks/useCurrentCamp";
+import { opacify } from "polished";
 
 export const Modal = ({
   children,
@@ -22,40 +24,47 @@ export const Modal = ({
 }: {
   children: ReactNode | ReactNode[];
   onDismiss?: () => void;
-}) => (
-  <div
-    onClick={onDismiss}
-    className={css`
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.3);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 1);
-      z-index: 665;
-    `}
-  >
+}) => {
+  const currentCamp = useCurrentCamp();
+  return (
     <div
+      onClick={onDismiss}
       className={css`
-        background: black;
-        padding: 8px 8px;
-        border-radius: 8px;
-        position: relative;
-        z-index: 667;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: ${currentCamp &&
+        opacify(-0.25, getCorrectTextColor(currentCamp.color))};
+        z-index: 665;
       `}
-      onClick={(e) => {
-        //  e.preventDefault();
-        e.stopPropagation();
-      }}
     >
-      {children}
+      <div
+        className={css`
+          background-color: ${currentCamp &&
+          getCorrectTextColor(currentCamp.color)};
+          box-shadow: 0 0 24px
+            ${currentCamp &&
+            opacify(-0.25, getCorrectTextColor(currentCamp.color, true))};
+          padding: 8px 8px;
+          border-radius: 8px;
+          position: relative;
+          z-index: 667;
+        `}
+        onClick={(e) => {
+          //  e.preventDefault();
+          e.stopPropagation();
+        }}
+      >
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 function CurfewButton({ location }: { location: ILocation }) {
   const [toggleCurfew] = useMethod<{ locationId: string }>(
     "Locations.toggleCurfew",

@@ -21,6 +21,7 @@
     "lodash": "^4.17.21",
     "meteor-node-stubs": "^1.2.5",
     "node-xlsx": "^0.21.0",
+    "polished": "^4.2.2",
     "react": "^18.2.0",
     "react-countdown": "^2.3.2",
     "react-dom": "^18.2.0",
