@@ -236,25 +236,29 @@ export default function PageStockItem({
         />
       </Label>
       <Label label="Unit Cost">
-        <input
-          type="number"
-          placeholder={
-            mostRecentShopPrice &&
-            `${mostRecentShopPrice.buyPrice} on ${new Intl.DateTimeFormat(
-              "da-DK",
-              {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "numeric",
-                minute: "numeric",
-                second: "numeric",
-              },
-            ).format(mostRecentShopPrice.timestamp)}`
-          }
-          step="any"
-          {...register("buyPrice")}
-        />
+        <input type="number" step="any" {...register("buyPrice")} />
+        <small>
+          <ul
+            className={css`
+              padding: 0;
+              padding-left: 16px;
+              margin: 0;
+            `}
+          >
+            {Array.from(product?.shopPrices || [])
+              .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
+              .map(({ timestamp, buyPrice }) => (
+                <li>{`${buyPrice} kr. as of ${new Intl.DateTimeFormat("da-DK", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  second: "numeric",
+                }).format(timestamp)}`}</li>
+              ))}
+          </ul>
+        </small>
       </Label>
       <hr />
       <div
