@@ -49,7 +49,7 @@ const renderer = ({
       `}
     >
       {days ? (
-        <>{days} DAYS TILL</>
+        <>{Math.round(days + hours / 24)} DAYS TILL</>
       ) : (
         <>
           {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
