@@ -75,7 +75,7 @@ if (Meteor.isServer) {
         color: "#E22028",
       });
     }
-    if (false && !Camps.findOne({ slug: "bornhack-2022" })) {
+    if (!Camps.findOne({ slug: "bornhack-2022" })) {
       Camps.insert({
         name: "BornHack 2022",
         slug: "bornhack-2022",
