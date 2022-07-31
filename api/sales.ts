@@ -1,4 +1,5 @@
 import { countBy, groupBy, uniqBy } from "lodash";
+import * as path from "path";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import xlsx from "node-xlsx";
@@ -315,8 +316,11 @@ if (Meteor.isServer)
       });
 
       var sheet = xlsx.parse(
-        process.cwd().split(".meteor")[0] +
-          "api/Zettle-Raw-Data-Report-20180801-20180831.xlsx",
+        path.join(
+          process.cwd().split(".meteor")[0],
+          "api",
+          "Zettle-Raw-Data-Report-20180801-20180831.xlsx",
+        ),
         { cellDates: true },
       );
       const headers = sheet[0].data[5] as string[];
