@@ -186,20 +186,25 @@ export default function PageStockItem({
         />
       </Label>
       <Label label="Bar Code">
-        <input
-          type="text"
-          defaultValue={product?.barCode || ""}
-          {...register("barCode")}
-        />
+        <div
+          className={css`
+            white-space: nowrap;
+          `}
+        >
+          <button type="button" onClick={() => setScanningBarcode(true)}>
+            Scan
+          </button>
+          <input
+            type="text"
+            defaultValue={product?.barCode || ""}
+            {...register("barCode")}
+          />
+        </div>
         {scanningBarcode ? (
           <Modal onDismiss={() => setScanningBarcode(false)}>
             <BarcodeScannerComponent onResult={handleBarCode} />
           </Modal>
-        ) : (
-          <button type="button" onClick={() => setScanningBarcode(true)}>
-            Scan
-          </button>
-        )}
+        ) : null}
       </Label>
       <Label label="Tap">
         <select defaultValue={product?.tap || ""} {...register("tap")}>
