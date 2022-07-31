@@ -1,5 +1,4 @@
 import { countBy, groupBy, uniqBy } from "lodash";
-import * as path from "path";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import xlsx from "node-xlsx";
@@ -18,7 +17,7 @@ export interface ISale {
   products: IProduct[];
 }
 
-if (Meteor.isServer && false)
+if (Meteor.isServer)
   Meteor.startup(() => {
     interface IZettleSale {
       Tid: Date;
@@ -316,9 +315,8 @@ if (Meteor.isServer && false)
       });
 
       var sheet = xlsx.parse(
-        path.join(
-          process.cwd().split(".meteor")[0],
-          "api",
+        // @ts-ignore
+        Assets.absoluteFilePath(
           "Zettle-Raw-Data-Report-20180801-20180831.xlsx",
         ),
         { cellDates: true },
