@@ -211,14 +211,15 @@ export default function CampByCamp() {
                 y={campTotals[camp.slug]}
                 key={camp.slug + "-ReferenceLine"}
                 label={{
-                  value: "Max " + camp.start?.getFullYear(),
-                  position: { x: 100, y: 0 },
-                  angle: 0.5,
+                  value: camp.start?.getFullYear(),
+                  position: "right",
+                  offset: 5,
                   style: {
                     fill: camp.color,
                     stroke: getCorrectTextColor(camp.color),
                     strokeWidth: 0.2,
                   },
+                  textAnchor: "end",
                 }}
                 stroke={camp.color}
                 strokeDasharray="3 3"
