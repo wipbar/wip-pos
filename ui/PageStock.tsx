@@ -219,7 +219,11 @@ export default function PageStock() {
                 </td>
                 <td>{product.brandName}</td>
                 <td>{product.name}</td>
-                <td>
+                <td
+                  className={css`
+                    white-space: nowrap;
+                  `}
+                >
                   {product.salePrice}{" "}
                   {product.shopPrices?.some(
                     ({ buyPrice }) =>
