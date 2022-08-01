@@ -39,7 +39,8 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
   const { data: products, loading } = useMongoFetch(
-    Products.find({ removedAt: { $exists: false } }),
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
   const toggleTag = useCallback(
     (tag: string) =>

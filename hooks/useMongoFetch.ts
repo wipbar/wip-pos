@@ -1,13 +1,16 @@
 import { Mongo } from "meteor/mongo";
 import { useTracker } from "meteor/react-meteor-data";
-import { DependencyList } from "react";
+import { DependencyList, useMemo } from "react";
 import useSubscription from "./useSubscription";
 
 const emptyArray: [] = [];
 export default function useMongoFetch<T extends object>(
-  query: Mongo.Collection<T> | Mongo.Cursor<T> | undefined,
-  deps: DependencyList = emptyArray,
+  queryFn: () => Mongo.Cursor<T> | undefined,
+  deps: DependencyList,
 ) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const query = useMemo(queryFn, deps);
+
   return {
     loading: useSubscription(
       query instanceof Mongo.Collection
@@ -20,7 +23,6 @@ export default function useMongoFetch<T extends object>(
     ),
     data: useTracker(() => {
       if (!query) return emptyArray;
-      if (query instanceof Mongo.Collection) return query.find().fetch();
       if (query instanceof Mongo.Cursor) return query.fetch();
       throw new Error("useMongoFetch only accepts Collection and Cursor");
     }, deps),

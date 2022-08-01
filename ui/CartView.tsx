@@ -20,10 +20,11 @@ function MostRecentSale() {
     data: [sale],
     loading: salesLoading,
   } = useMongoFetch(
-    Sales.find(
-      { locationId: location?._id },
-      { sort: { timestamp: -1 }, limit: 1 },
-    ),
+    () =>
+      Sales.find(
+        { locationId: location?._id },
+        { sort: { timestamp: -1 }, limit: 1 },
+      ),
     [location?._id],
   );
 
@@ -152,7 +153,8 @@ export default function CartView() {
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { data: products, loading: productsLoading } = useMongoFetch(
-    Products.find({ removedAt: { $exists: false } }),
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
   const [pickedProductIds, setPickedProductIds] = useSession<string[]>(
     "pickedProductIds",

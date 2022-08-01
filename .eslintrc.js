@@ -11,7 +11,10 @@ module.exports = {
   rules: {
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": [2],
-    "react-hooks/exhaustive-deps": [1],
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      { additionalHooks: "useMongoFetch" },
+    ],
     "no-else-return": ["error"],
   },
 };

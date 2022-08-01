@@ -56,7 +56,7 @@ function CurfewCountdown() {
   const currentCamp = useCurrentCamp();
   const {
     data: [newestCamp],
-  } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  } = useMongoFetch(() => Camps.find({}, { sort: { end: -1 } }), []);
   const camp: ICamp | undefined = currentCamp || newestCamp;
   const next2am = useMemo(
     () =>
@@ -108,13 +108,14 @@ function CurfewCountdown() {
 export default function PageStats() {
   const currentCamp = useCurrentCamp();
 
-  const { data: allSales } = useMongoFetch(Sales.find({}));
+  const { data: allSales } = useMongoFetch(() => Sales.find(), []);
   const { data: campSales } = useMongoFetch(
-    currentCamp
-      ? Sales.find({
-          timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-        })
-      : undefined,
+    () =>
+      currentCamp
+        ? Sales.find({
+            timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+          })
+        : undefined,
     [currentCamp],
   );
   const sales = useMemo(
@@ -122,7 +123,8 @@ export default function PageStats() {
     [campSales, allSales],
   );
   const { data: products } = useMongoFetch(
-    Products.find({ removedAt: { $exists: false } }),
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
   const mostSold = useMemo(
     () =>

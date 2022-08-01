@@ -18,7 +18,8 @@ export default function ProductTrend({
   const currentDate = useCurrentDate();
 
   const { data } = useMongoFetch(
-    currentCamp &&
+    () =>
+      currentCamp &&
       Sales.find(
         {
           products: { $elemMatch: { _id: product._id } },

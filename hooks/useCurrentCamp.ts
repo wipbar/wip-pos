@@ -8,12 +8,13 @@ export default function useCurrentCamp(): ICamp | undefined {
   const [currentCampSlug] = useSession<string | null>("currentCampSlug", null);
 
   const { data } = useMongoFetch(
-    currentCampSlug
-      ? Camps.find({ slug: currentCampSlug })
-      : Camps.find({
-          buildup: { $lte: currentDate },
-          end: { $gte: currentDate },
-        }),
+    () =>
+      currentCampSlug
+        ? Camps.find({ slug: currentCampSlug })
+        : Camps.find({
+            buildup: { $lte: currentDate },
+            end: { $gte: currentDate },
+          }),
     [currentCampSlug, currentDate],
   );
 

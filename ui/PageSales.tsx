@@ -36,20 +36,23 @@ export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
   const selectedCamp = useCurrentCamp();
   const { data: sales } = useMongoFetch(
-    Sales.find(
-      {
-        locationId: location?._id,
-        timestamp: {
-          $gte: selectedCamp?.start || new Date(new Date().getFullYear(), 0),
-          $lte: selectedCamp?.end || new Date(new Date().getFullYear() + 1, 0),
+    () =>
+      Sales.find(
+        {
+          locationId: location?._id,
+          timestamp: {
+            $gte: selectedCamp?.start || new Date(new Date().getFullYear(), 0),
+            $lte:
+              selectedCamp?.end || new Date(new Date().getFullYear() + 1, 0),
+          },
         },
-      },
-      { sort: { timestamp: -1 } },
-    ),
+        { sort: { timestamp: -1 } },
+      ),
     [location?._id, selectedCamp],
   );
   const { data: products } = useMongoFetch(
-    Products.find({ removedAt: { $exists: false } }),
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
   const salesByDay = useMemo(
     () =>

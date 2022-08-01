@@ -66,10 +66,10 @@ function createTrend<XK extends string, YK extends string>(
 const XYAxisDomain = ["dataMin", "dataMax"];
 
 export default function CampByCamp() {
-  const { data: camps } = useMongoFetch(Camps);
+  const { data: camps } = useMongoFetch(() => Camps.find(), []);
   const currentCamp = useCurrentCamp();
 
-  const { data: sales } = useMongoFetch(Sales);
+  const { data: sales } = useMongoFetch(() => Sales.find(), []);
   const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
     if (!memo) {
       memo = camp;

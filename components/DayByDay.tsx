@@ -32,11 +32,12 @@ const tooltipLabelFormatter = (hour: number) =>
 export default function DayByDay() {
   const currentCamp = useCurrentCamp();
   const { data: sales } = useMongoFetch(
-    currentCamp
-      ? Sales.find({
-          timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-        })
-      : undefined,
+    () =>
+      currentCamp
+        ? Sales.find({
+            timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+          })
+        : undefined,
     [currentCamp],
   );
   const numberOfDaysInCurrentCamp = currentCamp

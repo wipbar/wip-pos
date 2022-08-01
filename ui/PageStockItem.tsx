@@ -55,12 +55,12 @@ export default function PageStockItem({
   onCancel: () => void;
   product?: IProduct;
 }) {
-  const { data: locations } = useMongoFetch(Locations);
+  const { data: locations } = useMongoFetch(() => Locations.find(), []);
   const [scanningBarcode, setScanningBarcode] = useState(false);
   const { location } = useCurrentLocation();
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
-  const { data: products } = useMongoFetch(Products);
+  const { data: products } = useMongoFetch(() => Products.find(), []);
   const allTags = [
     ...products.reduce((memo, product) => {
       product.tags?.forEach((tag) => memo.add(tag.trim()));
@@ -98,10 +98,13 @@ export default function PageStockItem({
     reset();
   };
 
-  const handleBarCode = useCallback((resultBarCode: string) => {
-    setValue("barCode", resultBarCode);
-    setScanningBarcode(false);
-  }, []);
+  const handleBarCode = useCallback(
+    (resultBarCode: string) => {
+      setValue("barCode", resultBarCode);
+      setScanningBarcode(false);
+    },
+    [setValue],
+  );
 
   return (
     <form
@@ -248,7 +251,9 @@ export default function PageStockItem({
             {Array.from(product?.shopPrices || [])
               .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
               .map(({ timestamp, buyPrice }) => (
-                <li>{`${buyPrice} kr. as of ${new Intl.DateTimeFormat("da-DK", {
+                <li
+                  key={String(timestamp)}
+                >{`${buyPrice} kr. as of ${new Intl.DateTimeFormat("da-DK", {
                   year: "numeric",
                   month: "numeric",
                   day: "numeric",

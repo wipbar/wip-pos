@@ -96,19 +96,22 @@ export default function PageStock() {
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
   const { data: products, loading } = useMongoFetch(
-    location
-      ? Products.find(
-          // @ts-expect-error
-          {
-            removedAt: { $exists: showRemoved },
-            ...(showOnlyMenuItems
-              ? { locationIds: { $elemMatch: { $eq: location?._id } } }
-              : undefined),
-          },
-          { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
-        )
-      : undefined,
-    [showOnlyMenuItems, showRemoved, location?._id, sortBy],
+    () =>
+      location?._id
+        ? Products.find(
+            // @ts-expect-error
+            {
+              removedAt: { $exists: showRemoved },
+              ...(showOnlyMenuItems
+                ? { locationIds: { $elemMatch: { $eq: location?._id } } }
+                : undefined),
+            },
+            {
+              sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 },
+            },
+          )
+        : undefined,
+    [location?._id, showRemoved, showOnlyMenuItems, sortBy],
   );
 
   if (loading || locationLoading) return <>Loading...</>;

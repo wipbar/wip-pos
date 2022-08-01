@@ -9,7 +9,6 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
-import useWhyDidYouUpdate from "../hooks/useWhyDidYouUpdate";
 import { getCorrectTextColor } from "/util";
 
 function SparkLine({
@@ -82,24 +81,25 @@ export default function PageMenu() {
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(60000);
   const from = useMemo(() => subHours(currentDate, 24), [currentDate]);
-  const to = useMemo(() => currentDate, [currentCamp, currentDate]);
+  const to = useMemo(() => currentDate, [currentDate]);
   const { location, loading: locationLoading, error } = useCurrentLocation();
   const { data: sales, loading: salesLoading } = useMongoFetch(
-    Sales.find({ timestamp: { $gte: from, $lte: to } }),
+    () => Sales.find({ timestamp: { $gte: from, $lte: to } }),
     [from, to],
   );
   const { data: products, loading: productsLoading } = useMongoFetch(
-    Products.find(
-      {
-        removedAt: { $exists: false },
-        // @ts-expect-error
-        locationIds: { $elemMatch: { $eq: location?._id } },
-      },
-      { sort: { brandName: 1, name: 1 } },
-    ),
+    () =>
+      Products.find(
+        {
+          removedAt: { $exists: false },
+          // @ts-expect-error
+          locationIds: { $elemMatch: { $eq: location?._id } },
+        },
+        { sort: { brandName: 1, name: 1 } },
+      ),
     [location?._id],
   );
-  useWhyDidYouUpdate("PageMenu", { products, sales, from, to });
+
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(

@@ -127,14 +127,15 @@ function Link({
 
 export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
   const { data: campSales } = useMongoFetch(
-    currentCamp
-      ? Sales.find({
-          timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-        })
-      : undefined,
+    () =>
+      currentCamp
+        ? Sales.find({
+            timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+          })
+        : undefined,
     [currentCamp],
   );
-  const { data: allSales } = useMongoFetch(Sales.find({}));
+  const { data: allSales } = useMongoFetch(() => Sales.find(), []);
   const sales = useMemo(
     () => (campSales?.length ? campSales : allSales),
     [campSales, allSales],
@@ -167,7 +168,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
     [nodes],
   );
 
-  const { data: products } = useMongoFetch(Products);
+  const { data: products } = useMongoFetch(() => Products.find(), []);
 
   const data = useMemo(() => {
     const productsSold = sales.reduce<IProduct[]>((memo, sale) => {

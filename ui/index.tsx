@@ -38,10 +38,13 @@ export default function UI() {
   const locationSlug = match?.params.locationSlug;
   const pageSlug = (match?.params as any)["*"] as string | undefined;
 
-  const { data: camps } = useMongoFetch(Camps.find({}, { sort: { end: -1 } }));
+  const { data: camps } = useMongoFetch(
+    () => Camps.find({}, { sort: { end: -1 } }),
+    [],
+  );
   const currentCamp = useCurrentCamp();
   const user = useCurrentUser();
-  const { data: locations } = useMongoFetch(Locations);
+  const { data: locations } = useMongoFetch(() => Locations.find(), []);
   const userLocations = locations?.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );
