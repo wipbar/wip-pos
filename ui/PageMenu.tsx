@@ -1,14 +1,6 @@
 import { css } from "@emotion/css";
-import {
-  addHours,
-  endOfHour,
-  isPast,
-  isWithinRange,
-  min,
-  setHours,
-  startOfHour,
-  subHours,
-} from "date-fns";
+import { addHours, endOfHour, isWithinRange, subHours } from "date-fns";
+import { opacify } from "polished";
 import React, { Fragment, SVGProps, useMemo } from "react";
 import Products, { IProduct, isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
@@ -18,6 +10,7 @@ import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useWhyDidYouUpdate from "../hooks/useWhyDidYouUpdate";
+import { getCorrectTextColor } from "/util";
 
 function SparkLine({
   data,
@@ -194,7 +187,13 @@ export default function PageMenu() {
 
           return (
             <>
-              <div key={tags} className={css``}>
+              <div
+                key={tags}
+                className={css`
+                  background: ${currentCamp &&
+                  opacify(-(2 / 3), getCorrectTextColor(currentCamp?.color))};
+                `}
+              >
                 <h3
                   className={css`
                     margin: 0;
@@ -218,7 +217,11 @@ export default function PageMenu() {
                         padding: 4px 6px;
                         display: flex;
                         flex-direction: column;
-                        background: rgba(255, 255, 255, 0.1);
+                        background: ${currentCamp &&
+                        opacify(
+                          -(2 / 3),
+                          getCorrectTextColor(currentCamp?.color),
+                        )};
                         margin-top: 4px;
                         align-items: stretch;
                         -webkit-column-break-inside: avoid;
