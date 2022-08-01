@@ -48,12 +48,12 @@ const renderer = ({
           : ""}
       `}
     >
-      {days ? (
+      {days > 2 ? (
         <>{Math.round(days + hours / 24)} DAYS TILL</>
       ) : (
         <>
-          {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
-          {String(seconds).padStart(2, "0")}
+          {String(days * 24 + hours).padStart(2, "0")}:
+          {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
         </>
       )}
     </span>
