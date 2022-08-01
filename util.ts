@@ -1,5 +1,5 @@
 export function stringToColour(inputString: string, alpha = 1) {
-  var sum = 0;
+  let sum = 0;
 
   for (const i in inputString.split("")) {
     sum += inputString.charCodeAt(Number(i));

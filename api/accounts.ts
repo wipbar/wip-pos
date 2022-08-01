@@ -9,6 +9,7 @@ import { Session } from "meteor/session";
 import Camps from "./camps";
 import Locations from "./locations";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("tls").DEFAULT_ECDH_CURVE = "auto";
 
 Accounts.config({ forbidClientAccountCreation: true });
@@ -16,8 +17,7 @@ const service = "bornhack";
 const code_verifier = "1IwjXGI5H56e8vWKLHJwLn615KuGr8_yQeCLFgftTJ4";
 const code_challenge = "pAiuYdomi8XWR3KVWRQaHCqvtkFhX0Sjw5aCw6E--gI";
 
-if (Meteor.isClient) {
-} else {
+if (!Meteor.isClient) {
   OAuth.registerService(
     service,
     2,
@@ -208,14 +208,16 @@ export const assertUserInTeam = (
 };
 
 //In the client side
-if (Meteor.isClient)
+if (Meteor.isClient) {
   Meteor.call(
     "GALAXY_APP_VERSION_ID",
     (_: any, GALAXY_APP_VERSION_ID: number) =>
       Session.set("GALAXY_APP_VERSION_ID", GALAXY_APP_VERSION_ID),
   );
+}
 
-if (Meteor.isServer)
+if (Meteor.isServer) {
   Meteor.methods({
     GALAXY_APP_VERSION_ID: () => process.env.GALAXY_APP_VERSION_ID || 69,
   });
+}

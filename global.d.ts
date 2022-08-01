@@ -24,7 +24,7 @@ declare global {
 }
 
 declare module "meteor/meteor" {
-  module Meteor {
+  namespace Meteor {
     interface UserProfile {
       [str: string]: any;
       name?: string;
@@ -33,7 +33,7 @@ declare module "meteor/meteor" {
       teams?: { team?: string; camp?: string }[];
     }
     function loginWithBornhack(
-      options: {},
+      options: Record<string, any>,
       callback: (err: Error) => void,
     ): void;
   }
@@ -46,13 +46,13 @@ declare module "meteor/accounts-base" {
     }): void;
     function registerClientLoginFunction(
       funcName: string,
-      func: Function,
+      func: () => void,
     ): void;
     function callLoginFunction(funcName: string, args?: any[]): any;
     namespace oauth {
       function registerService(name: string): void;
       function credentialRequestCompleteHandler(
-        callback?: Function,
+        callback?: (error?: Error) => void,
       ): (credentialTokenOrError: string | Error) => void;
     }
   }

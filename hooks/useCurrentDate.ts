@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function useCurrentDate(interval = 1000) {
-  var [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(new Date());
 
   useInterval(() => {
     setDate(new Date());
@@ -22,7 +22,7 @@ function useInterval(callback: () => any, delay: number) {
       savedCallback.current?.();
     }
 
-    let id = setInterval(tick, delay);
+    const id = setInterval(tick, delay);
     return () => clearInterval(id);
   }, [delay]);
 }

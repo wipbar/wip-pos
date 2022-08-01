@@ -91,9 +91,9 @@ function Link({
   targetControlX,
   linkWidth,
   payload,
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sourceRelativeY,
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   targetRelativeY,
   ...others
 }: {

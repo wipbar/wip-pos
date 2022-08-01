@@ -23,5 +23,9 @@ module.exports = {
     ],
     "no-else-return": ["error"],
     "no-unused-vars": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
   },
+  ignorePatterns: ["**/vendor/**/*.js"],
 };

@@ -91,7 +91,7 @@ export default function CampByCamp() {
 
   const [data, campTotals] = useMemo(() => {
     const data = [];
-    let campTotals: Record<string, number> = {};
+    const campTotals: Record<string, number> = {};
     for (let i = 0; i < longestCampHours; i++) {
       const datapoint: { hour: number; [key: string]: number } = { hour: i };
       camps.forEach((camp) => {

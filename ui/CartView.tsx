@@ -139,7 +139,7 @@ function CartViewProductsItem({
   );
 }
 
-function removeItem<T extends any>(items: T[], i: number): T[] {
+function removeItem<T>(items: T[], i: number): T[] {
   return items.slice(0, i - 1).concat(items.slice(i, items.length));
 }
 

@@ -37,7 +37,7 @@ const FontAwesomeIcon = ({
       {...elProps}
     >
       {Array.isArray(d) ? (
-        d.map((D) => <path d={D} fill="currentColor" />)
+        d.map((D) => <path key={D} d={D} fill="currentColor" />)
       ) : (
         <path d={d} fill="currentColor" />
       )}

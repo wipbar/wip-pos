@@ -33,7 +33,7 @@ function SparkLine({
         minY: number | null = null,
         maxY: number | null = null;
 
-      for (let [x, y] of data) {
+      for (const [x, y] of data) {
         if (!minX || x < minX) minX = x;
         if (!maxX || x > maxX) maxX = x;
         if (!minY || y < minY) minY = y;
@@ -41,7 +41,7 @@ function SparkLine({
       }
       const XDelta = maxX! - minX!;
       const YDelta = maxY! - minY!;
-      let dataPoints = data
+      const dataPoints = data
         .map(([x, y]) =>
           [
             "L",

@@ -5,8 +5,10 @@ import SubsManager from "../SubsManager";
 export default function useSubscription(pubName: string) {
   const [loading, setLoading] = useState(true);
 
-  let compRef = useRef<ReturnType<typeof Tracker.autorun> | null>(null);
-  let handleRef = useRef<ReturnType<typeof SubsManager.subscribe> | null>(null);
+  const compRef = useRef<ReturnType<typeof Tracker.autorun> | null>(null);
+  const handleRef = useRef<ReturnType<typeof SubsManager.subscribe> | null>(
+    null,
+  );
 
   const stopComp = () => {
     compRef.current?.stop();
