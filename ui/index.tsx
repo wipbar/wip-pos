@@ -80,11 +80,44 @@ export default function UI() {
       `}
     >
       <style>{`
-        body {
+        @keyframes a {
+          to {
+            background-position: -200% 0%;
+          }
+        }
+        html {
           color: ${currentCamp?.color};
           background-color: ${
             currentCamp && getCorrectTextColor(currentCamp.color)
           };
+
+          background: linear-gradient(
+              to right,
+              #750787,
+              #004dff,
+              #008026,
+              #ffed00,
+              #ff8c00,
+              #e40303,
+              #750787
+            )
+            0 0/300% 100%;
+          background: linear-gradient(
+              to right,
+              rgba(255, 0, 0, 1),
+              rgba(255, 154, 0, 1),
+              rgba(208, 222, 33, 1),
+              rgba(79, 220, 74, 1),
+              rgba(63, 218, 216, 1),
+              rgba(47, 201, 226, 1),
+              rgba(28, 127, 238, 1),
+              rgba(95, 21, 242, 1),
+              rgba(186, 12, 248, 1),
+              rgba(251, 7, 217, 1),
+              rgba(255, 0, 0, 1)
+            )
+            0 0/200% 100%;
+          animation: a 4s linear infinite;
         }
         a {
           color: ${currentCamp?.color};
