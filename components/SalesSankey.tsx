@@ -275,7 +275,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
       ),
     };
   }, [sales, products]);
-  console.log(data);
+
   return (
     <ResponsiveContainer width="100%" height={350}>
       <Sankey
