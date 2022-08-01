@@ -1,28 +1,13 @@
 module.exports = {
+  settings: { react: { version: "detect" } },
   env: {
     browser: true,
     es6: true,
     node: true,
   },
-  extends: [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "prettier",
-    "prettier/react",
-  ],
-  globals: {
-    Atomics: "readonly",
-    SharedArrayBuffer: "readonly",
-  },
-  parser: "babel-eslint",
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true,
-    },
-    ecmaVersion: 2018,
-    sourceType: "module",
-  },
-  plugins: ["react", "react-hooks", "prettier"],
+  extends: ["eslint:recommended", "plugin:react/recommended", "prettier"],
+  parser: "@typescript-eslint/parser",
+  plugins: ["@typescript-eslint", "react", "react-hooks", "prettier"],
   rules: {
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": [2],
