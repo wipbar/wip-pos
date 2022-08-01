@@ -16,5 +16,6 @@ module.exports = {
       { additionalHooks: "useMongoFetch" },
     ],
     "no-else-return": ["error"],
+    "no-unused-vars": "off",
   },
 };
