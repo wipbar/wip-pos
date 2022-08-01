@@ -153,7 +153,11 @@ export default function PageStock() {
       </select>
       {location ? <CurfewButton location={location} /> : null}
       <hr />
-      <table>
+      <table
+        className={css`
+          width: 100%;
+        `}
+      >
         <thead>
           <tr>
             <th />
