@@ -23,8 +23,14 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
 
 export default function DayByDay() {
-  const { data: sales } = useMongoFetch(Sales);
   const currentCamp = useCurrentCamp();
+  const { data: sales } = useMongoFetch(
+    currentCamp
+      ? Sales.find({
+          timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+        })
+      : undefined,
+  );
   const numberOfDaysInCurrentCamp = currentCamp
     ? differenceInDays(currentCamp.end, currentCamp.start)
     : 0;

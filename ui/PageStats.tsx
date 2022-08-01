@@ -190,13 +190,13 @@ export default function PageStats() {
 
             @media (min-width: 900px) {
               > * {
-                width: 50%;
+                ${campSales?.length ? `width: 50%;` : `flex: 1;`}
               }
             }
           `}
         >
           <CampByCamp />
-          <DayByDay />
+          {campSales?.length ? <DayByDay /> : null}
         </div>
       </div>
       <div
