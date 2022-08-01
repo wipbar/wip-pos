@@ -186,7 +186,7 @@ export default function PageMenu() {
             );
 
           return (
-            <>
+            <Fragment key={tags}>
               <div
                 key={tags}
                 className={css`
@@ -378,7 +378,7 @@ export default function PageMenu() {
                   <pre>Rendered: {new Date().toLocaleString()}</pre>
                 </center>
               ) : null}
-            </>
+            </Fragment>
           );
         })}
     </div>
