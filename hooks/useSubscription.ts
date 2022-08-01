@@ -1,33 +1,35 @@
 import { Tracker } from "meteor/tracker";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SubsManager from "../SubsManager";
 
-export default function useSubscription(pubName: string, ...subOpts: any[]) {
+export default function useSubscription(pubName: string) {
   const [loading, setLoading] = useState(true);
-  let comp: ReturnType<typeof Tracker.autorun> | null = null;
-  let handle: ReturnType<typeof SubsManager.subscribe> | null = null;
+
+  let compRef = useRef<ReturnType<typeof Tracker.autorun> | null>(null);
+  let handleRef = useRef<ReturnType<typeof SubsManager.subscribe> | null>(null);
 
   const stopComp = () => {
-    comp?.stop();
-    if (handle && "stop" in handle) handle.stop();
+    compRef.current?.stop();
+    if (handleRef.current && "stop" in handleRef.current)
+      handleRef.current.stop();
 
-    comp = null;
-    handle = null;
+    compRef.current = null;
+    handleRef.current = null;
   };
 
   useEffect(() => {
     stopComp();
     Tracker.autorun((currentComp) => {
-      comp = currentComp;
+      compRef.current = currentComp;
       if (pubName) {
-        handle = SubsManager.subscribe(pubName, ...subOpts);
-        setLoading(!handle.ready());
+        handleRef.current = SubsManager.subscribe(pubName);
+        setLoading(!handleRef.current.ready());
       } else {
         setLoading(false);
       }
     });
     return stopComp;
-  }, [pubName, ...subOpts]);
+  }, [pubName]);
 
   return loading;
 }
