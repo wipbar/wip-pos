@@ -46,7 +46,7 @@ export default function PageSales() {
       },
       { sort: { timestamp: -1 } },
     ),
-    [location, selectedCamp],
+    [location?._id, selectedCamp],
   );
   const { data: products } = useMongoFetch(
     Products.find({ removedAt: { $exists: false } }),

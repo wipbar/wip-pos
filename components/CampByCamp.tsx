@@ -63,11 +63,13 @@ function createTrend<XK extends string, YK extends string>(
   };
 }
 
+const XYAxisDomain = ["dataMin", "dataMax"];
+
 export default function CampByCamp() {
-  const { data: camps } = useMongoFetch(Camps, []);
+  const { data: camps } = useMongoFetch(Camps);
   const currentCamp = useCurrentCamp();
 
-  const { data: sales } = useMongoFetch(Sales, []);
+  const { data: sales } = useMongoFetch(Sales);
   const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
     if (!memo) {
       memo = camp;
@@ -126,7 +128,7 @@ export default function CampByCamp() {
       .map((data) => data.hour),
   );
 
-  const trendData = (() => {
+  const trendData = useMemo(() => {
     const trend =
       currentCamp &&
       createTrend(
@@ -150,7 +152,7 @@ export default function CampByCamp() {
         hour: Math.min(xMax, nowHour + 24),
       },
     ];
-  })();
+  }, [currentCamp, data, nowHour, xMax]);
 
   return (
     <div>
@@ -172,7 +174,7 @@ export default function CampByCamp() {
             interval={23}
           />
           <YAxis
-            domain={["dataMin", "dataMax"]}
+            domain={XYAxisDomain}
             tickFormatter={(amount: number) => String(~~amount)}
             label={{
               value: "Revenue (HAX)",
@@ -245,7 +247,7 @@ export default function CampByCamp() {
           <YAxis
             yAxisId="right"
             orientation="right"
-            domain={["dataMin", "dataMax"]}
+            domain={XYAxisDomain}
             strokeOpacity={0.5}
           />
 

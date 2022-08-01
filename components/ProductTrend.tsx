@@ -31,7 +31,7 @@ export default function ProductTrend({
         },
         { sort: { timestamp: 1 } },
       ),
-    [product, currentCamp],
+    [product._id, currentCamp],
   );
   const productSales = useMemo(
     () =>

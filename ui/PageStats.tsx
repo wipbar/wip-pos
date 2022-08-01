@@ -1,13 +1,5 @@
 import { css } from "@emotion/css";
-import {
-  addDays,
-  endOfHour,
-  isAfter,
-  isPast,
-  min,
-  setHours,
-  startOfHour,
-} from "date-fns";
+import { addDays, isAfter, setHours, startOfHour } from "date-fns";
 import React, { useMemo } from "react";
 import Countdown from "react-countdown";
 import Camps, { ICamp } from "../api/camps";
@@ -20,7 +12,6 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useMongoFetch from "../hooks/useMongoFetch";
 
-const rolloverOffset = 5;
 const renderer = ({
   days,
   hours,
@@ -79,7 +70,7 @@ function CurfewCountdown() {
       (camp && isAfter(camp.buildup, currentDate) && camp.buildup) ||
       (camp && isAfter(camp.start, currentDate) && camp.start) ||
       next2am,
-    [next2am, camp],
+    [camp, currentDate, next2am],
   );
 
   if (!newestCamp) return null;
@@ -115,30 +106,16 @@ function CurfewCountdown() {
 }
 
 export default function PageStats() {
-  const currentDate = useCurrentDate(2000);
   const currentCamp = useCurrentCamp();
-  const from = useMemo(
-    () =>
-      currentCamp &&
-      startOfHour(
-        setHours(
-          isPast(currentCamp.start) ? currentCamp.start : currentCamp.buildup,
-          rolloverOffset,
-        ),
-      ),
-    [currentCamp],
-  );
-  const to = useMemo(
-    () =>
-      currentCamp &&
-      endOfHour(min(setHours(currentCamp.end, rolloverOffset), currentDate)),
-    [currentCamp, currentDate],
-  );
 
-  const { data: allSales } = useMongoFetch(Sales.find({}), [from, to]);
+  const { data: allSales } = useMongoFetch(Sales.find({}));
   const { data: campSales } = useMongoFetch(
-    from && to ? Sales.find({ timestamp: { $gt: from, $lt: to } }) : undefined,
-    [from, to],
+    currentCamp
+      ? Sales.find({
+          timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+        })
+      : undefined,
+    [currentCamp],
   );
   const sales = useMemo(
     () => (campSales?.length ? campSales : allSales),

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   Layer,
   Rectangle,
@@ -91,7 +91,9 @@ function Link({
   targetControlX,
   linkWidth,
   payload,
+  // eslint-disable-next-line no-unused-vars
   sourceRelativeY,
+  // eslint-disable-next-line no-unused-vars
   targetRelativeY,
   ...others
 }: {
@@ -132,30 +134,38 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
       : undefined,
     [currentCamp],
   );
-  const { data: allSales } = useMongoFetch(Sales.find({}), [currentCamp]);
+  const { data: allSales } = useMongoFetch(Sales.find({}));
   const sales = useMemo(
     () => (campSales?.length ? campSales : allSales),
     [campSales, allSales],
   );
-  const salesNode =
-    currentCamp && campSales?.length
-      ? `Sales (${currentCamp.name})`
-      : "Sales (all time)";
-  const nodes = [
-    { color: "", name: salesNode },
-    { color: "#FFED00", name: "Alcoholic" },
-    { color: "#FFED00", name: "Beer" },
-    { color: "#FFED00", name: "Tap" },
-    { color: "#FFED00", name: "Non-Tap" },
-    { color: "#D2691E", name: "Non-Beer" },
-    { color: "#D2691E", name: "Cocktail" },
-    { color: "#D2691E", name: "Non-Cocktail" },
-    { color: "#193781", name: "Non-Alcoholic" },
-    { color: "#193781", name: "Mate" },
-    { color: "#16503f", name: "Non-Mate" },
-  ];
-  const getNode = (name: string) =>
-    nodes.findIndex((node) => node.name === name);
+  const salesNode = useMemo(
+    () =>
+      currentCamp && campSales?.length
+        ? `Sales (${currentCamp.name})`
+        : "Sales (all time)",
+    [currentCamp, campSales],
+  );
+  const nodes = useMemo(
+    () => [
+      { color: "", name: salesNode },
+      { color: "#FFED00", name: "Alcoholic" },
+      { color: "#FFED00", name: "Beer" },
+      { color: "#FFED00", name: "Tap" },
+      { color: "#FFED00", name: "Non-Tap" },
+      { color: "#D2691E", name: "Non-Beer" },
+      { color: "#D2691E", name: "Cocktail" },
+      { color: "#D2691E", name: "Non-Cocktail" },
+      { color: "#193781", name: "Non-Alcoholic" },
+      { color: "#193781", name: "Mate" },
+      { color: "#16503f", name: "Non-Mate" },
+    ],
+    [salesNode],
+  );
+  const getNode = useCallback(
+    (name: string) => nodes.findIndex((node) => node.name === name),
+    [nodes],
+  );
 
   const { data: products } = useMongoFetch(Products);
 
@@ -274,7 +284,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
           links.some(({ target }) => target === getNode(name)),
       ),
     };
-  }, [sales, products]);
+  }, [sales, getNode, salesNode, nodes, products]);
 
   return (
     <ResponsiveContainer width="100%" height={350}>

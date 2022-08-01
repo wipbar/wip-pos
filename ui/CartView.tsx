@@ -24,7 +24,7 @@ function MostRecentSale() {
       { locationId: location?._id },
       { sort: { timestamp: -1 }, limit: 1 },
     ),
-    [location],
+    [location?._id],
   );
 
   if (locationLoading || salesLoading) return null;
@@ -172,7 +172,7 @@ export default function CartView() {
       console.log({ resultBarCode, product });
       if (product) setPickedProductIds([...pickedProductIds, product._id]);
     },
-    [pickedProductIds],
+    [pickedProductIds, products, setPickedProductIds],
   );
 
   if (productsLoading) return null;
@@ -345,7 +345,9 @@ export default function CartView() {
                   setConfirmOpen(false);
                   try {
                     console.log(navigator.vibrate?.(500));
+                    // eslint-disable-next-line no-empty
                   } catch {}
+                  // eslint-disable-next-line no-empty
                 } catch {}
                 setSellingLoading(false);
               }}

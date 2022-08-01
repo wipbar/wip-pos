@@ -22,6 +22,13 @@ import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
 
+const XYAxisDomain = ["dataMin", "dataMax"];
+const YAxisTickFormatter = (amount: number) => String(~~amount);
+const XAxisTickFormatter = (hour: number) =>
+  String((hour + 8) % 24).padStart(2, "0");
+const tooltipLabelFormatter = (hour: number) =>
+  `H${String((hour + 8) % 24).padStart(2, "0")}`;
+
 export default function DayByDay() {
   const currentCamp = useCurrentCamp();
   const { data: sales } = useMongoFetch(
@@ -30,6 +37,7 @@ export default function DayByDay() {
           timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
         })
       : undefined,
+    [currentCamp],
   );
   const numberOfDaysInCurrentCamp = currentCamp
     ? differenceInDays(currentCamp.end, currentCamp.start)
@@ -44,7 +52,7 @@ export default function DayByDay() {
               [key: string]: number | null;
             }>(
               (memo, _, j) => {
-                const hour = j * 24 + i;
+                const hour: number = j * 24 + i;
 
                 if (isFuture(addHours(currentCamp.start, hour + 6)))
                   return memo;
@@ -81,6 +89,16 @@ export default function DayByDay() {
         : [],
     [currentCamp, numberOfDaysInCurrentCamp, sales],
   );
+  const YAxisLabel = useMemo(
+    () => ({
+      value: "Revenue (HAX)",
+      angle: -90,
+      offset: 70,
+      position: "insideLeft",
+      style: { fill: currentCamp?.color },
+    }),
+    [currentCamp],
+  );
 
   return (
     <div>
@@ -90,26 +108,14 @@ export default function DayByDay() {
           margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            interval={1}
-            dataKey="x"
-            tickFormatter={(hour) => String((hour + 8) % 24).padStart(2, "0")}
-          />
+          <XAxis interval={1} dataKey="x" tickFormatter={XAxisTickFormatter} />
           <YAxis
-            domain={["dataMin", "dataMax"]}
-            tickFormatter={(amount: number) => String(~~amount)}
-            label={{
-              value: "Revenue (HAX)",
-              angle: -90,
-              offset: 70,
-              position: "insideLeft",
-              style: { fill: currentCamp?.color },
-            }}
+            domain={XYAxisDomain}
+            tickFormatter={YAxisTickFormatter}
+            label={YAxisLabel}
           />
           <Tooltip
-            labelFormatter={(hour) =>
-              `H${String((hour + 8) % 24).padStart(2, "0")}`
-            }
+            labelFormatter={tooltipLabelFormatter}
             contentStyle={{ background: "#000", color: "#FFF" }}
           />
           <Legend />
@@ -153,7 +159,7 @@ export default function DayByDay() {
           <YAxis
             yAxisId="right"
             orientation="right"
-            domain={["dataMin", "dataMax"]}
+            domain={XYAxisDomain}
             strokeOpacity={0.5}
           />
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) =>
