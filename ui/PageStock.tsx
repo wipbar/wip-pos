@@ -156,142 +156,148 @@ export default function PageStock() {
       </select>
       {location ? <CurfewButton location={location} /> : null}
       <hr />
-      <table
+      <div
         className={css`
-          width: 100%;
+          overflow-x: auto;
         `}
       >
-        <thead>
-          <tr>
-            <th />
-            <th>Brand</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Size</th>
-            <th>ABV</th>
-            <th>Description</th>
-            <th>Tags</th>
-            <th>Tap</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => {
-            const isOnMenu =
-              location && product.locationIds?.includes(location?._id);
-            return (
-              <tr key={product._id}>
-                <td>
-                  <button
-                    onClick={() =>
-                      editProduct({
-                        productId: product._id,
-                        data: isOnMenu
-                          ? {
-                              locationIds: product.locationIds?.filter(
-                                (id) => id !== location?._id,
-                              ),
-                            }
-                          : {
-                              locationIds: [
-                                ...(product.locationIds || []),
-                                location?._id,
-                              ],
-                            },
-                      })
-                    }
-                    disabled={location?.curfew && isAlcoholic(product)}
-                    style={{
-                      whiteSpace: "nowrap",
-                      background:
-                        location?.curfew && isAlcoholic(product)
-                          ? "gray"
-                          : isOnMenu
-                          ? "red"
-                          : "limegreen",
-                      color: "white",
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={
-                        location?.curfew && isAlcoholic(product)
-                          ? faBan
-                          : isOnMenu
-                          ? faMinus
-                          : faPlus
-                      }
-                    />{" "}
-                    Menu
-                  </button>
-                </td>
-                <td>{product.brandName}</td>
-                <td>{product.name}</td>
-                <td
-                  className={css`
-                    white-space: nowrap;
-                  `}
-                >
-                  {product.salePrice}{" "}
-                  {product.shopPrices?.some(
-                    ({ buyPrice }) =>
-                      buyPrice &&
-                      Number(buyPrice) !== Number(product.salePrice) &&
-                      Number(buyPrice) < Number(product.salePrice),
-                  ) ? null : (
-                    <small>?</small>
-                  )}
-                </td>
-                <td>
-                  {product.unitSize}
-                  {product.sizeUnit}
-                </td>
-                <td>{product.abv ? `${product.abv}%` : null}</td>
-                <td>{product.description}</td>
-                <td style={{ whiteSpace: "nowrap" }}>
-                  {[...(product.tags || [])].sort()?.map((tag) => (
-                    <span
-                      key={tag}
-                      className={css`
-                        display: inline-block;
-                        background: ${stringToColour(tag) ||
-                        `rgba(0, 0, 0, 0.4)`};
-                        color: ${getCorrectTextColor(stringToColour(tag)) ||
-                        "white"};
-                        padding: 0 3px;
-                        border-radius: 4px;
-                        margin-left: 2px;
-                      `}
-                    >
-                      {tag.trim()}
-                    </span>
-                  ))}
-                </td>
-                <td>{product.tap}</td>
-                <td style={{ whiteSpace: "nowrap" }}>
-                  <button onClick={() => setIsEditing(product._id)}>
-                    <FontAwesomeIcon icon={faPencilAlt} />
-                  </button>
-                  {product && isUserAdmin(user) && (
+        <table
+          className={css`
+            width: 100%;
+          `}
+        >
+          <thead>
+            <tr>
+              <th />
+              <th>Brand</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Size</th>
+              <th>ABV</th>
+              <th>Description</th>
+              <th>Tags</th>
+              <th>Tap</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => {
+              const isOnMenu =
+                location && product.locationIds?.includes(location?._id);
+              return (
+                <tr key={product._id}>
+                  <td>
                     <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete " + product.name,
-                          )
-                        ) {
-                          removeProduct({ productId: product._id });
-                        }
+                      onClick={() =>
+                        editProduct({
+                          productId: product._id,
+                          data: isOnMenu
+                            ? {
+                                locationIds: product.locationIds?.filter(
+                                  (id) => id !== location?._id,
+                                ),
+                              }
+                            : {
+                                locationIds: [
+                                  ...(product.locationIds || []),
+                                  location?._id,
+                                ],
+                              },
+                        })
+                      }
+                      disabled={location?.curfew && isAlcoholic(product)}
+                      style={{
+                        whiteSpace: "nowrap",
+                        background:
+                          location?.curfew && isAlcoholic(product)
+                            ? "gray"
+                            : isOnMenu
+                            ? "red"
+                            : "limegreen",
+                        color: "white",
                       }}
                     >
-                      <FontAwesomeIcon icon={faTrash} />
+                      <FontAwesomeIcon
+                        icon={
+                          location?.curfew && isAlcoholic(product)
+                            ? faBan
+                            : isOnMenu
+                            ? faMinus
+                            : faPlus
+                        }
+                      />{" "}
+                      Menu
                     </button>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  </td>
+                  <td>{product.brandName}</td>
+                  <td>{product.name}</td>
+                  <td
+                    className={css`
+                      white-space: nowrap;
+                    `}
+                  >
+                    {product.salePrice}{" "}
+                    {product.shopPrices?.some(
+                      ({ buyPrice }) =>
+                        buyPrice &&
+                        Number(buyPrice) !== Number(product.salePrice) &&
+                        Number(buyPrice) < Number(product.salePrice),
+                    ) ? null : (
+                      <small>?</small>
+                    )}
+                  </td>
+                  <td>
+                    {product.unitSize}
+                    {product.sizeUnit}
+                  </td>
+                  <td>{product.abv ? `${product.abv}%` : null}</td>
+                  <td>{product.description}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>
+                    {[...(product.tags || [])].sort()?.map((tag) => (
+                      <span
+                        key={tag}
+                        className={css`
+                          display: inline-block;
+                          background: ${stringToColour(tag) ||
+                          `rgba(0, 0, 0, 0.4)`};
+                          color: ${getCorrectTextColor(stringToColour(tag)) ||
+                          "white"};
+                          padding: 0 3px;
+                          border-radius: 4px;
+                          margin-left: 2px;
+                        `}
+                      >
+                        {tag.trim()}
+                      </span>
+                    ))}
+                  </td>
+                  <td>{product.tap}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>
+                    <button onClick={() => setIsEditing(product._id)}>
+                      <FontAwesomeIcon icon={faPencilAlt} />
+                    </button>
+                    {product && isUserAdmin(user) && (
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete " + product.name,
+                            )
+                          ) {
+                            removeProduct({ productId: product._id });
+                          }
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
