@@ -159,6 +159,7 @@ export default function UI() {
             display: flex;
             justify-content: space-around;
             align-items: center;
+            overflow-x: auto;
             > a,
             > div {
               padding: 0.25em 0.5em;
