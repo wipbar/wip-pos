@@ -210,14 +210,58 @@ export default function UI() {
               currentLocation &&
               isUserInTeam(user, currentLocation.teamName) ? (
                 <>
-                  <Link to={`/${locationSlug}/tend`}>Tend</Link>
-                  <Link to={`/${locationSlug}/stock`}>Stock</Link>
-                  <Link to={`/${locationSlug}/sales`}>Sales</Link>
+                  <Link
+                    to={`/${
+                      locationSlug !== "stats"
+                        ? locationSlug
+                        : userLocations[0]?.slug
+                    }/tend`}
+                  >
+                    Tend
+                  </Link>
+                  <Link
+                    to={`/${
+                      locationSlug !== "stats"
+                        ? locationSlug
+                        : userLocations[0]?.slug
+                    }/stock`}
+                  >
+                    Stock
+                  </Link>
+                  <Link
+                    to={`/${
+                      locationSlug !== "stats"
+                        ? locationSlug
+                        : userLocations[0]?.slug
+                    }/sales`}
+                  >
+                    Sales
+                  </Link>
+                  <Link
+                    to={`/${
+                      locationSlug !== "stats"
+                        ? locationSlug
+                        : userLocations[0]?.slug
+                    }/menu`}
+                  >
+                    Menu
+                  </Link>
                 </>
               ) : null}
-              <Link to={`/${locationSlug}/menu`}>Menu</Link>
             </>
           ) : null}
+          {(!locationSlug || locationSlug === "stats") &&
+          !(
+            user &&
+            currentLocation &&
+            isUserInTeam(user, currentLocation.teamName)
+          )
+            ? locations.map(({ slug, name }) => (
+                <Link key={slug} to={`/${slug}/menu`}>
+                  {name} Menu
+                </Link>
+              ))
+            : null}
           <Link to={`/stats`}>Stats</Link>
           <AccountsUIWrapper />
         </nav>
