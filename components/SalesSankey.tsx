@@ -130,7 +130,10 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
     () =>
       currentCamp
         ? Sales.find({
-            timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+            timestamp: {
+              $gte: currentCamp.buildup,
+              $lte: currentCamp.end,
+            },
           })
         : undefined,
     [currentCamp],
@@ -279,11 +282,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
 
     return {
       links,
-      nodes: nodes.filter(
-        ({ name }) =>
-          name === salesNode ||
-          links.some(({ target }) => target === getNode(name)),
-      ),
+      nodes,
     };
   }, [sales, getNode, salesNode, nodes, products]);
 
