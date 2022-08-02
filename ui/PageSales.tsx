@@ -41,7 +41,7 @@ export default function PageSales() {
         {
           locationId: location?._id,
           timestamp: {
-            $gte: selectedCamp?.start || new Date(new Date().getFullYear(), 0),
+            $gte: selectedCamp?.buildup || new Date(new Date().getFullYear(), 0),
             $lte:
               selectedCamp?.end || new Date(new Date().getFullYear() + 1, 0),
           },
