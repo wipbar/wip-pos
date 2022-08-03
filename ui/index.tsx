@@ -296,6 +296,9 @@ export default function UI() {
                   justify-content: space-evenly;
                 `}
               >
+                <li>
+                  <Link to={`/stats`}>Stats</Link>
+                </li>
                 {locations?.map((location) => (
                   <li
                     key={location._id}
@@ -306,8 +309,6 @@ export default function UI() {
                     {location.name}
                     <br />
                     <Link to={`/${location.slug}/menu`}>Menu</Link>
-                    <br />
-                    <Link to={`/stats`}>Stats</Link>
                   </li>
                 ))}
               </ul>
