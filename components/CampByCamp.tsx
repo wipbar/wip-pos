@@ -239,7 +239,7 @@ export default function CampByCamp() {
               strokeDasharray={
                 camp.slug === currentCamp?.slug ? undefined : "3 3"
               }
-              strokeWidth={camp.slug === currentCamp?.slug ? 2 : 1}
+              strokeWidth={camp.slug === currentCamp?.slug ? 4 : 1}
               dot={false}
               connectNulls
             />
