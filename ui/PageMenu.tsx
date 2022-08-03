@@ -156,7 +156,7 @@ export default function PageMenu() {
   }
   return (
     <ResponsiveMasonry
-      columnsCountBreakPoints={{ 0: 1, 500: 2, 800: 3, 1100: 4 }}
+      columnsCountBreakPoints={{ 0: 1, 500: 2, 800: 3, 1100: 4, 1400: 5 }}
     >
       <Masonry
         gutter="10px"
