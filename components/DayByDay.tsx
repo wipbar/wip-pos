@@ -1,9 +1,10 @@
 import {
   addHours,
-  differenceInDays,
+  differenceInHours,
   endOfHour,
   isFuture,
   isWithinRange,
+  min,
 } from "date-fns";
 import React, { useMemo } from "react";
 import {
@@ -29,6 +30,7 @@ const XAxisTickFormatter = (hour: number) =>
 const tooltipLabelFormatter = (hour: number) =>
   `H${String((hour + 8) % 24).padStart(2, "0")}`;
 
+const offset = -4;
 export default function DayByDay() {
   const currentCamp = useCurrentCamp();
   const { data: sales } = useMongoFetch(
@@ -41,7 +43,10 @@ export default function DayByDay() {
     [currentCamp],
   );
   const numberOfDaysInCurrentCamp = currentCamp
-    ? differenceInDays(currentCamp.end, currentCamp.start)
+    ? Math.ceil(
+        differenceInHours(min(new Date(), currentCamp.end), currentCamp.start) /
+          24,
+      )
     : 0;
 
   const data = useMemo(
@@ -55,7 +60,7 @@ export default function DayByDay() {
               (memo, _, j) => {
                 const hour: number = j * 24 + i;
 
-                if (isFuture(addHours(currentCamp.start, hour + 6)))
+                if (isFuture(addHours(currentCamp.start, hour + offset)))
                   return memo;
 
                 return {
@@ -65,8 +70,8 @@ export default function DayByDay() {
                       .filter((sale) =>
                         isWithinRange(
                           sale.timestamp,
-                          addHours(currentCamp.start, j * 24 + 6),
-                          endOfHour(addHours(currentCamp.start, hour + 6)),
+                          addHours(currentCamp.start, j * 24 + offset),
+                          endOfHour(addHours(currentCamp.start, hour + offset)),
                         ),
                       )
                       .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
@@ -76,8 +81,8 @@ export default function DayByDay() {
                       .filter((sale) =>
                         isWithinRange(
                           sale.timestamp,
-                          addHours(currentCamp.start, hour + 6),
-                          endOfHour(addHours(currentCamp.start, hour + 6)),
+                          addHours(currentCamp.start, hour + offset),
+                          endOfHour(addHours(currentCamp.start, hour + offset)),
                         ),
                       )
                       .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
@@ -100,7 +105,7 @@ export default function DayByDay() {
     }),
     [currentCamp],
   );
-
+  console.log(data);
   return (
     <div>
       <ResponsiveContainer width="100%" height={350}>

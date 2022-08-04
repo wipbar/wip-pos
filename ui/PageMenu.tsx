@@ -167,7 +167,7 @@ export default function PageMenu() {
         {productsGroupedByTags
           .sort((a, b) => b[1].length - a[1].length)
           .sort((a, b) => a[0].localeCompare(b[0]))
-          .map(([tags, products], i) => {
+          .map(([tags, products]) => {
             const productsByBrandName = Object.entries(
               products.reduce<Record<string, IProduct[]>>((m, product) => {
                 if (product.brandName)
