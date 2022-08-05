@@ -106,7 +106,9 @@ export default function PageMenu() {
     () =>
       Object.entries(
         products
-          .filter((product) => (location?.curfew ? isAlcoholic(product) : true))
+          .filter((product) =>
+            location?.curfew ? !isAlcoholic(product) : true,
+          )
           .reduce<Record<string, IProduct[]>>((memo, product) => {
             const key = [...(product.tags || [])].sort()?.join(",") || "other";
             if (memo[key]) {
@@ -125,9 +127,6 @@ export default function PageMenu() {
   }
 
   if (error) return error;
-
-  const randomIndex = getRandomInt(0, productsGroupedByTags?.length - 1);
-  const randomIndex2 = getRandomInt(0, productsGroupedByTags?.length - 1);
 
   if (!productsGroupedByTags.length) {
     return (
