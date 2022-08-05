@@ -382,15 +382,6 @@ export default function PageMenu() {
             font-size: 0.6em;
           `}
         >
-          <pre>ET1kkcTIrNKUEsI9NWKuYr8VGGOFlj@4</pre>
-        </center>
-        <center
-          className={css`
-            margin-top: -8px;
-            margin-bottom: 16px;
-            font-size: 0.6em;
-          `}
-        >
           <pre>Rendered: {new Date().toLocaleString()}</pre>
         </center>
       </Masonry>
