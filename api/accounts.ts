@@ -1,7 +1,7 @@
 import { Accounts } from "meteor/accounts-base";
 import { HTTP } from "meteor/http";
 import { Meteor } from "meteor/meteor";
-// @ts-expect-error
+// @ts-expect-error blah blah
 import { OAuth } from "meteor/oauth";
 import { Random } from "meteor/random";
 import { ServiceConfiguration } from "meteor/service-configuration";
@@ -85,17 +85,8 @@ if (!Meteor.isClient) {
         serviceData: {
           accessToken: OAuth.sealSecret(accessToken),
           id: identity.user.username,
-        },
-        options: {
-          profile: {
-            name:
-              identity.profile.public_credit_name !== "Unnamed"
-                ? identity.profile.public_credit_name
-                : identity.user.username,
-            profile: identity.profile,
-            user: identity.user,
-            teams: identity.teams,
-          },
+          teams: identity.teams,
+          publicCreditName: identity.profile.public_credit_name,
         },
       };
     },
@@ -156,11 +147,16 @@ if (Meteor.isClient) {
 
   Meteor.loginWithBornhack = () => Accounts.callLoginFunction(service);
 } else {
-  Accounts.addAutopublishFields({
-    forLoggedInUser: ["services.bornhack"],
-    forOtherUsers: ["services.bornhack.username"],
+  Accounts.setDefaultPublishFields({
+    profile: 1,
+    username: 1,
+    emails: 1,
+    "services.bornhack.id": 1,
+    "services.bornhack.teams": 1,
+    "services.bornhack.publicCreditName": 1,
   });
 }
+
 export const isUserAdmin = (userOrId: string | Meteor.User | null) => {
   if (!userOrId) return false;
 
@@ -168,7 +164,7 @@ export const isUserAdmin = (userOrId: string | Meteor.User | null) => {
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
 
-  if (user?.profile?.user?.username === "klarstrup") return true;
+  if (user?.services?.bornhack?.id === "klarstrup") return true;
 };
 
 export const isUserInTeam = (
@@ -183,8 +179,8 @@ export const isUserInTeam = (
   const [currentCamp] = Camps.find({}, { sort: { end: -1 } }).fetch();
 
   return Boolean(
-    user?.profile?.teams?.some(
-      ({ team, camp }) =>
+    user?.services?.bornhack?.teams?.some(
+      ({ team, camp }: { team: string; camp: string }) =>
         team?.toLowerCase() === inTeam.toLowerCase() &&
         camp === currentCamp.name,
     ),
@@ -211,7 +207,7 @@ export const assertUserInTeam = (
 if (Meteor.isClient) {
   Meteor.call(
     "GALAXY_APP_VERSION_ID",
-    (_: any, GALAXY_APP_VERSION_ID: number) =>
+    (_: unknown, GALAXY_APP_VERSION_ID: number) =>
       Session.set("GALAXY_APP_VERSION_ID", GALAXY_APP_VERSION_ID),
   );
 }

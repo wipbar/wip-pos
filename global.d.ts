@@ -26,16 +26,10 @@ declare global {
 declare module "meteor/meteor" {
   namespace Meteor {
     interface UserProfile {
-      [str: string]: any;
+      [str: string]: unknown;
       name?: string;
-      profile?: { public_credit_name?: string; description?: string };
-      user?: { username?: string; user_id?: string };
-      teams?: { team?: string; camp?: string }[];
     }
-    function loginWithBornhack(
-      options: Record<string, any>,
-      callback: (err: Error) => void,
-    ): void;
+    function loginWithBornhack(): void;
   }
 }
 declare module "meteor/accounts-base" {
@@ -44,6 +38,7 @@ declare module "meteor/accounts-base" {
       forLoggedInUser: string[];
       forOtherUsers: string[];
     }): void;
+    function setDefaultPublishFields(fields: Mongo.FieldSpecifier): void;
     function registerClientLoginFunction(
       funcName: string,
       func: () => void,
