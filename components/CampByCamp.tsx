@@ -66,7 +66,10 @@ function createTrend<XK extends string, YK extends string>(
 const XYAxisDomain = ["dataMin", "dataMax"];
 
 export default function CampByCamp() {
-  const { data: camps } = useMongoFetch(() => Camps.find(), []);
+  const { data: camps } = useMongoFetch(
+    () => Camps.find({}, { sort: { start: 1 } }),
+    [],
+  );
   const currentCamp = useCurrentCamp();
 
   const { data: sales } = useMongoFetch(() => Sales.find(), []);
@@ -170,7 +173,7 @@ export default function CampByCamp() {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="hour"
-            tickFormatter={(hour) => String((hour + 12) % 24).padStart(2, "0")}
+            tickFormatter={(hour) => "D" + String(Math.ceil((hour + 12) / 24))}
             interval={23}
           />
           <YAxis
@@ -233,7 +236,7 @@ export default function CampByCamp() {
               type="monotone"
               key={camp.slug}
               dataKey={camp.slug}
-              name={"Σ" + camp.name}
+              name={"Σ" + camp.start.getFullYear()}
               stroke={camp.color}
               fill={getCorrectTextColor(camp.color)}
               strokeDasharray={
@@ -257,7 +260,7 @@ export default function CampByCamp() {
                 yAxisId="right"
                 key={currentCamp.slug + "individual"}
                 dataKey={currentCamp.slug + "individual"}
-                name={"Δ" + currentCamp.name}
+                name={"Δ" + currentCamp.start.getFullYear()}
                 fill={currentCamp?.color}
                 fillOpacity={0.5}
               />
