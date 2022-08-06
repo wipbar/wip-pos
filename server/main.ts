@@ -10,15 +10,16 @@ import "./metrics";
 
 Meteor.publish("products", () => Products.find());
 Meteor.publish("camps", () => Camps.find({}, { sort: { end: -1 } }));
-Meteor.publish("sales", ({ from, to }) => {
+Meteor.publish("sales", ({ from, to } = {}) => {
   let selector: Mongo.Selector<ISale> = {};
-  console.log({ to, from });
+
   if (from) {
     selector = {
       ...selector,
       timestamp: { ...selector.timestamp, $gte: from },
     };
   }
+
   if (to) {
     selector = {
       ...selector,
