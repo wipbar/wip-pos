@@ -16,10 +16,16 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   const { location } = useCurrentLocation();
   const currentCamp = useCurrentCamp();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
+  const [showOnlyBarcodeLessItems, setShowOnlyBarcodeLessItems] =
+    useState(true);
   const [showItemDetails, setShowItemDetails] = useState(true);
   const toggleOnlyMenuItems = useCallback(
     () => setShowOnlyMenuItems(!showOnlyMenuItems),
     [showOnlyMenuItems],
+  );
+  const toggleShowOnlyBarcodeLessItems = useCallback(
+    () => setShowOnlyBarcodeLessItems(!showOnlyBarcodeLessItems),
+    [showOnlyBarcodeLessItems],
   );
   const toggleItemDetails = useCallback(
     () => setShowItemDetails(!showItemDetails),
@@ -53,13 +59,14 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   );
   const allTags = [
     ...products
-      .filter((product) =>
+      .filter(({ locationIds }) =>
         showOnlyMenuItems && location
-          ? product.locationIds?.includes(location._id)
+          ? locationIds?.includes(location._id)
           : true,
       )
-      .reduce((memo, product) => {
-        product.tags?.forEach((tag) => memo.add(tag.trim()));
+      .filter(({ barCode }) => (showOnlyBarcodeLessItems ? !barCode : true))
+      .reduce((memo, { tags }) => {
+        tags?.forEach((tag) => memo.add(tag.trim()));
 
         return memo;
       }, new Set<string>()),
@@ -73,24 +80,22 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
         className={css`
           text-align: center;
           padding-top: 1em;
+          > small > label {
+            display: inline-flex;
+            align-items: center;
+            background-color: ${currentCamp?.color || "initial"};
+            color: ${(currentCamp && getCorrectTextColor(currentCamp?.color)) ||
+            "initial"};
+            padding: 0 6px;
+            border-radius: 4px;
+            margin-right: 2px;
+            margin-bottom: 4px;
+            font-size: 1.5em;
+          }
         `}
       >
         <small>
-          <label
-            className={css`
-              display: inline-flex;
-              align-items: center;
-              background-color: ${currentCamp?.color || "initial"};
-              color: ${(currentCamp &&
-                getCorrectTextColor(currentCamp?.color)) ||
-              "initial"};
-              padding: 0 6px;
-              border-radius: 4px;
-              margin-right: 2px;
-              margin-bottom: 4px;
-              font-size: 1.5em;
-            `}
-          >
+          <label>
             <input
               type="checkbox"
               onChange={toggleOnlyMenuItems}
@@ -101,21 +106,18 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
             />
             show only items on the menu
           </label>{" "}
-          <label
-            className={css`
-              display: inline-flex;
-              align-items: center;
-              background-color: ${currentCamp?.color || "initial"};
-              color: ${(currentCamp &&
-                getCorrectTextColor(currentCamp?.color)) ||
-              "initial"};
-              padding: 0 6px;
-              border-radius: 4px;
-              margin-right: 2px;
-              margin-bottom: 4px;
-              font-size: 1.5em;
-            `}
-          >
+          <label>
+            <input
+              type="checkbox"
+              onChange={toggleShowOnlyBarcodeLessItems}
+              checked={showOnlyBarcodeLessItems}
+              className={css`
+                margin-right: 4px;
+              `}
+            />
+            show only items without barcodes
+          </label>{" "}
+          <label>
             <input
               type="checkbox"
               onChange={toggleItemDetails}
@@ -193,11 +195,12 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
               product.tags?.map((tag) => tag.trim()).includes(filter.trim()),
             );
           })
-          .filter((product) =>
+          .filter(({ locationIds }) =>
             showOnlyMenuItems && location
-              ? product.locationIds?.includes(location._id)
+              ? locationIds?.includes(location._id)
               : true,
           )
+          .filter(({ barCode }) => (showOnlyBarcodeLessItems ? !barCode : true))
           .map((product) => (
             <button
               key={product._id}
