@@ -44,7 +44,7 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
-  const { data: products, loading } = useMongoFetch(
+  const { data: products } = useMongoFetch(
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );
@@ -71,8 +71,6 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
         return memo;
       }, new Set<string>()),
   ];
-
-  if (loading) return <>Loading...</>;
 
   return (
     <div {...props}>

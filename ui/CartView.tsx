@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
 import { format } from "date-fns";
-import React, { useCallback, useState } from "react";
+import { useTracker } from "meteor/react-meteor-data";
+import React, { useCallback, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSound from "use-sound";
 import Products, { IProduct } from "../api/products";
@@ -11,21 +12,23 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
-import useSubscription from "../hooks/useSubscription";
 import { getCorrectTextColor } from "../util";
+import useSubscription from "/hooks/useSubscription";
 
 function MostRecentSale() {
+  const currentCamp = useCurrentCamp();
   const { location, loading: locationLoading } = useCurrentLocation(true);
-  const {
-    data: [sale],
-    loading: salesLoading,
-  } = useMongoFetch(
+  const [sale] = useTracker(
     () =>
       Sales.find(
         { locationId: location?._id },
         { sort: { timestamp: -1 }, limit: 1 },
-      ),
+      ).fetch(),
     [location?._id],
+  );
+  const salesLoading = useSubscription(
+    "sales",
+    useMemo(() => ({ from: currentCamp?.buildup }), [currentCamp?.buildup]),
   );
 
   if (locationLoading || salesLoading) return null;
@@ -149,10 +152,9 @@ export default function CartView() {
   const [playCrank] = useSound("/cashregistercrank.mp3");
   const [playDing] = useSound("/cashregisterding.mp3");
 
-  useSubscription("products");
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const { data: products, loading: productsLoading } = useMongoFetch(
+  const { data: products } = useMongoFetch(
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );
@@ -177,7 +179,6 @@ export default function CartView() {
     [pickedProductIds, products, setPickedProductIds],
   );
 
-  if (productsLoading) return null;
   return (
     <div
       className={css`
