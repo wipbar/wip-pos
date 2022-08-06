@@ -2,7 +2,10 @@ import { Tracker } from "meteor/tracker";
 import { useEffect, useRef, useState } from "react";
 import SubsManager from "../SubsManager";
 
-export default function useSubscription(pubName: string, ...args: unknown[]) {
+export default function useSubscription(
+  pubName: string | false,
+  ...args: unknown[]
+) {
   const [loading, setLoading] = useState(true);
 
   const compRef = useRef<ReturnType<typeof Tracker.autorun> | null>(null);
