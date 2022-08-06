@@ -106,7 +106,7 @@ export default function UI() {
             )
             0 0/300% 100%;
           background: linear-gradient(
-              to right,
+              -45deg,
               rgba(255, 0, 0, 1),
               rgba(255, 154, 0, 1),
               rgba(208, 222, 33, 1),
@@ -119,8 +119,7 @@ export default function UI() {
               rgba(251, 7, 217, 1),
               rgba(255, 0, 0, 1)
             )
-            0 0/200% 100%;
-          animation: a 4s linear infinite;
+            0 0/100% 100%;
         }
         a {
           color: ${currentCamp?.color};
