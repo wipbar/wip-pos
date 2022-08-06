@@ -1,10 +1,11 @@
 import { Tracker } from "meteor/tracker";
-import { useEffect, useRef, useState } from "react";
+import { DependencyList, useEffect, useMemo, useRef, useState } from "react";
 import SubsManager from "../SubsManager";
 
 export default function useSubscription(
   pubName: string | false,
-  ...args: unknown[]
+  pubArguments?: unknown,
+  deps?: DependencyList,
 ) {
   const [loading, setLoading] = useState(true);
 
@@ -12,6 +13,9 @@ export default function useSubscription(
   const handleRef = useRef<ReturnType<typeof SubsManager.subscribe> | null>(
     null,
   );
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoArguments = useMemo(() => pubArguments, deps);
 
   const stopComp = () => {
     compRef.current?.stop();
@@ -27,7 +31,7 @@ export default function useSubscription(
     Tracker.autorun((currentComp) => {
       compRef.current = currentComp;
       if (pubName) {
-        handleRef.current = SubsManager.subscribe(pubName, ...args);
+        handleRef.current = SubsManager.subscribe(pubName, memoArguments);
 
         setLoading(!handleRef.current.ready());
       } else {
@@ -35,8 +39,7 @@ export default function useSubscription(
       }
     });
     return stopComp;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pubName, ...args]);
+  }, [pubName, memoArguments]);
 
   return loading;
 }

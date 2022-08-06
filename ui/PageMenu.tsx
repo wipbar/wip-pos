@@ -86,18 +86,16 @@ export default function PageMenu() {
   const currentDate = useCurrentDate(60000);
   const from = useMemo(() => subHours(currentDate, 24), [currentDate]);
   const to = useMemo(() => currentDate, [currentDate]);
-  const { location, loading: locationLoading, error } = useCurrentLocation();
+  const { location, error } = useCurrentLocation();
 
   const sales = useTracker(
     () => Sales.find({ timestamp: { $gte: from, $lte: to } }).fetch(),
     [from, to],
   );
-  const salesLoading = useSubscription(
-    "sales",
-    useMemo(() => ({ from, to }), [from, to]),
-  );
-  const { data: products, loading: productsLoading } = useMongoFetch(
+  useSubscription("sales", { from, to }, [from, to]);
+  const { data: products } = useMongoFetch(
     () =>
+      location &&
       Products.find(
         {
           removedAt: { $exists: false },
@@ -128,10 +126,6 @@ export default function PageMenu() {
       ),
     [location?.curfew, products],
   );
-
-  if (productsLoading || locationLoading || salesLoading) {
-    return <>Loading...</>;
-  }
 
   if (error) return error;
 

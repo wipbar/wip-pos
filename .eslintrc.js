@@ -19,7 +19,7 @@ module.exports = {
     "react-hooks/rules-of-hooks": [2],
     "react-hooks/exhaustive-deps": [
       "warn",
-      { additionalHooks: "(useMongoFetch|useTracker)" },
+      { additionalHooks: "(useMongoFetch|useTracker|useSubscription)" },
     ],
     "no-else-return": ["error"],
     "no-unused-vars": "off",

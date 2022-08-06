@@ -28,7 +28,8 @@ function MostRecentSale() {
   );
   const salesLoading = useSubscription(
     "sales",
-    useMemo(() => ({ from: currentCamp?.buildup }), [currentCamp?.buildup]),
+    { from: currentCamp?.buildup },
+    [currentCamp?.buildup],
   );
 
   if (locationLoading || salesLoading) return null;

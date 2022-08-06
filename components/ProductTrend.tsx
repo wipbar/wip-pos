@@ -20,16 +20,11 @@ export default function ProductTrend({
 
   useSubscription(
     currentCamp ? "sales" : false,
-    useMemo(
-      () =>
-        currentCamp && {
-          from: isPast(currentCamp.start)
-            ? currentCamp.start
-            : currentCamp.buildup,
-          to: currentCamp.end,
-        },
-      [currentCamp],
-    ),
+    currentCamp && {
+      from: isPast(currentCamp.start) ? currentCamp.start : currentCamp.buildup,
+      to: currentCamp.end,
+    },
+    [currentCamp],
   );
   const data = useTracker(
     () =>
