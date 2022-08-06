@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import { addHours, endOfHour, isWithinRange, subHours } from "date-fns";
+import { useTracker } from "meteor/react-meteor-data";
 import { opacify } from "polished";
 import React, { Fragment, SVGProps, useMemo } from "react";
 // @ts-expect-error missing types
@@ -11,6 +12,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useSubscription from "/hooks/useSubscription";
 import { getCorrectTextColor } from "/util";
 
 function SparkLine({
@@ -85,9 +87,14 @@ export default function PageMenu() {
   const from = useMemo(() => subHours(currentDate, 24), [currentDate]);
   const to = useMemo(() => currentDate, [currentDate]);
   const { location, loading: locationLoading, error } = useCurrentLocation();
-  const { data: sales, loading: salesLoading } = useMongoFetch(
-    () => Sales.find({ timestamp: { $gte: from, $lte: to } }),
+
+  const sales = useTracker(
+    () => Sales.find({ timestamp: { $gte: from, $lte: to } }).fetch(),
     [from, to],
+  );
+  const salesLoading = useSubscription(
+    "sales",
+    useMemo(() => ({ from, to }), [from, to]),
   );
   const { data: products, loading: productsLoading } = useMongoFetch(
     () =>

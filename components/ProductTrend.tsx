@@ -1,11 +1,12 @@
 import { isPast, isWithinRange, min, subHours } from "date-fns";
+import { useTracker } from "meteor/react-meteor-data";
 import React, { ComponentProps, useMemo } from "react";
 import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import useMongoFetch from "../hooks/useMongoFetch";
 import Fire from "./Fire";
 import useCurrentDate from "/hooks/useCurrentDate";
+import useSubscription from "/hooks/useSubscription";
 
 const f = 0.25;
 export default function ProductTrend({
@@ -17,21 +18,35 @@ export default function ProductTrend({
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate();
 
-  const { data } = useMongoFetch(
-    () =>
-      currentCamp &&
-      Sales.find(
-        {
-          products: { $elemMatch: { _id: product._id } },
-          timestamp: {
-            $gte: isPast(currentCamp.start)
-              ? currentCamp.start
-              : currentCamp.buildup,
-            $lte: currentCamp.end,
-          },
+  useSubscription(
+    currentCamp ? "sales" : false,
+    useMemo(
+      () =>
+        currentCamp && {
+          from: isPast(currentCamp.start)
+            ? currentCamp.start
+            : currentCamp.buildup,
+          to: currentCamp.end,
         },
-        { sort: { timestamp: 1 } },
-      ),
+      [currentCamp],
+    ),
+  );
+  const data = useTracker(
+    () =>
+      currentCamp
+        ? Sales.find(
+            {
+              products: { $elemMatch: { _id: product._id } },
+              timestamp: {
+                $gte: isPast(currentCamp.start)
+                  ? currentCamp.start
+                  : currentCamp.buildup,
+                $lte: currentCamp.end,
+              },
+            },
+            { sort: { timestamp: 1 } },
+          ).fetch()
+        : [],
     [product._id, currentCamp],
   );
   const productSales = useMemo(
