@@ -192,11 +192,40 @@ export default function PageMenu() {
               <h3
                 className={css`
                   margin: 0;
-                  padding: 8px;
                 `}
               >
                 {tags}
               </h3>
+              <SparkLine
+                className={css`
+                  display: block;
+                  border-bottom: ${currentCamp?.color} 1px solid;
+                `}
+                fill={currentCamp?.color}
+                data={Array.from({ length: 24 }, (_, i) => [
+                  23 - i,
+                  sales.reduce((memo, sale) => {
+                    if (
+                      isWithinRange(
+                        sale.timestamp,
+                        addHours(currentDate, -i - 1),
+                        addHours(currentDate, -i),
+                      )
+                    ) {
+                      return (
+                        memo +
+                        sale.products.filter((saleProduct) =>
+                          productsByBrandName
+                            .map(([, products]) => products)
+                            .flat()
+                            .some((product) => saleProduct._id === product._id),
+                        ).length
+                      );
+                    }
+                    return memo;
+                  }, 0),
+                ])}
+              />
               <ul
                 className={css`
                   margin: 0;
@@ -265,8 +294,6 @@ export default function PageMenu() {
                             flex: 1;
                             display: flex;
                             justify-content: space-between;
-                            margin-top: -4px;
-                            margin-bottom: -12px;
                           `}
                         >
                           <span>
@@ -319,6 +346,10 @@ export default function PageMenu() {
                         </div>
                         <SparkLine
                           className={css`
+                            margin-left: -6px;
+                            margin-right: -6px;
+                            width: calc(100% + 12px);
+                            display: block;
                             border-bottom: ${currentCamp?.color} 1px solid;
                           `}
                           fill={currentCamp?.color}
