@@ -1,10 +1,10 @@
 import { css } from "@emotion/css";
-import { addHours, endOfHour, isWithinRange, subHours } from "date-fns";
+import { addHours, isWithinRange, subHours } from "date-fns";
 import { groupBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify } from "polished";
 import React, { Fragment, SVGProps, useMemo } from "react";
-import Products, { isAlcoholic } from "../api/products";
+import Products, { IProduct, isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -22,7 +22,6 @@ function SparkLine({
 }: {
   data: [number, number][];
 } & SVGProps<SVGSVGElement>) {
-  //  console.log(data);
   const viewBoxWidth = 1000;
   const viewBoxHeight = 10;
 
@@ -75,16 +74,15 @@ function SparkLine({
 
 export default function PageMenu() {
   const currentCamp = useCurrentCamp();
-  const currentDate = useCurrentDate(60000);
+  const currentDate = useCurrentDate(1000);
   const from = useMemo(() => subHours(currentDate, 24), [currentDate]);
-  const to = useMemo(() => currentDate, [currentDate]);
   const { location, error } = useCurrentLocation();
 
   const sales = useFind(
-    () => Sales.find({ timestamp: { $gte: from, $lte: to } }),
-    [from, to],
+    () => Sales.find({ timestamp: { $gte: from } }),
+    [from],
   );
-  useSubscription("sales", { from, to }, [from, to]);
+  useSubscription("sales", { from }, [from]);
   const products = useFind(
     () =>
       Products.find(
@@ -152,9 +150,10 @@ export default function PageMenu() {
         @media (min-width: 1400px) {
           column-width: 18.5vw;
         }
-        column-fill: auto;
+        column-fill: balance;
         column-gap: 1vw;
         max-width: 100%;
+        break-inside: avoid;
       `}
     >
       {productsGroupedByTags
@@ -187,7 +186,6 @@ export default function PageMenu() {
                 background: ${currentCamp &&
                 opacify(-(2 / 3), getCorrectTextColor(currentCamp?.color))};
 
-                page-break-inside: avoid;
                 break-inside: avoid;
                 border: 3px solid transparent;
                 padding: 4px;
@@ -224,8 +222,6 @@ export default function PageMenu() {
                       )};
                       margin-top: 4px;
                       align-items: stretch;
-                      -webkit-column-break-inside: avoid;
-                      page-break-inside: avoid;
                       break-inside: avoid;
                     `}
                   >
@@ -244,6 +240,7 @@ export default function PageMenu() {
                         key={product._id}
                         className={css`
                           position: relative;
+                          break-inside: avoid;
                           ${product.salePrice == 0
                             ? `
                                 box-shadow: 0 0 20px black, 0 0 40px black;
@@ -330,21 +327,24 @@ export default function PageMenu() {
                           fill={currentCamp?.color}
                           data={Array.from({ length: 24 }, (_, i) => [
                             23 - i,
-                            sales.reduce(
-                              (memo, sale) =>
+                            sales.reduce((memo, sale) => {
+                              if (
                                 isWithinRange(
                                   sale.timestamp,
+                                  addHours(currentDate, -i - 1),
                                   addHours(currentDate, -i),
-                                  endOfHour(addHours(currentDate, -i)),
                                 )
-                                  ? memo +
-                                    sale.products.filter(
-                                      (saleProduct) =>
-                                        saleProduct._id === product._id,
-                                    ).length
-                                  : memo,
-                              0,
-                            ),
+                              ) {
+                                return (
+                                  memo +
+                                  sale.products.filter(
+                                    (saleProduct) =>
+                                      saleProduct._id === product._id,
+                                  ).length
+                                );
+                              }
+                              return memo;
+                            }, 0),
                           ])}
                         />
                       </div>
