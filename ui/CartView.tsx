@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { format } from "date-fns";
 import { useTracker } from "meteor/react-meteor-data";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSound from "use-sound";
 import Products, { IProduct } from "../api/products";
@@ -171,11 +171,21 @@ export default function CartView() {
     0,
   );
 
+  const [showOnlyBarCodeLessItems, setShowOnlyBarCodeLessItems] = useSession<
+    boolean | null
+  >("showOnlyBarCodeLessItems", null);
+
   const handleBarCode = useCallback(
     (resultBarCode: string) => {
       const product = products.find(({ barCode }) => resultBarCode === barCode);
-      console.log({ resultBarCode, product });
-      if (product) setPickedProductIds([...pickedProductIds, product._id]);
+
+      if (!product) return;
+
+      setPickedProductIds([...pickedProductIds, product._id]);
+
+      if (showOnlyBarCodeLessItems === null) {
+        setShowOnlyBarCodeLessItems(true);
+      }
     },
     [pickedProductIds, products, setPickedProductIds],
   );

@@ -16,16 +16,17 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   const { location } = useCurrentLocation();
   const currentCamp = useCurrentCamp();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
-  const [showOnlyBarcodeLessItems, setShowOnlyBarcodeLessItems] =
-    useState(true);
+  const [showOnlyBarCodeLessItems, setShowOnlyBarCodeLessItems] = useSession<
+    boolean | null
+  >("showOnlyBarCodeLessItems", null);
   const [showItemDetails, setShowItemDetails] = useState(true);
   const toggleOnlyMenuItems = useCallback(
     () => setShowOnlyMenuItems(!showOnlyMenuItems),
     [showOnlyMenuItems],
   );
-  const toggleShowOnlyBarcodeLessItems = useCallback(
-    () => setShowOnlyBarcodeLessItems(!showOnlyBarcodeLessItems),
-    [showOnlyBarcodeLessItems],
+  const toggleShowOnlyBarCodeLessItems = useCallback(
+    () => setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
+    [showOnlyBarCodeLessItems],
   );
   const toggleItemDetails = useCallback(
     () => setShowItemDetails(!showItemDetails),
@@ -64,7 +65,7 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
           ? locationIds?.includes(location._id)
           : true,
       )
-      .filter(({ barCode }) => (showOnlyBarcodeLessItems ? !barCode : true))
+      .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
       .reduce((memo, { tags }) => {
         tags?.forEach((tag) => memo.add(tag.trim()));
 
@@ -107,8 +108,8 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
           <label>
             <input
               type="checkbox"
-              onChange={toggleShowOnlyBarcodeLessItems}
-              checked={showOnlyBarcodeLessItems}
+              onChange={toggleShowOnlyBarCodeLessItems}
+              checked={showOnlyBarCodeLessItems || false}
               className={css`
                 margin-right: 4px;
               `}
@@ -198,7 +199,7 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
               ? locationIds?.includes(location._id)
               : true,
           )
-          .filter(({ barCode }) => (showOnlyBarcodeLessItems ? !barCode : true))
+          .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
           .map((product) => (
             <button
               key={product._id}
