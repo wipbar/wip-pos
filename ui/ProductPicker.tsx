@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { lighten } from "polished";
 import React, { HTMLProps, useCallback, useEffect, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -77,78 +78,77 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
     <div {...props}>
       <div
         className={css`
+          display: grid;
+          grid-gap: 0.5vw 1vw;
+          padding: 1vw;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
           text-align: center;
-          padding-top: 1em;
-          > small > label {
-            display: inline-flex;
+          > label {
+            display: flex;
             align-items: center;
             background-color: ${currentCamp?.color || "initial"};
+            border: 2px solid black;
             color: ${(currentCamp && getCorrectTextColor(currentCamp?.color)) ||
             "initial"};
             padding: 0 6px;
-            border-radius: 4px;
-            margin-right: 2px;
-            margin-bottom: 4px;
-            font-size: 1.5em;
+            border-radius: 3px;
+            font-size: 1em;
+            > input {
+              margin-right: 4px;
+            }
           }
         `}
       >
-        <small>
-          <label>
-            <input
-              type="checkbox"
-              onChange={toggleOnlyMenuItems}
-              checked={showOnlyMenuItems}
-              className={css`
-                margin-right: 4px;
-              `}
-            />
-            show only items on the menu
-          </label>{" "}
-          <label>
-            <input
-              type="checkbox"
-              onChange={toggleShowOnlyBarCodeLessItems}
-              checked={showOnlyBarCodeLessItems || false}
-              className={css`
-                margin-right: 4px;
-              `}
-            />
-            show only items without barcodes
-          </label>{" "}
-          <label>
-            <input
-              type="checkbox"
-              onChange={toggleItemDetails}
-              checked={showItemDetails}
-              className={css`
-                margin-right: 4px;
-              `}
-            />
-            show item details
-          </label>
-        </small>
+        <label>
+          <input
+            type="checkbox"
+            onChange={toggleOnlyMenuItems}
+            checked={showOnlyMenuItems}
+          />
+          show only items on the menu
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            onChange={toggleShowOnlyBarCodeLessItems}
+            checked={showOnlyBarCodeLessItems || false}
+          />
+          show only items without barcodes
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            onChange={toggleItemDetails}
+            checked={showItemDetails}
+          />
+          show item details
+        </label>
       </div>
       <div
         className={css`
-          display: flex;
-          justify-content: space-around;
-          margin-top: 1em;
-          margin-bottom: 0.5em;
+          display: grid;
+          grid-gap: 0.5vw 1vw;
+          padding: 1vw;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 
-          flex-wrap: wrap;
+          > label {
+            > input {
+              margin-right: 4px;
+            }
+          }
         `}
       >
         {allTags.map((tag) => (
           <label
             key={tag}
             className={css`
-              display: inline-flex;
+              display: flex;
               align-items: center;
               background: ${stringToColour(tag) || `rgba(255, 255, 255, 0.4)`};
               color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
+              border: 2px solid black;
               padding: 0 6px;
-              border-radius: 4px;
+              border-radius: 3px;
               margin-right: 2px;
               margin-bottom: 4px;
               font-size: 1.5em;
@@ -158,9 +158,6 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
               type="checkbox"
               checked={activeFilters.includes(tag.trim())}
               onChange={() => toggleTag(tag)}
-              className={css`
-                margin-right: 4px;
-              `}
             />
             {tag}
           </label>
@@ -168,23 +165,15 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
       </div>
       <div
         className={css`
-          display: flex;
-          justify-content: space-around;
-          flex-wrap: wrap;
-          width: 100%;
-          max-width: 100%;
-          padding: 0.5em;
+          display: grid;
+          grid-gap: 0.5vw 1vw;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          padding: 1vw;
         `}
       >
         {[...products]
           .filter((product) =>
             location?.curfew ? !isAlcoholic(product) : true,
-          )
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .sort((a, b) => a.brandName.localeCompare(b.brandName))
-          .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
-          .sort((a, b) =>
-            tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
           )
           .filter((product) => {
             if (!activeFilters.length) return true;
@@ -200,6 +189,12 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
               : true,
           )
           .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .sort((a, b) => a.brandName.localeCompare(b.brandName))
+          .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
+          .sort((a, b) =>
+            tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
+          )
           .map((product) => (
             <button
               key={product._id}
@@ -210,26 +205,19 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
                 ])
               }
               className={css`
-                width: 100%;
-                @media (min-width: 500px) {
-                  width: 49%;
-                }
-                @media (min-width: 700px) {
-                  width: 32%;
-                }
-                @media (min-width: 1400px) {
-                  width: 24%;
-                }
-                background: ${stringToColour(
-                  [...(product.tags || [])].sort().join(","),
-                  0.69,
-                ) || "rgba(255, 255, 255, 1)"};
+                background: linear-gradient(
+                  135deg,
+                  ${[...(product.tags || [])]
+                    .sort()
+                    .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
+                    .join(", ")}
+                );
+                border: 2px solid black;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
                 border-radius: 5px;
                 align-items: center;
-                margin-bottom: 5px;
               `}
             >
               <div
@@ -289,17 +277,9 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
                   )}
                 </div>
               </div>
-              <div
-                className={css`
-                  margin-top: 6px;
-                `}
-              >
+              <div>
                 {showItemDetails && (
-                  <span
-                    className={css`
-                      opacity: 0.75;
-                    `}
-                  >
+                  <span>
                     <code>
                       <b>{product.salePrice}</b>
                     </code>
@@ -310,30 +290,6 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
               </div>
             </button>
           ))}
-        <div
-          className={css`
-            @media (orientation: portrait) {
-              width: 32%;
-            }
-            width: 24%;
-          `}
-        />
-        <div
-          className={css`
-            @media (orientation: portrait) {
-              width: 32%;
-            }
-            width: 24%;
-          `}
-        />
-        <div
-          className={css`
-            @media (orientation: portrait) {
-              width: 32%;
-            }
-            width: 24%;
-          `}
-        />
       </div>
     </div>
   );
