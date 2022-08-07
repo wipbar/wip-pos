@@ -3,7 +3,6 @@ import { format } from "date-fns";
 import { useTracker } from "meteor/react-meteor-data";
 import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
-import useSound from "use-sound";
 import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
@@ -17,14 +16,16 @@ import useSubscription from "/hooks/useSubscription";
 
 function MostRecentSale() {
   const currentCamp = useCurrentCamp();
-  const { location, loading: locationLoading } = useCurrentLocation(true);
+  const { location } = useCurrentLocation(true);
   const [sale] = useTracker(
     () =>
-      Sales.find(
-        { locationId: location?._id },
-        { sort: { timestamp: -1 }, limit: 1 },
-      ).fetch(),
-    [location?._id],
+      location
+        ? Sales.find(
+            { locationId: location._id },
+            { sort: { timestamp: -1 }, limit: 1 },
+          ).fetch()
+        : [],
+    [location],
   );
   const salesLoading = useSubscription(
     "sales",
@@ -32,7 +33,8 @@ function MostRecentSale() {
     [currentCamp?.buildup],
   );
 
-  if (locationLoading || salesLoading) return null;
+  if (salesLoading) return null;
+
   return (
     <div
       className={css`
@@ -147,11 +149,11 @@ function removeItem<T>(items: T[], i: number): T[] {
   return items.slice(0, i - 1).concat(items.slice(i, items.length));
 }
 
+const crankSound = new Audio("/cashregistercrank.mp3");
+const dingSound = new Audio("/cashregisterding.mp3");
+
 export default function CartView() {
   const currentCamp = useCurrentCamp();
-
-  const [playCrank] = useSound("/cashregistercrank.mp3");
-  const [playDing] = useSound("/cashregisterding.mp3");
 
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -163,8 +165,18 @@ export default function CartView() {
     "pickedProductIds",
     [],
   );
-  const [sellingLoading, setSellingLoading] = useState(false);
-  const [doSellProducts] = useMethod("Sales.sellProducts");
+  const [doSellProducts, { isLoading: sellingLoading }] =
+    useMethod("Sales.sellProducts");
+
+  const handleSellClick = useCallback(async () => {
+    crankSound.play();
+    doSellProducts({ locationSlug, productIds: pickedProductIds });
+
+    setPickedProductIds([]);
+    setConfirmOpen(false);
+    dingSound.play();
+    navigator.vibrate?.(500);
+  }, [doSellProducts, locationSlug, pickedProductIds, setPickedProductIds]);
 
   const haxTotal = pickedProductIds?.reduce(
     (m, id) => m + Number(products.find(({ _id }) => id == _id)?.salePrice),
@@ -352,25 +364,7 @@ export default function CartView() {
                 width: 100%;
               `}
               disabled={sellingLoading}
-              onClick={async () => {
-                try {
-                  setSellingLoading(true);
-                  playCrank();
-                  await doSellProducts({
-                    locationSlug,
-                    productIds: pickedProductIds,
-                  });
-                  playDing();
-                  setPickedProductIds([]);
-                  setConfirmOpen(false);
-                  try {
-                    console.log(navigator.vibrate?.(500));
-                    // eslint-disable-next-line no-empty
-                  } catch {}
-                  // eslint-disable-next-line no-empty
-                } catch {}
-                setSellingLoading(false);
-              }}
+              onClick={handleSellClick}
             >
               {sellingLoading ? <>Selling...</> : <>yeah i got it</>}
             </button>

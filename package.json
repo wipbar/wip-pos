@@ -33,8 +33,7 @@
     "react-select": "^5.4.0",
     "recharts": "^2.1.13",
     "simpl-schema": "^1.12.3",
-    "tdigest": "^0.1.2",
-    "use-sound": "^4.0.1"
+    "tdigest": "^0.1.2"
   },
   "meteor": {
     "mainModule": {
