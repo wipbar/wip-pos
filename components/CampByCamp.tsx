@@ -1,4 +1,6 @@
 import { addHours, endOfHour, isWithinRange } from "date-fns";
+import { sumBy } from "lodash";
+import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import {
   Bar,
@@ -22,8 +24,6 @@ import { getCorrectTextColor } from "../util";
 const getAvg = (arr: number[]) =>
   arr.reduce((acc, c) => acc + c, 0) / arr.length;
 
-const getSum = (arr: number[]) => arr.reduce((acc, c) => acc + c, 0);
-
 function createTrend<XK extends string, YK extends string>(
   data: Record<XK | YK, number>[],
   xKey: XK,
@@ -44,32 +44,25 @@ function createTrend<XK extends string, YK extends string>(
 
   const xy = [];
   for (let x = 0; x < data.length; x++) {
-    xy.push(xMinusxMean[x] * yMinusyMean[x]);
+    xy.push(xMinusxMean[x]! * yMinusyMean[x]!);
   }
 
   // const xy = xMinusxMean.map((val, index) => val * yMinusyMean[index]);
 
-  const xySum = getSum(xy);
+  const xySum = sumBy(xy);
 
   // b1 is the slope
-  const b1 = xySum / getSum(xMinusxMeanSq);
+  const b1 = xySum / sumBy(xMinusxMeanSq);
   // b0 is the start of the slope on the Y axis
   const b0 = yMean - b1 * xMean;
 
-  return {
-    slope: b1,
-    yStart: b0,
-    calcY: (x: number) => b0 + b1 * x,
-  };
+  return { slope: b1, yStart: b0, calcY: (x: number) => b0 + b1 * x };
 }
 
 const XYAxisDomain = ["dataMin", "dataMax"];
 
 export default function CampByCamp() {
-  const { data: camps } = useMongoFetch(
-    () => Camps.find({}, { sort: { start: 1 } }),
-    [],
-  );
+  const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }), []);
   const currentCamp = useCurrentCamp();
 
   const { data: sales } = useMongoFetch(() => Sales.find(), []);
@@ -98,18 +91,20 @@ export default function CampByCamp() {
     for (let i = 0; i < longestCampHours; i++) {
       const datapoint: { hour: number; [key: string]: number } = { hour: i };
       camps.forEach((camp) => {
-        const count = sales
-          .filter((sale) =>
+        const count = sumBy(
+          sales.filter((sale) =>
             isWithinRange(
               sale.timestamp,
               addHours(camp.start, i),
               endOfHour(addHours(camp.start, i)),
             ),
-          )
-          .reduce((memo, sale) => memo + Number(sale.amount), 0);
+          ),
+          ({ amount }) => amount,
+        );
         if (count) {
-          campTotals[camp.slug] = (campTotals[camp.slug] || 0) + count;
-          datapoint[camp.slug] = campTotals[camp.slug];
+          const campTotal = (campTotals[camp.slug] || 0) + count;
+          campTotals[camp.slug] = campTotal;
+          datapoint[camp.slug] = campTotal;
           datapoint[camp.slug + "individual"] = count;
         }
       });
@@ -154,7 +149,7 @@ export default function CampByCamp() {
           trend && trend.calcY(Math.min(xMax, nowHour + 24)),
         hour: Math.min(xMax, nowHour + 24),
       },
-    ];
+    ] as const;
   }, [currentCamp, data, nowHour, xMax]);
 
   return (

@@ -1,5 +1,5 @@
 import { css } from "@emotion/css";
-import { useTracker } from "meteor/react-meteor-data";
+import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
 import React, { useEffect } from "react";
@@ -17,7 +17,6 @@ import Locations from "../api/locations";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
-import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
@@ -26,6 +25,7 @@ import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
+import useSubscription from "/hooks/useSubscription";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
@@ -38,20 +38,23 @@ export default function UI() {
   const locationSlug = match?.params.locationSlug;
   const pageSlug = (match?.params as any)["*"] as string | undefined;
 
-  const { data: camps } = useMongoFetch(
-    () => Camps.find({}, { sort: { end: -1 } }),
-    [],
-  );
+  // Hold permanent subscriptions to small, low-churn datasets
+  useSubscription("products");
+  useSubscription("camps");
+  useSubscription("locations");
+
+  const camps = useFind(() => Camps.find({}, { sort: { end: -1 } }), []);
   const currentCamp = useCurrentCamp();
   const user = useCurrentUser();
-  const { data: locations } = useMongoFetch(() => Locations.find(), []);
-  const userLocations = locations?.filter(({ teamName }) =>
+  const locations = useFind(() => Locations.find(), []);
+  const userLocations = locations.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );
   const currentLocation = useCurrentLocation()?.location || locations?.[0];
   useEffect(() => {
-    if (userLocations?.length && !locationSlug) {
-      navigate("/" + userLocations[0].slug + "/");
+    const firstUserLocation = userLocations[0];
+    if (firstUserLocation && !locationSlug) {
+      navigate("/" + firstUserLocation.slug + "/");
     }
   }, [navigate, locationSlug, userLocations]);
   const [, setTitle] = useSession("DocumentTitle");

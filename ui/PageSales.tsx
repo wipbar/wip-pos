@@ -1,12 +1,11 @@
 import { css } from "@emotion/css";
 import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
-import { groupBy } from "lodash";
-import { useTracker } from "meteor/react-meteor-data";
+import { groupBy, sumBy } from "lodash";
+import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import Products, { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useMongoFetch from "../hooks/useMongoFetch";
 import useCurrentCamp from "/hooks/useCurrentCamp";
 import useSubscription from "/hooks/useSubscription";
 
@@ -42,23 +41,22 @@ export default function PageSales() {
     { from: selectedCamp?.buildup, to: selectedCamp?.end },
     [selectedCamp?.buildup, selectedCamp?.end],
   );
-  const sales = useTracker(
+  const sales = useFind(
     () =>
+      selectedCamp &&
       Sales.find(
         {
           locationId: location?._id,
           timestamp: {
-            $gte:
-              selectedCamp?.buildup || new Date(new Date().getFullYear(), 0),
-            $lte:
-              selectedCamp?.end || new Date(new Date().getFullYear() + 1, 0),
+            $gte: selectedCamp?.buildup,
+            $lte: selectedCamp?.end,
           },
         },
         { sort: { timestamp: -1 } },
-      ).fetch(),
-    [location?._id, selectedCamp?.buildup, selectedCamp?.end],
+      ),
+    [location?._id, selectedCamp],
   );
-  const { data: products } = useMongoFetch(
+  const products = useFind(
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );
@@ -101,23 +99,18 @@ export default function PageSales() {
               >
                 {format(day, "DD/MM/YYYY")}{" "}
                 <code>
-                  <b>
-                    {salesOfDay.reduce(
-                      (memo, { amount }) => memo + Number(amount),
-                      0,
-                    )}
-                  </b>
+                  <b>{sumBy(salesOfDay, "amount")}</b>
                   <span style={{ color: "limegreen" }}>
                     (+{" "}
-                    {salesOfDay
-                      .map(
+                    {sumBy(
+                      salesOfDay.map(
                         (sale) => sale.amount - getSaleExpenses(sale, products),
-                      )
-                      .reduce((memo, profit) => memo + Number(profit))}
+                      ),
+                    )}
                     )
                   </span>
                 </code>
-                <small>{salesOfDay[0].currency}</small>{" "}
+                <small>{salesOfDay[0]?.currency}</small>{" "}
                 <small>
                   <button
                     type="button"

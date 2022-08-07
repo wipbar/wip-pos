@@ -1,4 +1,5 @@
 import Fiber from "fibers";
+import { sumBy } from "lodash";
 import { WebApp } from "meteor/webapp";
 import Locations from "../api/locations";
 import Products from "../api/products";
@@ -14,12 +15,11 @@ new client.Gauge({
     locations.forEach((location) => {
       const locationSales = Sales.find({ locationId: location._id }).fetch();
       Products.find().forEach(({ brandName, name: productName, _id }) => {
-        const count = locationSales.reduce(
-          (memo, sale) =>
-            memo +
+        const count = sumBy(
+          locationSales,
+          (sale) =>
             sale.products.filter((saleProduct) => saleProduct._id == _id)
               .length,
-          0,
         );
         // if (count)
         this.labels(location.name, brandName || "", productName).set(count);

@@ -20,7 +20,7 @@ module.exports = {
     "react-hooks/exhaustive-deps": [
       "warn",
       {
-        additionalHooks: "(useMongoFetch|useTracker|useTracker)",
+        additionalHooks: "(useMongoFetch|useTracker|useTracker|useFind)",
       },
     ],
     "no-else-return": ["error"],

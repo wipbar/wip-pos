@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { useFind } from "meteor/react-meteor-data";
 import React, { ReactNode, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CreatableSelect from "react-select/creatable";
@@ -7,7 +8,6 @@ import Products, { IProduct } from "../api/products";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
-import useMongoFetch from "../hooks/useMongoFetch";
 import { Modal } from "./PageStock";
 
 const toOptions = (items: any[]) =>
@@ -55,12 +55,12 @@ export default function PageStockItem({
   onCancel: () => void;
   product?: IProduct;
 }) {
-  const { data: locations } = useMongoFetch(() => Locations.find(), []);
+  const locations = useFind(() => Locations.find(), []);
   const [scanningBarcode, setScanningBarcode] = useState(false);
   const { location } = useCurrentLocation();
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
-  const { data: products } = useMongoFetch(() => Products.find(), []);
+  const products = useFind(() => Products.find(), []);
   const allTags = [
     ...products.reduce((memo, product) => {
       product.tags?.forEach((tag) => memo.add(tag.trim()));

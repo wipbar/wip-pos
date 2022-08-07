@@ -1,5 +1,5 @@
 import { css } from "@emotion/css";
-import { useTracker } from "meteor/react-meteor-data";
+import { useFind } from "meteor/react-meteor-data";
 import React from "react";
 import { useMatch } from "react-router-dom";
 import { isUserInTeam } from "../api/accounts";
@@ -13,8 +13,8 @@ export default function useCurrentLocation(authorized?: boolean) {
   const locationSlug = match?.params.locationSlug;
 
   const loading = useSubscription("locations");
-  const location = useTracker(
-    () => Locations.findOne({ slug: locationSlug }),
+  const [location] = useFind(
+    () => Locations.find({ slug: locationSlug }, { limit: 1 }),
     [locationSlug],
   );
 

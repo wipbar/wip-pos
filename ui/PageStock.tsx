@@ -4,6 +4,8 @@ import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
+import { useFind } from "meteor/react-meteor-data";
+import { opacify } from "polished";
 import React, { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import type { ILocation } from "../api/locations";
@@ -12,11 +14,9 @@ import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
-import useMongoFetch from "../hooks/useMongoFetch";
 import { getCorrectTextColor, stringToColour } from "../util";
 import PageStockItem from "./PageStockItem";
 import useCurrentCamp from "/hooks/useCurrentCamp";
-import { opacify } from "polished";
 
 export const Modal = ({
   children,
@@ -91,22 +91,18 @@ export default function PageStock() {
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
-  const { data: products } = useMongoFetch(
+  const products = useFind(
     () =>
-      location?._id
-        ? Products.find(
-            // @ts-expect-error
-            {
-              removedAt: { $exists: showRemoved },
-              ...(showOnlyMenuItems
-                ? { locationIds: { $elemMatch: { $eq: location?._id } } }
-                : undefined),
-            },
-            {
-              sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 },
-            },
-          )
-        : undefined,
+      Products.find(
+        // @ts-expect-error
+        {
+          removedAt: { $exists: showRemoved },
+          ...(showOnlyMenuItems
+            ? { locationIds: { $elemMatch: { $eq: location?._id } } }
+            : undefined),
+        },
+        { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
+      ),
     [location?._id, showRemoved, showOnlyMenuItems, sortBy],
   );
 
@@ -140,7 +136,7 @@ export default function PageStock() {
         value={sortBy}
       >
         <option value={""}>Sort By...</option>
-        {products?.length
+        {products[0]
           ? Object.keys(products[0]).map((key) => (
               <option key={key} value={key}>
                 {key}

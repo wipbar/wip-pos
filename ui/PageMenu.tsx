@@ -1,16 +1,15 @@
 import { css } from "@emotion/css";
 import { addHours, endOfHour, isWithinRange, subHours } from "date-fns";
-import { useTracker } from "meteor/react-meteor-data";
+import { groupBy } from "lodash";
+import { useFind } from "meteor/react-meteor-data";
 import { opacify } from "polished";
 import React, { Fragment, SVGProps, useMemo } from "react";
-
-import Products, { IProduct, isAlcoholic } from "../api/products";
+import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useMongoFetch from "../hooks/useMongoFetch";
 import useSubscription from "/hooks/useSubscription";
 import { getCorrectTextColor } from "/util";
 
@@ -81,14 +80,13 @@ export default function PageMenu() {
   const to = useMemo(() => currentDate, [currentDate]);
   const { location, error } = useCurrentLocation();
 
-  const sales = useTracker(
-    () => Sales.find({ timestamp: { $gte: from, $lte: to } }).fetch(),
+  const sales = useFind(
+    () => Sales.find({ timestamp: { $gte: from, $lte: to } }),
     [from, to],
   );
   useSubscription("sales", { from, to }, [from, to]);
-  const { data: products } = useMongoFetch(
+  const products = useFind(
     () =>
-      location &&
       Products.find(
         {
           removedAt: { $exists: false },
@@ -97,25 +95,18 @@ export default function PageMenu() {
         },
         { sort: { brandName: 1, name: 1 } },
       ),
-    [location?._id],
+    [location],
   );
 
   const productsGroupedByTags = useMemo(
     () =>
       Object.entries(
-        products
-          .filter((product) =>
+        groupBy(
+          products.filter((product) =>
             location?.curfew ? !isAlcoholic(product) : true,
-          )
-          .reduce<Record<string, IProduct[]>>((memo, product) => {
-            const key = [...(product.tags || [])].sort()?.join(",") || "other";
-            if (memo[key]) {
-              memo[key].push(product);
-            } else {
-              memo[key] = [product];
-            }
-            return memo;
-          }, {}),
+          ),
+          ({ tags }) => [...(tags || [])].sort()?.join(",") || "other",
+        ),
       ),
     [location?.curfew, products],
   );
@@ -171,15 +162,7 @@ export default function PageMenu() {
         .sort((a, b) => b[1].length - a[1].length)
         .map(([tags, products]) => {
           const productsByBrandName = Object.entries(
-            products.reduce<Record<string, IProduct[]>>((m, product) => {
-              if (product.brandName)
-                if (m[product.brandName]) {
-                  m[product.brandName].push(product);
-                } else {
-                  m[product.brandName] = [product];
-                }
-              return m;
-            }, {}),
+            groupBy(products, ({ brandName }) => brandName),
           )
             .sort(([, a], [, b]) => b.length - a.length)
             .map(

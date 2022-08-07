@@ -3,7 +3,7 @@ import { DependencyList, useEffect, useMemo, useRef, useState } from "react";
 import SubsManager from "../SubsManager";
 
 export default function useSubscription(
-  pubName: string | false,
+  pubName: string | false | undefined,
   pubArguments?: unknown,
   deps?: DependencyList,
 ) {

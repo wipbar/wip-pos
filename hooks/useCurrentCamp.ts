@@ -1,13 +1,13 @@
-import useMongoFetch from "./useMongoFetch";
+import { useFind } from "meteor/react-meteor-data";
 import Camps, { ICamp } from "../api/camps";
-import useSession from "./useSession";
 import useCurrentDate from "./useCurrentDate";
+import useSession from "./useSession";
 
 export default function useCurrentCamp(): ICamp | undefined {
   const currentDate = useCurrentDate(1000 * 60 * 60);
   const [currentCampSlug] = useSession<string | null>("currentCampSlug", null);
 
-  const { data } = useMongoFetch(
+  return useFind(
     () =>
       currentCampSlug
         ? Camps.find({ slug: currentCampSlug })
@@ -16,7 +16,5 @@ export default function useCurrentCamp(): ICamp | undefined {
             end: { $gte: currentDate },
           }),
     [currentCampSlug, currentDate],
-  );
-
-  return data[0];
+  )?.[0];
 }

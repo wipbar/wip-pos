@@ -6,6 +6,8 @@ import {
   isWithinRange,
   min,
 } from "date-fns";
+import { sumBy } from "lodash";
+import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import {
   Bar,
@@ -21,7 +23,6 @@ import {
 } from "recharts";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import useMongoFetch from "../hooks/useMongoFetch";
 
 const XYAxisDomain = ["dataMin", "dataMax"];
 const YAxisTickFormatter = (amount: number) => String(~~amount);
@@ -31,17 +32,19 @@ const tooltipLabelFormatter = (hour: number) =>
   `H${String((hour + 8) % 24).padStart(2, "0")}`;
 
 const offset = -4;
+const emptyArray: [] = [];
 export default function DayByDay() {
   const currentCamp = useCurrentCamp();
-  const { data: sales } = useMongoFetch(
-    () =>
-      currentCamp
-        ? Sales.find({
-            timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-          })
-        : undefined,
-    [currentCamp],
-  );
+  const sales =
+    useFind(
+      () =>
+        currentCamp
+          ? Sales.find({
+              timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+            })
+          : undefined,
+      [currentCamp],
+    ) || emptyArray;
   const numberOfDaysInCurrentCamp = currentCamp
     ? Math.ceil(
         differenceInHours(min(new Date(), currentCamp.end), currentCamp.start) /
@@ -65,28 +68,26 @@ export default function DayByDay() {
 
                 return {
                   ...memo,
-                  [j]:
-                    sales
-                      .filter((sale) =>
-                        isWithinRange(
-                          sale.timestamp,
-                          addHours(currentCamp.start, j * 24 + offset),
-                          endOfHour(addHours(currentCamp.start, hour + offset)),
-                        ),
-                      )
-                      .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
-                    null,
-                  [j + "individual"]:
-                    sales
-                      .filter((sale) =>
-                        isWithinRange(
-                          sale.timestamp,
-                          addHours(currentCamp.start, hour + offset),
-                          endOfHour(addHours(currentCamp.start, hour + offset)),
-                        ),
-                      )
-                      .reduce((memo, sale) => memo + Number(sale.amount), 0) ||
-                    null,
+                  [j]: sumBy(
+                    sales.filter((sale) =>
+                      isWithinRange(
+                        sale.timestamp,
+                        addHours(currentCamp.start, j * 24 + offset),
+                        endOfHour(addHours(currentCamp.start, hour + offset)),
+                      ),
+                    ),
+                    "amount",
+                  ),
+                  [j + "individual"]: sumBy(
+                    sales.filter((sale) =>
+                      isWithinRange(
+                        sale.timestamp,
+                        addHours(currentCamp.start, hour + offset),
+                        endOfHour(addHours(currentCamp.start, hour + offset)),
+                      ),
+                    ),
+                    "amount",
+                  ),
                 };
               },
               { x: i },

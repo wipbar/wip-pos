@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import { addDays, isAfter, setHours, startOfHour } from "date-fns";
+import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import Countdown from "react-countdown";
 import Camps, { ICamp } from "../api/camps";
@@ -54,9 +55,7 @@ const renderer = ({
 function CurfewCountdown() {
   const currentDate = useCurrentDate(50);
   const currentCamp = useCurrentCamp();
-  const {
-    data: [newestCamp],
-  } = useMongoFetch(() => Camps.find({}, { sort: { end: -1 } }), []);
+  const [newestCamp] = useFind(() => Camps.find({}, { sort: { end: -1 } }), []);
   const camp: ICamp | undefined = currentCamp || newestCamp;
   const next2am = useMemo(
     () =>
@@ -73,7 +72,7 @@ function CurfewCountdown() {
     [camp, currentDate, next2am],
   );
 
-  if (!newestCamp) return null;
+  if (!camp) return null;
 
   return (
     <div
@@ -122,7 +121,7 @@ export default function PageStats() {
     () => (campSales?.length ? campSales : allSales),
     [campSales, allSales],
   );
-  const { data: products } = useMongoFetch(
+  const products = useFind(
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );
@@ -131,7 +130,7 @@ export default function PageStats() {
       Object.entries(
         sales.reduce<Record<string, number>>((m, sale) => {
           sale.products.forEach((product) => {
-            m[product._id] = m[product._id] ? m[product._id] + 1 : 1;
+            m[product._id] = (m[product._id] || 0) + 1;
           });
           return m;
         }, {}),

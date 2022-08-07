@@ -1,10 +1,10 @@
 import { css } from "@emotion/css";
+import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import React, { HTMLProps, useCallback, useEffect, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor, stringToColour } from "../util";
 
@@ -46,7 +46,7 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
-  const { data: products } = useMongoFetch(
+  const products = useFind(
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );

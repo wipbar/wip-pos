@@ -1,3 +1,4 @@
+import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useMemo } from "react";
 import {
   Layer,
@@ -171,7 +172,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
     [nodes],
   );
 
-  const { data: products } = useMongoFetch(() => Products.find(), []);
+  const products = useFind(() => Products.find(), []);
 
   const data = useMemo(() => {
     const productsSold = sales.reduce<IProduct[]>((memo, sale) => {

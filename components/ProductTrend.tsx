@@ -1,5 +1,6 @@
 import { isPast, isWithinRange, min, subHours } from "date-fns";
-import { useTracker } from "meteor/react-meteor-data";
+import { sumBy } from "lodash";
+import { useFind } from "meteor/react-meteor-data";
 import React, { ComponentProps, useMemo } from "react";
 import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
@@ -19,30 +20,28 @@ export default function ProductTrend({
   const currentDate = useCurrentDate();
 
   useSubscription(
-    currentCamp ? "sales" : false,
+    currentCamp && "sales",
     currentCamp && {
       from: isPast(currentCamp.start) ? currentCamp.start : currentCamp.buildup,
       to: currentCamp.end,
     },
     [currentCamp],
   );
-  const data = useTracker(
+  const data = useFind(
     () =>
-      currentCamp
-        ? Sales.find(
-            {
-              products: { $elemMatch: { _id: product._id } },
-              timestamp: {
-                $gte: isPast(currentCamp.start)
-                  ? currentCamp.start
-                  : currentCamp.buildup,
-                $lte: currentCamp.end,
-              },
-            },
-            { sort: { timestamp: 1 } },
-          ).fetch()
-        : [],
-    [product._id, currentCamp],
+      Sales.find(
+        {
+          products: { $elemMatch: { _id: product._id } },
+          timestamp: currentCamp && {
+            $gte: isPast(currentCamp.start)
+              ? currentCamp.start
+              : currentCamp.buildup,
+            $lte: currentCamp.end,
+          },
+        },
+        { sort: { timestamp: 1 } },
+      ),
+    [currentCamp, product._id],
   );
   const productSales = useMemo(
     () =>
@@ -59,7 +58,7 @@ export default function ProductTrend({
   const averageSalesPerHour = useMemo(
     () =>
       currentCamp && firstSale
-        ? productSales.reduce((memo, sale) => sale.products.length + memo, 0) /
+        ? sumBy(productSales, (sale) => sale.products.length) /
           ((Number(min(currentCamp.end, currentDate)) -
             Number(
               firstSale.timestamp ||
@@ -73,16 +72,17 @@ export default function ProductTrend({
   );
   const salesInPastHour = useMemo(
     () =>
-      productSales
-        .filter((sale) =>
+      sumBy(
+        productSales.filter((sale) =>
           isWithinRange(sale.timestamp, subHours(currentDate, 2), currentDate),
-        )
-        .reduce((memo, sale) => sale.products.length + memo, 0),
+        ),
+        (sale) => sale.products.length,
+      ),
     [currentDate, productSales],
   );
 
   const number = Number(
-    Number(salesInPastHour / (averageSalesPerHour * f)).toFixed(3),
+    (salesInPastHour / (averageSalesPerHour * f)).toFixed(3),
   );
 
   if (salesInPastHour > 2 && number > 30) return <Fire {...props} />;

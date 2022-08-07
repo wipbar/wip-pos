@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
 import { format } from "date-fns";
-import { useTracker } from "meteor/react-meteor-data";
+import { sumBy } from "lodash";
+import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import Products, { IProduct } from "../api/products";
@@ -9,7 +10,6 @@ import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
-import useMongoFetch from "../hooks/useMongoFetch";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor } from "../util";
 import useSubscription from "/hooks/useSubscription";
@@ -17,23 +17,17 @@ import useSubscription from "/hooks/useSubscription";
 function MostRecentSale() {
   const currentCamp = useCurrentCamp();
   const { location } = useCurrentLocation(true);
-  const [sale] = useTracker(
-    () =>
-      location
-        ? Sales.find(
-            { locationId: location._id },
-            { sort: { timestamp: -1 }, limit: 1 },
-          ).fetch()
-        : [],
-    [location],
+  const [sale] = useFind(() =>
+    Sales.find(
+      { locationId: location?._id },
+      { sort: { timestamp: -1 }, limit: 1 },
+    ),
   );
-  const salesLoading = useSubscription(
-    "sales",
-    { from: currentCamp?.buildup },
-    [currentCamp?.buildup],
-  );
+  useSubscription("sales", { from: currentCamp?.buildup }, [
+    currentCamp?.buildup,
+  ]);
 
-  if (salesLoading) return null;
+  if (!sale) return null;
 
   return (
     <div
@@ -157,7 +151,7 @@ export default function CartView() {
 
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const { data: products } = useMongoFetch(
+  const products = useFind(
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );
@@ -178,9 +172,8 @@ export default function CartView() {
     navigator.vibrate?.(500);
   }, [doSellProducts, locationSlug, pickedProductIds, setPickedProductIds]);
 
-  const haxTotal = pickedProductIds?.reduce(
-    (m, id) => m + Number(products.find(({ _id }) => id == _id)?.salePrice),
-    0,
+  const haxTotal = sumBy(pickedProductIds, (id) =>
+    Number(products.find(({ _id }) => id == _id)?.salePrice),
   );
 
   const [showOnlyBarCodeLessItems, setShowOnlyBarCodeLessItems] = useSession<
