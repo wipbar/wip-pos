@@ -27,7 +27,7 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   );
   const toggleShowOnlyBarCodeLessItems = useCallback(
     () => setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
-    [showOnlyBarCodeLessItems],
+    [setShowOnlyBarCodeLessItems, showOnlyBarCodeLessItems],
   );
   const toggleItemDetails = useCallback(
     () => setShowItemDetails(!showItemDetails),
