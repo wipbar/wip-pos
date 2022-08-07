@@ -4,7 +4,7 @@ import { groupBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify } from "polished";
 import React, { Fragment, SVGProps, useMemo } from "react";
-import Products, { IProduct, isAlcoholic } from "../api/products";
+import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -26,35 +26,32 @@ function SparkLine({
   const viewBoxHeight = 10;
 
   const pathD = useMemo(() => {
-    if (data.length) {
-      const xOffset = -1;
-      const yOffset = viewBoxHeight;
-      let minX: number | null = null,
-        maxX: number | null = null,
-        minY: number | null = null,
-        maxY: number | null = null;
+    const xOffset = 0;
+    const yOffset = viewBoxHeight;
+    let minX: number | null = null,
+      maxX: number | null = null,
+      minY: number | null = null,
+      maxY: number | null = null;
 
-      for (const [x, y] of data) {
-        if (!minX || x < minX) minX = x;
-        if (!maxX || x > maxX) maxX = x;
-        if (!minY || y < minY) minY = y;
-        if (!maxY || y > maxY) maxY = y;
-      }
-      const XDelta = maxX! - minX!;
-      const YDelta = maxY! - minY!;
-      const dataPoints = data
-        .map(([x, y]) =>
-          [
-            "L",
-            xOffset + ((x - minX!) / XDelta) * (viewBoxWidth + 1),
-            yOffset - ((y - minY!) / YDelta) * viewBoxHeight,
-          ].join(" "),
-        )
-        .join(" ");
-      const firstPoint = `L ${xOffset} ${viewBoxHeight}`;
-      const lastPoint = `L ${xOffset + (viewBoxWidth + 1)} ${viewBoxHeight}`;
-      return `M ${xOffset} ${yOffset} ${firstPoint} ${dataPoints} ${lastPoint}`;
+    for (const [x, y] of data) {
+      if (!minX || x < minX) minX = x;
+      if (!maxX || x > maxX) maxX = x;
+      if (!minY || y < minY) minY = y;
+      if (!maxY || y > maxY) maxY = y;
     }
+    const XDelta = maxX! - minX!;
+    const YDelta = maxY! - minY!;
+    const dataPoints = data
+      .map(([x, y]) =>
+        [
+          "L",
+          xOffset + ((x - minX!) / XDelta) * viewBoxWidth,
+          yOffset - ((y - minY!) / YDelta) * viewBoxHeight,
+        ].join(" "),
+      )
+      .join(" ");
+
+    return `M 0 ${viewBoxHeight} L ${viewBoxWidth} ${viewBoxHeight} ${dataPoints}`;
   }, [data]);
 
   return (
