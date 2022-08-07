@@ -6,7 +6,6 @@ import {
   RectangleProps,
   ResponsiveContainer,
   Sankey,
-  Tooltip,
 } from "recharts";
 import type { SankeyLink, SankeyNode } from "recharts/types/util/types";
 import type { ICamp } from "../api/camps";
@@ -294,9 +293,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
         data={data}
         link={<Link camp={currentCamp} />}
         node={<Node camp={currentCamp} />}
-      >
-        <Tooltip />
-      </Sankey>
+      />
     </ResponsiveContainer>
   );
 }
