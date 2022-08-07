@@ -154,7 +154,12 @@ export default function UI() {
           background: rgba(255, 255, 255, 0.2);
           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
         `}
-        hidden={(pageSlug === "menu" || pageSlug === "stats") && !user}
+        hidden={
+          (pageSlug === "menu" ||
+            pageSlug === "stats" ||
+            locationSlug === "stats") &&
+          !user
+        }
       >
         <nav
           className={css`
