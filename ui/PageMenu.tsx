@@ -3,8 +3,7 @@ import { addHours, endOfHour, isWithinRange, subHours } from "date-fns";
 import { useTracker } from "meteor/react-meteor-data";
 import { opacify } from "polished";
 import React, { Fragment, SVGProps, useMemo } from "react";
-// @ts-expect-error missing types
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+
 import Products, { IProduct, isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
@@ -73,12 +72,6 @@ function SparkLine({
       )}
     </svg>
   );
-}
-
-function getRandomInt(min: number, max: number) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export default function PageMenu() {
@@ -155,237 +148,239 @@ export default function PageMenu() {
     );
   }
   return (
-    <ResponsiveMasonry
-      columnsCountBreakPoints={{ 0: 1, 500: 2, 800: 3, 1100: 4, 1400: 5 }}
+    <div
+      className={css`
+        padding: 10px;
+        column-width: 100vw;
+        @media (min-width: 700px) {
+          column-width: 40vw;
+        }
+        @media (min-width: 1100px) {
+          column-width: 30vw;
+        }
+        @media (min-width: 1400px) {
+          column-width: 18.5vw;
+        }
+        column-fill: auto;
+        column-gap: 1vw;
+        max-width: 100%;
+      `}
     >
-      <Masonry
-        gutter="10px"
-        className={css`
-          padding: 10px;
-        `}
-      >
-        {productsGroupedByTags
-          .sort((a, b) => b[1].length - a[1].length)
-          .sort((a, b) => a[0].localeCompare(b[0]))
-          .map(([tags, products]) => {
-            const productsByBrandName = Object.entries(
-              products.reduce<Record<string, IProduct[]>>((m, product) => {
-                if (product.brandName)
-                  if (m[product.brandName]) {
-                    m[product.brandName].push(product);
-                  } else {
-                    m[product.brandName] = [product];
-                  }
-                return m;
-              }, {}),
+      {productsGroupedByTags
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .sort((a, b) => b[1].length - a[1].length)
+        .map(([tags, products]) => {
+          const productsByBrandName = Object.entries(
+            products.reduce<Record<string, IProduct[]>>((m, product) => {
+              if (product.brandName)
+                if (m[product.brandName]) {
+                  m[product.brandName].push(product);
+                } else {
+                  m[product.brandName] = [product];
+                }
+              return m;
+            }, {}),
+          )
+            .sort(([, a], [, b]) => b.length - a.length)
+            .map(
+              ([brand, products]) =>
+                [
+                  brand,
+                  products
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0),
+                ] as const,
             )
-              .sort(([, a], [, b]) => b.length - a.length)
-              .map(
-                ([brand, products]) =>
-                  [
-                    brand,
-                    products
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0),
-                  ] as const,
-              )
-              .sort(
-                ([, aProducts], [, bProducts]) =>
-                  aProducts?.[0]?.tap?.localeCompare(
-                    bProducts?.[0]?.tap || "",
-                  ) || 0,
-              );
+            .sort(
+              ([, aProducts], [, bProducts]) =>
+                aProducts?.[0]?.tap?.localeCompare(bProducts?.[0]?.tap || "") ||
+                0,
+            );
 
-            return (
-              <Fragment key={tags}>
-                <div
-                  key={tags}
-                  className={css`
-                    background: ${currentCamp &&
-                    opacify(-(2 / 3), getCorrectTextColor(currentCamp?.color))};
+          return (
+            <div
+              key={tags}
+              className={css`
+                background: ${currentCamp &&
+                opacify(-(2 / 3), getCorrectTextColor(currentCamp?.color))};
 
-                    -webkit-column-break-inside: avoid;
-                    page-break-inside: avoid;
-                    break-inside: avoid;
-                    border: 3px solid transparent;
-                    padding: 4px;
-                  `}
-                >
-                  <h3
+                page-break-inside: avoid;
+                break-inside: avoid;
+                border: 3px solid transparent;
+                padding: 4px;
+                margin-bottom: 12px;
+              `}
+            >
+              <h3
+                className={css`
+                  margin: 0;
+                  padding: 8px;
+                `}
+              >
+                {tags}
+              </h3>
+              <ul
+                className={css`
+                  margin: 0;
+                  padding: 0;
+                  list-style: none;
+                `}
+              >
+                {productsByBrandName.map(([brandName, products]) => (
+                  <li
+                    key={brandName}
                     className={css`
                       margin: 0;
-                      padding: 8px;
+                      padding: 4px 6px 0px;
+                      display: flex;
+                      flex-direction: column;
+                      background: ${currentCamp &&
+                      opacify(
+                        -(2 / 3),
+                        getCorrectTextColor(currentCamp?.color),
+                      )};
+                      margin-top: 4px;
+                      align-items: stretch;
+                      -webkit-column-break-inside: avoid;
+                      page-break-inside: avoid;
+                      break-inside: avoid;
                     `}
                   >
-                    {tags}
-                  </h3>
-                  <ul
-                    className={css`
-                      margin: 0;
-                      padding: 0;
-                      list-style: none;
-                    `}
-                  >
-                    {productsByBrandName.map(([brandName, products]) => (
-                      <li
-                        key={brandName}
+                    <small
+                      className={css`
+                        flex: 1;
+                        display: flex;
+                        justify-content: space-between;
+                      `}
+                    >
+                      <small>{brandName}</small>
+                      <small>HAX</small>
+                    </small>
+                    {products.map((product) => (
+                      <div
+                        key={product._id}
                         className={css`
-                          margin: 0;
-                          padding: 4px 6px;
-                          display: flex;
-                          flex-direction: column;
-                          background: ${currentCamp &&
-                          opacify(
-                            -(2 / 3),
-                            getCorrectTextColor(currentCamp?.color),
-                          )};
-                          margin-top: 4px;
-                          align-items: stretch;
-                          -webkit-column-break-inside: avoid;
-                          page-break-inside: avoid;
-                          break-inside: avoid;
+                          position: relative;
+                          ${product.salePrice == 0
+                            ? `
+                                box-shadow: 0 0 20px black, 0 0 40px black;
+                                color: black;
+                                background: rgba(255, 0, 0, 0.75);
+                                padding: 0 4px;
+                                animation-name: wobble;
+                                animation-iteration-count: infinite;
+                                animation-duration: 2s;
+                            `
+                            : ""}
                         `}
                       >
-                        <small
+                        <ProductTrend
+                          product={product}
+                          className={css`
+                            position: absolute !important;
+                            bottom: 0;
+                            width: 100%;
+                            z-index: 0;
+                          `}
+                        />
+                        <div
                           className={css`
                             flex: 1;
                             display: flex;
                             justify-content: space-between;
+                            margin-top: -4px;
+                            margin-bottom: -12px;
                           `}
                         >
-                          <small>{brandName}</small>
-                          <small>HAX</small>
-                        </small>
-                        {products.map((product) => (
-                          <div
-                            key={product._id}
-                            className={css`
-                              position: relative;
-                              ${product.name.includes("Kramse")
-                                ? `
-                                  box-shadow: 0 0 20px black, 0 0 40px black;
-                                  color: black;
-                                  background: rgba(255, 0, 0, 0.75);
-                                  padding: 0 4px;
-                                  animation-name: wobble;
-                                  animation-iteration-count: infinite;
-                                  animation-duration: 2s;
-                                `
-                                : ""}
-                            `}
-                          >
-                            <ProductTrend
-                              product={product}
-                              className={css`
-                                position: absolute !important;
-                                bottom: 0;
-                                width: 100%;
-                                z-index: 0;
-                              `}
-                            />
+                          <span>
                             <div
                               className={css`
-                                flex: 1;
-                                display: flex;
-                                justify-content: space-between;
-                                margin-bottom: -12px;
+                                font-weight: 500;
                               `}
                             >
-                              <span>
-                                <div
-                                  className={css`
-                                    font-weight: 500;
-                                  `}
-                                >
-                                  {product.name}
-                                </div>
-                                <small
-                                  className={css`
-                                    margin-top: -0.25em;
-                                    display: block;
-                                  `}
-                                >
-                                  {[
-                                    product.description || null,
-                                    product.unitSize && product.sizeUnit
-                                      ? `${product.unitSize}${product.sizeUnit}`
-                                      : null,
-                                    typeof product.abv === "number" ||
-                                    (typeof product.abv === "string" &&
-                                      product.abv)
-                                      ? `${product.abv}%`
-                                      : null,
-                                  ]
-                                    .filter(Boolean)
-                                    .map((thing, i) => (
-                                      <Fragment key={thing}>
-                                        {i > 0 ? ", " : null}
-                                        <small key={thing}>{thing}</small>
-                                      </Fragment>
-                                    ))}
-                                </small>
-                              </span>
+                              {product.name}
+                            </div>
+                            <small
+                              className={css`
+                                margin-top: -0.25em;
+                                display: block;
+                              `}
+                            >
+                              {[
+                                product.description || null,
+                                typeof product.abv === "number" ||
+                                (typeof product.abv === "string" && product.abv)
+                                  ? `${product.abv}%`
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .map((thing, i) => (
+                                  <Fragment key={thing}>
+                                    {i > 0 ? ", " : null}
+                                    <small key={thing}>{thing}</small>
+                                  </Fragment>
+                                ))}
+                            </small>
+                          </span>
+                          <div
+                            className={css`
+                              text-align: right;
+                            `}
+                          >
+                            <b>{Number(product.salePrice) || "00"}</b>
+                            {product.tap ? (
                               <div
                                 className={css`
-                                  text-align: right;
+                                  line-height: 0.5;
+                                  white-space: nowrap;
                                 `}
                               >
-                                <b>{Number(product.salePrice) || "00"}</b>
-                                {product.tap ? (
-                                  <div
-                                    className={css`
-                                      line-height: 0.5;
-                                      white-space: nowrap;
-                                    `}
-                                  >
-                                    <small>🚰 {product.tap}</small>
-                                  </div>
-                                ) : null}
+                                <small>🚰 {product.tap}</small>
                               </div>
-                            </div>
-                            <SparkLine
-                              className={css`
-                                border-bottom: ${currentCamp?.color} 1px solid;
-                              `}
-                              fill={currentCamp?.color}
-                              data={Array.from({ length: 24 }, (_, i) => [
-                                23 - i,
-                                sales.reduce(
-                                  (memo, sale) =>
-                                    isWithinRange(
-                                      sale.timestamp,
-                                      addHours(currentDate, -i),
-                                      endOfHour(addHours(currentDate, -i)),
-                                    )
-                                      ? memo +
-                                        sale.products.filter(
-                                          (saleProduct) =>
-                                            saleProduct._id === product._id,
-                                        ).length
-                                      : memo,
-                                  0,
-                                ),
-                              ])}
-                            />
+                            ) : null}
                           </div>
-                        ))}
-                      </li>
+                        </div>
+                        <SparkLine
+                          className={css`
+                            border-bottom: ${currentCamp?.color} 1px solid;
+                          `}
+                          fill={currentCamp?.color}
+                          data={Array.from({ length: 24 }, (_, i) => [
+                            23 - i,
+                            sales.reduce(
+                              (memo, sale) =>
+                                isWithinRange(
+                                  sale.timestamp,
+                                  addHours(currentDate, -i),
+                                  endOfHour(addHours(currentDate, -i)),
+                                )
+                                  ? memo +
+                                    sale.products.filter(
+                                      (saleProduct) =>
+                                        saleProduct._id === product._id,
+                                    ).length
+                                  : memo,
+                              0,
+                            ),
+                          ])}
+                        />
+                      </div>
                     ))}
-                  </ul>
-                </div>
-              </Fragment>
-            );
-          })}
-        <center
-          className={css`
-            margin-top: -8px;
-            margin-bottom: 16px;
-            font-size: 0.6em;
-          `}
-        >
-          <pre>Rendered: {new Date().toLocaleString()}</pre>
-        </center>
-      </Masonry>
-    </ResponsiveMasonry>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      <center
+        className={css`
+          margin-top: -8px;
+          margin-bottom: 16px;
+          font-size: 0.6em;
+        `}
+      >
+        <pre>Rendered: {new Date().toLocaleString()}</pre>
+      </center>
+    </div>
   );
 }
