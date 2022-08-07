@@ -187,7 +187,13 @@ export default function CartView() {
         setShowOnlyBarCodeLessItems(true);
       }
     },
-    [pickedProductIds, products, setPickedProductIds],
+    [
+      pickedProductIds,
+      products,
+      setPickedProductIds,
+      setShowOnlyBarCodeLessItems,
+      showOnlyBarCodeLessItems,
+    ],
   );
 
   return (

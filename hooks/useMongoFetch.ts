@@ -25,6 +25,7 @@ export default function useMongoFetch<T extends object>(
       if (!query) return emptyArray;
       if (query instanceof Mongo.Cursor) return query.fetch();
       throw new Error("useMongoFetch only accepts Collection and Cursor");
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps),
   };
 }

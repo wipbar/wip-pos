@@ -10,7 +10,8 @@ import "./metrics";
 
 Meteor.publish("products", () => Products.find());
 Meteor.publish("camps", () => Camps.find({}, { sort: { end: -1 } }));
-Meteor.publish("sales", ({ from, to } = {}) => {
+Meteor.publish("sales", (rawOptions) => {
+  const { from, to } = rawOptions || {};
   let selector: Mongo.Selector<ISale> = {};
 
   if (from) {

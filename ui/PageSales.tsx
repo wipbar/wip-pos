@@ -1,12 +1,14 @@
 import { css } from "@emotion/css";
 import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
 import { groupBy } from "lodash";
+import { useTracker } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import Products, { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMongoFetch from "../hooks/useMongoFetch";
 import useCurrentCamp from "/hooks/useCurrentCamp";
+import useSubscription from "/hooks/useSubscription";
 
 const rolloverOffset = 5;
 
@@ -35,20 +37,26 @@ const getSaleExpenses = (sale: ISale, products: IProduct[]) =>
 export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
   const selectedCamp = useCurrentCamp();
-  const { data: sales } = useMongoFetch(
+  useSubscription(
+    "sales",
+    { from: selectedCamp?.buildup, to: selectedCamp?.end },
+    [selectedCamp?.buildup, selectedCamp?.end],
+  );
+  const sales = useTracker(
     () =>
       Sales.find(
         {
           locationId: location?._id,
           timestamp: {
-            $gte: selectedCamp?.buildup || new Date(new Date().getFullYear(), 0),
+            $gte:
+              selectedCamp?.buildup || new Date(new Date().getFullYear(), 0),
             $lte:
               selectedCamp?.end || new Date(new Date().getFullYear() + 1, 0),
           },
         },
         { sort: { timestamp: -1 } },
-      ),
-    [location?._id, selectedCamp],
+      ).fetch(),
+    [location?._id, selectedCamp?.buildup, selectedCamp?.end],
   );
   const { data: products } = useMongoFetch(
     () => Products.find({ removedAt: { $exists: false } }),
