@@ -85,17 +85,13 @@ export default function PageStock() {
   const user = useCurrentUser();
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
-  const {
-    location,
-    error,
-    loading: locationLoading,
-  } = useCurrentLocation(true);
+  const { location, error } = useCurrentLocation(true);
   const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState<null | string | typeof NEW>(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
-  const { data: products, loading } = useMongoFetch(
+  const { data: products } = useMongoFetch(
     () =>
       location?._id
         ? Products.find(
@@ -113,8 +109,6 @@ export default function PageStock() {
         : undefined,
     [location?._id, showRemoved, showOnlyMenuItems, sortBy],
   );
-
-  if (loading || locationLoading) return <>Loading...</>;
 
   if (error) return error;
 

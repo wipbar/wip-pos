@@ -5,9 +5,7 @@ import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 
 export default function PageTend() {
-  const { error, loading } = useCurrentLocation(true);
-
-  if (loading) return <>Loading...</>;
+  const { error } = useCurrentLocation(true);
 
   if (error) return error;
 
