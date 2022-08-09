@@ -121,11 +121,16 @@ export default function PageTend() {
                   ),
                 );
               } else {
-                setPickedProductIdsLists((oldPickedProductIdsLists) =>
-                  oldPickedProductIdsLists.filter(
+                setPickedProductIdsLists((oldPickedProductIdsLists) => {
+                  console.log({ oldPickedProductIdsLists });
+                  if (oldPickedProductIdsLists.length === 1) {
+                    // If this would remove the last list make the new list of lists a list with an empty list
+                    return [[]];
+                  }
+                  return oldPickedProductIdsLists.filter(
                     (l) => l !== pickedProductIds,
-                  ),
-                );
+                  );
+                });
               }
             }}
             onSetActive={() => setCurrentCart(i)}
