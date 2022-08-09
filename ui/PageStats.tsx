@@ -138,6 +138,43 @@ export default function PageStats() {
     [sales],
   );
 
+  const productsSold = campSales.map(({ products }) => products).flat();
+
+  console.log(`${campSales.reduce(
+    (revenue, { amount }) => revenue + amount,
+    0,
+  )} HAX revenue
+${productsSold.length} items sold
+${campSales.length} discrete transactions
+${Math.round(
+  productsSold
+    .filter(({ tags }) => tags?.includes("beer"))
+    .reduce(
+      (totalLiters, { unitSize, sizeUnit }) =>
+        unitSize && sizeUnit === "cl"
+          ? totalLiters + Number(unitSize) / 100
+          : totalLiters,
+      0,
+    ),
+)} liters of beer
+${Math.round(
+  productsSold
+    .filter(({ brandName }) => brandName === "Club Mate")
+    .reduce(
+      (totalLiters, { unitSize, sizeUnit }) =>
+        unitSize && sizeUnit === "cl"
+          ? totalLiters + Number(unitSize) / 100
+          : totalLiters,
+      0,
+    ),
+)} liters of mate
+${
+  productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
+} cocktails
+${
+  productsSold.filter(({ name }) => name.includes("Tsunami")).length
+} tsunamis`);
+
   return (
     <div
       className={css`
