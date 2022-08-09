@@ -122,7 +122,6 @@ export default function PageTend() {
                 );
               } else {
                 setPickedProductIdsLists((oldPickedProductIdsLists) => {
-                  console.log({ oldPickedProductIdsLists });
                   if (oldPickedProductIdsLists.length === 1) {
                     // If this would remove the last list make the new list of lists a list with an empty list
                     return [[]];
@@ -131,6 +130,7 @@ export default function PageTend() {
                     (l) => l !== pickedProductIds,
                   );
                 });
+                setCurrentCart(0);
               }
             }}
             onSetActive={() => setCurrentCart(i)}
