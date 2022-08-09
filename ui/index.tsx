@@ -91,6 +91,9 @@ export default function UI() {
             background-position: -200% 0%;
           }
         }
+        button {
+          cursor: pointer;
+        }
         html {
           color: ${currentCamp?.color};
           background-color: ${

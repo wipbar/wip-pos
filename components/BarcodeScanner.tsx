@@ -48,6 +48,7 @@ export default function BarcodeScanner({
       <span
         className={css`
           color: yellow;
+          text-shadow: 0 0 4px red, 0 0 4px red;
         `}
       >
         {keyBuffer ?? "Waiting for scan"}

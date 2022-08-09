@@ -13,7 +13,14 @@ function removeItem<T>(items: T[], i: number) {
 }
 const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
 
-export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
+export default function ProductPicker({
+  pickedProductIds,
+  setPickedProductIds,
+  ...props
+}: {
+  pickedProductIds: string[];
+  setPickedProductIds: (value: string[]) => void;
+} & HTMLProps<HTMLDivElement>) {
   const { location } = useCurrentLocation();
   const currentCamp = useCurrentCamp();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
@@ -34,10 +41,6 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
     [showItemDetails],
   );
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [pickedProductIds, setPickedProductIds] = useSession<string[]>(
-    "pickedProductIds",
-    [],
-  );
   const [prevPickedProductIds, setPrevPickedProductIds] =
     useState(activeFilters);
   useEffect(() => {
@@ -75,7 +78,16 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
   ];
 
   return (
-    <div {...props}>
+    <div
+      {...props}
+      className={
+        css`
+          box-shadow: ${currentCamp?.color} 0 0 10px 0px;
+          background: ${currentCamp && getCorrectTextColor(currentCamp.color)};
+        ` +
+        (" " + (props.className || ""))
+      }
+    >
       <div
         className={css`
           display: grid;
@@ -199,10 +211,7 @@ export default function ProductPicker(props: HTMLProps<HTMLDivElement>) {
             <button
               key={product._id}
               onClick={() =>
-                setPickedProductIds((pickedProductIds) => [
-                  ...pickedProductIds,
-                  product._id,
-                ])
+                setPickedProductIds([...pickedProductIds, product._id])
               }
               className={css`
                 background: linear-gradient(

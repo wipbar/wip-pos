@@ -1,71 +1,21 @@
 import { css } from "@emotion/css";
-import { format } from "date-fns";
 import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import Products, { IProduct } from "../api/products";
-import Sales from "../api/sales";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor } from "../util";
-import useSubscription from "/hooks/useSubscription";
-
-function MostRecentSale() {
-  const currentCamp = useCurrentCamp();
-  const { location } = useCurrentLocation(true);
-  const [sale] = useFind(() =>
-    Sales.find(
-      { locationId: location?._id },
-      { sort: { timestamp: -1 }, limit: 1 },
-    ),
-  );
-  useSubscription("sales", { from: currentCamp?.buildup }, [
-    currentCamp?.buildup,
-  ]);
-
-  if (!sale) return null;
-
-  return (
-    <div
-      className={css`
-        font-size: 0.7em;
-        opacity: 0.7;
-        color: gray;
-      `}
-    >
-      Last sale: {format(sale.timestamp, "HH:mm:ss")}{" "}
-      <code>
-        <b>{sale.amount}</b>
-      </code>
-      <small>{sale.currency}</small>
-      <ul
-        className={css`
-          padding: 0;
-          margin: 0;
-          padding-bottom: 20px;
-        `}
-      >
-        {sale.products.map((product, i) => (
-          <li key={sale._id + i + product._id}>
-            {product.brandName ? <>{product.brandName} - </> : null}{" "}
-            {product.name}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 function CartViewProductsItem({
   product,
   onRemoveClick,
 }: {
   product: IProduct;
-  onRemoveClick: () => any;
+  onRemoveClick?: () => any;
 }) {
   if (!product) null;
   return (
@@ -98,6 +48,7 @@ function CartViewProductsItem({
             justify-content: center;
             flex-shrink: 0;
             border: 0;
+            ${!onRemoveClick ? "opacity:0.5;" : ""}
           `}
           onClick={onRemoveClick}
         >
@@ -146,17 +97,23 @@ function removeItem<T>(items: T[], i: number): T[] {
 const crankSound = new Audio("/cashregistercrank.mp3");
 const dingSound = new Audio("/cashregisterding.mp3");
 
-export default function CartView() {
+export default function CartView({
+  pickedProductIds,
+  setPickedProductIds,
+  isActive,
+  onSetActive,
+}: {
+  pickedProductIds: string[];
+  setPickedProductIds: (value: string[]) => void;
+  isActive?: boolean;
+  onSetActive?: () => void;
+}) {
   const currentCamp = useCurrentCamp();
 
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const products = useFind(
     () => Products.find({ removedAt: { $exists: false } }),
-    [],
-  );
-  const [pickedProductIds, setPickedProductIds] = useSession<string[]>(
-    "pickedProductIds",
     [],
   );
   const [doSellProducts, { isLoading: sellingLoading }] =
@@ -188,9 +145,7 @@ export default function CartView() {
 
       setPickedProductIds([...pickedProductIds, product._id]);
 
-      if (showOnlyBarCodeLessItems === null) {
-        setShowOnlyBarCodeLessItems(true);
-      }
+      if (showOnlyBarCodeLessItems === null) setShowOnlyBarCodeLessItems(true);
     },
     [
       pickedProductIds,
@@ -204,14 +159,29 @@ export default function CartView() {
   return (
     <div
       className={css`
-        width: 200px;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.25);
         display: flex;
         flex-direction: column;
         max-height: 100%;
-        flex: 1;
         border-left: 1px solid rgba(255, 255, 255, 0.4);
+        transition: all 300ms ease-in-out;
+        margin-bottom: 12px;
+        ${isActive
+          ? css`
+              box-shadow: ${currentCamp?.color} 10px 0 10px 0px;
+              background: ${currentCamp &&
+              getCorrectTextColor(currentCamp.color)};
+              border-radius: 0px;
+              border-top-right-radius: 12px;
+              border-bottom-right-radius: 12px;
+            `
+          : css`
+              cursor: pointer;
+              border-radius: 24px;
+              transform: scale(0.9);
+            `}
       `}
+      onClick={isActive ? undefined : onSetActive}
     >
       {pickedProductIds?.length ? (
         <>
@@ -232,8 +202,13 @@ export default function CartView() {
                 <CartViewProductsItem
                   key={id + i}
                   product={product}
-                  onRemoveClick={() =>
-                    setPickedProductIds(removeItem(pickedProductIds, i + 1))
+                  onRemoveClick={
+                    isActive
+                      ? () =>
+                          setPickedProductIds(
+                            removeItem(pickedProductIds, i + 1),
+                          )
+                      : undefined
                   }
                 />
               ) : null;
@@ -245,16 +220,14 @@ export default function CartView() {
               border-top: 2px solid rgba(255, 255, 255, 0.1);
               display: flex;
               bottom: 0;
-              position: sticky;
               flex-direction: column;
               align-items: center;
               padding-bottom: 1em;
-              box-shadow: ${currentCamp?.color} 0 0 10px 0px;
-              background: ${currentCamp &&
-              getCorrectTextColor(currentCamp.color)};
             `}
           >
-            <BarcodeScannerComponent onResult={handleBarCode} />
+            {isActive ? (
+              <BarcodeScannerComponent onResult={handleBarCode} />
+            ) : null}
             <big>
               <big>
                 <b>
@@ -265,24 +238,27 @@ export default function CartView() {
                 </b>
               </big>
             </big>
-            <div>
-              <button
-                type="button"
-                onClick={() => setConfirmOpen(true)}
-                className={css`
-                  display: block;
 
-                  background-color: ${currentCamp?.color};
-                  color: ${currentCamp &&
-                  getCorrectTextColor(currentCamp.color)};
+            {isActive ? (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setConfirmOpen(true)}
+                  className={css`
+                    display: block;
 
-                  margin-top: 1em;
-                  padding: 1em;
-                `}
-              >
-                Press To Sell
-              </button>
-            </div>
+                    background-color: ${currentCamp?.color};
+                    color: ${currentCamp &&
+                    getCorrectTextColor(currentCamp.color)};
+
+                    margin-top: 1em;
+                    padding: 1em;
+                  `}
+                >
+                  Press To Sell
+                </button>
+              </div>
+            ) : null}
           </div>
         </>
       ) : (
@@ -290,13 +266,14 @@ export default function CartView() {
           className={css`
             height: 100%;
             display: flex;
-            align-items: flex-end;
-            justify-content: flex-end;
+            align-items: center;
             flex-direction: column;
           `}
         >
-          <BarcodeScannerComponent onResult={handleBarCode} />
-          <MostRecentSale />
+          No items in this cart yet...
+          {isActive ? (
+            <BarcodeScannerComponent onResult={handleBarCode} />
+          ) : null}
         </div>
       )}
       {confirmOpen ? (
