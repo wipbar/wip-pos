@@ -38,8 +38,8 @@ export default function PageSales() {
   const selectedCamp = useCurrentCamp();
   useSubscription(
     "sales",
-    { from: selectedCamp?.buildup, to: selectedCamp?.end },
-    [selectedCamp?.buildup, selectedCamp?.end],
+    { from: selectedCamp?.buildup, to: selectedCamp?.teardown },
+    [selectedCamp],
   );
   const sales = useFind(
     () =>
@@ -49,7 +49,7 @@ export default function PageSales() {
           locationId: location?._id,
           timestamp: {
             $gte: selectedCamp?.buildup,
-            $lte: selectedCamp?.end,
+            $lte: selectedCamp?.teardown,
           },
         },
         { sort: { timestamp: -1 } },

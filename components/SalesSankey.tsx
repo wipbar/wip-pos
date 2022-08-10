@@ -132,7 +132,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
         ? Sales.find({
             timestamp: {
               $gte: currentCamp.buildup,
-              $lte: currentCamp.end,
+              $lte: currentCamp.teardown,
             },
           })
         : undefined,

@@ -182,7 +182,7 @@ export const isUserInTeam = (
     user?.services?.bornhack?.teams?.some(
       ({ team, camp }: { team: string; camp: string }) =>
         team?.toLowerCase() === inTeam.toLowerCase() &&
-        camp === currentCamp.name,
+        camp === currentCamp?.name,
     ),
   );
 };

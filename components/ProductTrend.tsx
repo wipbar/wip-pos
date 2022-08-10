@@ -22,8 +22,8 @@ export default function ProductTrend({
   useSubscription(
     currentCamp && "sales",
     currentCamp && {
-      from: isPast(currentCamp.start) ? currentCamp.start : currentCamp.buildup,
-      to: currentCamp.end,
+      from: currentCamp.buildup,
+      to: currentCamp.teardown,
     },
     [currentCamp],
   );
@@ -33,10 +33,8 @@ export default function ProductTrend({
         {
           products: { $elemMatch: { _id: product._id } },
           timestamp: currentCamp && {
-            $gte: isPast(currentCamp.start)
-              ? currentCamp.start
-              : currentCamp.buildup,
-            $lte: currentCamp.end,
+            $gte: currentCamp.buildup,
+            $lte: currentCamp.teardown,
           },
         },
         { sort: { timestamp: 1 } },
@@ -59,13 +57,8 @@ export default function ProductTrend({
     () =>
       currentCamp && firstSale
         ? sumBy(productSales, (sale) => sale.products.length) /
-          ((Number(min(currentCamp.end, currentDate)) -
-            Number(
-              firstSale.timestamp ||
-                (isPast(currentCamp.start)
-                  ? currentCamp.start
-                  : currentCamp.buildup),
-            )) /
+          ((Number(min(currentCamp.teardown, currentDate)) -
+            Number(firstSale.timestamp || currentCamp.buildup)) /
             3600000)
         : 0,
     [currentCamp, currentDate, firstSale, productSales],

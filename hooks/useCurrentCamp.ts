@@ -13,7 +13,7 @@ export default function useCurrentCamp(): ICamp | undefined {
         ? Camps.find({ slug: currentCampSlug })
         : Camps.find({
             buildup: { $lte: currentDate },
-            end: { $gte: currentDate },
+            teardown: { $gte: currentDate },
           }),
     [currentCampSlug, currentDate],
   )?.[0];

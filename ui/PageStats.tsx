@@ -112,7 +112,10 @@ export default function PageStats() {
     () =>
       currentCamp
         ? Sales.find({
-            timestamp: { $gte: currentCamp.buildup, $lte: currentCamp.end },
+            timestamp: {
+              $gte: currentCamp.buildup,
+              $lte: currentCamp.teardown,
+            },
           })
         : undefined,
     [currentCamp],
