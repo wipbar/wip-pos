@@ -28,7 +28,7 @@ const getSaleExpenses = (sale: ISale, products: IProduct[]) =>
       .filter(({ timestamp }) => timestamp < sale.timestamp)
       .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))?.[0]?.buyPrice;
 
-    if (!shopPrice) return m + Number(currentProduct.salePrice);
+    if (!shopPrice) return m + Number(saleProduct.salePrice);
 
     return m + Number(shopPrice);
   }, 0);
