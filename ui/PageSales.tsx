@@ -1,5 +1,13 @@
 import { css } from "@emotion/css";
-import { format, setHours, setMinutes, startOfDay, subHours } from "date-fns";
+import {
+  format,
+  max,
+  min,
+  setHours,
+  setMinutes,
+  startOfDay,
+  subHours,
+} from "date-fns";
 import { groupBy, sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
@@ -64,12 +72,18 @@ export default function PageSales() {
     () =>
       Object.entries(
         groupBy(sales, ({ timestamp }) =>
-          startOfDay(subHours(timestamp, rolloverOffset)).toISOString(),
+          min(
+            max(
+              startOfDay(subHours(timestamp, rolloverOffset)),
+              startOfDay(subHours(selectedCamp!.start!, rolloverOffset)),
+            ),
+            startOfDay(subHours(selectedCamp!.end!, rolloverOffset)),
+          ).toISOString(),
         ),
       )
         .map(([date, data]) => [new Date(date), data] as const)
         .sort(([a], [b]) => Number(a) - Number(b)),
-    [sales],
+    [sales, selectedCamp],
   );
 
   if (error) return error;
@@ -97,7 +111,15 @@ export default function PageSales() {
                   white-space: nowrap;
                 `}
               >
-                {format(day, "DD/MM/YYYY")}{" "}
+                {format(
+                  min(...salesOfDay.map(({ timestamp }) => timestamp)),
+                  "DD/MM/YYYY",
+                )}
+                -
+                {format(
+                  max(...salesOfDay.map(({ timestamp }) => timestamp)),
+                  "DD/MM/YYYY",
+                )}{" "}
                 <code>
                   <b>{sumBy(salesOfDay, "amount")}</b>
                   <span style={{ color: "limegreen" }}>
