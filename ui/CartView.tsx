@@ -170,7 +170,7 @@ export default function CartView({
         margin-bottom: 12px;
         ${isActive
           ? css`
-              box-shadow: ${currentCamp?.color} 10px 0 10px 0px;
+              box-shadow: ${currentCamp?.color} 0px 0 10px 0px;
               background: ${currentCamp &&
               getCorrectTextColor(currentCamp.color)};
               border-radius: 0px;
