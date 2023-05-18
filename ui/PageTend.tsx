@@ -133,7 +133,12 @@ export default function PageTend() {
                 setCurrentCart(0);
               }
             }}
-            onSetActive={() => setCurrentCart(i)}
+            onSetActive={() => {
+              setCurrentCart(i);
+              setPickedProductIdsLists((oldPickedProductIdsLists) =>
+                oldPickedProductIdsLists.filter((l) => l.length),
+              );
+            }}
             isActive={current === i}
           />
         ))}
