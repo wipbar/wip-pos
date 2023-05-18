@@ -36,7 +36,7 @@ export default function UI() {
   );
   const match = useMatch("/:locationSlug/*");
   const locationSlug = match?.params.locationSlug;
-  const pageSlug = (match?.params as any)["*"] as string | undefined;
+  const pageSlug = (match?.params as any)?.["*"] as string | undefined;
 
   // Hold permanent subscriptions to small, low-churn datasets
   useSubscription("products");
