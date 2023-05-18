@@ -15,7 +15,7 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor, stringToColour } from "../util";
-import PageStockItem from "./PageStockItem";
+import PageProductsItem from "./PageProductsItem";
 import useCurrentCamp from "/hooks/useCurrentCamp";
 
 export const Modal = ({
@@ -81,7 +81,7 @@ function CurfewButton({ location }: { location: ILocation }) {
   );
 }
 const NEW = Symbol("New");
-export default function PageStock() {
+export default function PageProducts() {
   const user = useCurrentUser();
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
@@ -113,11 +113,11 @@ export default function PageStock() {
       <button onClick={() => setIsEditing(NEW)}>Create Product</button>
       {isEditing === NEW ? (
         <Modal>
-          <PageStockItem onCancel={() => setIsEditing(null)} />
+          <PageProductsItem onCancel={() => setIsEditing(null)} />
         </Modal>
       ) : isEditing ? (
         <Modal>
-          <PageStockItem
+          <PageProductsItem
             onCancel={() => setIsEditing(null)}
             product={products.find(({ _id }) => _id === isEditing)}
           />

@@ -23,7 +23,7 @@ import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
 import PageSales from "./PageSales";
 import PageStats from "./PageStats";
-import PageStock from "./PageStock";
+import PageProducts from "./PageProducts";
 import PageTend from "./PageTend";
 import useSubscription from "/hooks/useSubscription";
 
@@ -235,9 +235,9 @@ export default function UI() {
                       locationSlug !== "stats"
                         ? locationSlug
                         : userLocations[0]?.slug
-                    }/stock`}
+                    }/products`}
                   >
-                    Stock
+                    Products
                   </Link>
                   <Link
                     to={`/${
@@ -283,7 +283,7 @@ export default function UI() {
           element={<Navigate to={`/${locationSlug}/tend`} />}
         />
         <Route path="/:locationSlug/tend" element={<PageTend />} />
-        <Route path="/:locationSlug/stock" element={<PageStock />} />
+        <Route path="/:locationSlug/products" element={<PageProducts />} />
         <Route path="/:locationSlug/sales" element={<PageSales />} />
         <Route path="/:locationSlug/menu" element={<PageMenu />} />
         <Route path="/stats" element={<PageStats />} />

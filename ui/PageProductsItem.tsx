@@ -8,7 +8,7 @@ import Products, { IProduct } from "../api/products";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
-import { Modal } from "./PageStock";
+import { Modal } from "./PageProducts";
 
 const toOptions = (items: any[]) =>
   items.map((item) => ({ label: item, value: item }));
