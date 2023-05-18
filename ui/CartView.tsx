@@ -37,6 +37,7 @@ function CartViewProductsItem({
       >
         <button
           className={css`
+            align-self: flex-start;
             display: flex;
             border-radius: 100%;
             margin-right: 5px;
@@ -48,7 +49,8 @@ function CartViewProductsItem({
             justify-content: center;
             flex-shrink: 0;
             border: 0;
-            ${!onRemoveClick ? "opacity:0.5;" : ""}
+            background: transparent;
+            ${!onRemoveClick ? "opacity:0;" : ""}
           `}
           onClick={onRemoveClick}
         >
