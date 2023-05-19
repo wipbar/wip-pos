@@ -7,6 +7,7 @@ import Products from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import Stocks from "../api/stocks";
 import "./metrics";
+import "./sales";
 
 Meteor.publish("products", () => Products.find());
 Meteor.publish("camps", () => Camps.find({}, { sort: { end: -1 } }));
