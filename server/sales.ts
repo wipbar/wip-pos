@@ -5,7 +5,7 @@ import Sales from "../api/sales";
 WebApp.connectHandlers.use("/sales", (_req, res) =>
   Fiber(async () => {
     try {
-      res.setHeader("content-type", "text/plain; version=0.0.4; charset=utf-8");
+      res.setHeader("content-type", "application/json; charset=utf-8");
       return res.end(JSON.stringify(Sales.find({}).fetch()));
     } catch (error) {
       console.error(error);
