@@ -110,6 +110,7 @@ export default function PageMenu() {
 
   if (!productsGroupedByTags.length) {
     return (
+      // eslint-disable-next-line react/no-unknown-property
       <marquee scrollAmount="20">
         <big
           className={css`
