@@ -1,8 +1,8 @@
 import { Mass, Volume } from "convert";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
+import { Flavor } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
-import { Flavor } from "/util";
 
 export type ProductID = Flavor<string, "ProductID">;
 

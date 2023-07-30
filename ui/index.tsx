@@ -18,6 +18,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useSession from "../hooks/useSession";
+import useSubscription from "../hooks/useSubscription";
 import { getCorrectTextColor } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
@@ -26,7 +27,6 @@ import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
-import useSubscription from "/hooks/useSubscription";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 

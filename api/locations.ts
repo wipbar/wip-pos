@@ -1,7 +1,7 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
+import { Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
-import { Flavor } from "/util";
 
 export type LocationID = Flavor<string, "LocationID">;
 

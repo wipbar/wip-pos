@@ -10,8 +10,8 @@ import ProductTrend from "../components/ProductTrend";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useSubscription from "/hooks/useSubscription";
-import { getCorrectTextColor } from "/util";
+import useSubscription from "../hooks/useSubscription";
+import { getCorrectTextColor } from "../util";
 
 function SparkLine({
   data,

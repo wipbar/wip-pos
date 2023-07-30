@@ -1,6 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import { Flavor } from "/util";
+import { Flavor } from "../util";
 
 export type StockID = Flavor<string, "StockID">;
 

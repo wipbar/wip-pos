@@ -12,7 +12,7 @@ import type { ICamp } from "../api/camps";
 import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useMongoFetch from "../hooks/useMongoFetch";
-import { getCorrectTextColor } from "/util";
+import { getCorrectTextColor } from "../util";
 
 function Node({
   x,

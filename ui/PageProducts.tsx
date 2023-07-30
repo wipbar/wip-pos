@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons";
 import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
@@ -9,14 +10,14 @@ import { opacify } from "polished";
 import React, { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import type { ILocation } from "../api/locations";
-import Products, { isAlcoholic } from "../api/products";
+import Products, { ProductID, isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor, stringToColour } from "../util";
 import PageProductsItem from "./PageProductsItem";
-import useCurrentCamp from "/hooks/useCurrentCamp";
 
 export const Modal = ({
   children,
@@ -87,7 +88,10 @@ export default function PageProducts() {
   const [removeProduct] = useMethod("Products.removeProduct");
   const { location, error } = useCurrentLocation(true);
   const [showRemoved] = useState(false);
-  const [isEditing, setIsEditing] = useState<null | string | typeof NEW>(null);
+  const [isEditing, setIsEditing] = useState<null | ProductID | typeof NEW>(
+    null,
+  );
+  const [isStocking, setIsStocking] = useState<null | ProductID>(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
@@ -121,6 +125,10 @@ export default function PageProducts() {
             onCancel={() => setIsEditing(null)}
             product={products.find(({ _id }) => _id === isEditing)}
           />
+        </Modal>
+      ) : isStocking ? (
+        <Modal onDismiss={() => setIsStocking(null)}>
+          product stock editor thing here
         </Modal>
       ) : null}
       <label>
@@ -263,6 +271,9 @@ export default function PageProducts() {
                   </td>
                   <td>{product.tap}</td>
                   <td style={{ whiteSpace: "nowrap" }}>
+                    <button onClick={() => setIsStocking(product._id)}>
+                      <FontAwesomeIcon icon={faBoxesStacked} />
+                    </button>
                     <button onClick={() => setIsEditing(product._id)}>
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </button>

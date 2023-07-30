@@ -13,9 +13,9 @@ import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import Products, { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useCurrentCamp from "/hooks/useCurrentCamp";
-import useSubscription from "/hooks/useSubscription";
+import useSubscription from "../hooks/useSubscription";
 
 const rolloverOffset = 5;
 

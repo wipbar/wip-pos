@@ -5,9 +5,9 @@ import React, { ComponentProps, useMemo } from "react";
 import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import useCurrentDate from "../hooks/useCurrentDate";
+import useSubscription from "../hooks/useSubscription";
 import Fire from "./Fire";
-import useCurrentDate from "/hooks/useCurrentDate";
-import useSubscription from "/hooks/useSubscription";
 
 const f = 0.25;
 export default function ProductTrend({
