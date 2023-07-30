@@ -1,9 +1,13 @@
+import { Mass, Volume } from "convert";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { assertUserInAnyTeam } from "./accounts";
+import { Flavor } from "/util";
+
+export type ProductID = Flavor<string, "ProductID">;
 
 export interface IProduct {
-  _id: string;
+  _id: ProductID;
   createdAt: Date;
   updatedAt?: Date;
   brandName: string;
@@ -11,7 +15,7 @@ export interface IProduct {
   description?: string;
   salePrice?: number;
   unitSize?: number | string;
-  sizeUnit?: string;
+  sizeUnit?: Volume | Mass;
   abv?: number;
   ibu?: number;
   tags?: string[];

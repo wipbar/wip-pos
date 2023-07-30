@@ -2,10 +2,13 @@ import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { isUserInTeam } from "./accounts";
 import Locations, { ILocation } from "./locations";
-import Products, { IProduct } from "./products";
+import Products, { IProduct, ProductID } from "./products";
+import { Flavor } from "/util";
+
+export type SaleID = Flavor<string, "SaleID">;
 
 export interface ISale {
-  _id: string;
+  _id: SaleID;
   userId?: string;
   locationId: string;
   currency?: string;
@@ -23,7 +26,7 @@ Meteor.methods({
     productIds,
   }: {
     locationSlug: ILocation["slug"];
-    productIds: IProduct["_id"][];
+    productIds: ProductID[];
   }) {
     if (this.isSimulation) return;
     if (!locationSlug || !productIds) throw new Meteor.Error("misisng");
@@ -35,7 +38,7 @@ Meteor.methods({
     if (!isUserInTeam(userId, location.teamName))
       throw new Meteor.Error("Wait that's illegal");
 
-    const newSale = {
+    return Sales.insert({
       userId,
       locationId: location._id,
       currency: "HAX",
@@ -46,8 +49,7 @@ Meteor.methods({
       ),
       timestamp: new Date(),
       products: productIds.map((_id) => Products.findOne({ _id })!),
-    };
-    return Sales.insert(newSale);
+    });
   },
 });
 

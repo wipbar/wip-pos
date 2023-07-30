@@ -21,9 +21,10 @@ import useSession from "../hooks/useSession";
 import { getCorrectTextColor } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
+import PageProducts from "./PageProducts";
 import PageSales from "./PageSales";
 import PageStats from "./PageStats";
-import PageProducts from "./PageProducts";
+import PageStock from "./PageStock";
 import PageTend from "./PageTend";
 import useSubscription from "/hooks/useSubscription";
 
@@ -244,6 +245,15 @@ export default function UI() {
                       locationSlug !== "stats"
                         ? locationSlug
                         : userLocations[0]?.slug
+                    }/stock`}
+                  >
+                    Stock
+                  </Link>
+                  <Link
+                    to={`/${
+                      locationSlug !== "stats"
+                        ? locationSlug
+                        : userLocations[0]?.slug
                     }/sales`}
                   >
                     Sales
@@ -284,6 +294,7 @@ export default function UI() {
         />
         <Route path="/:locationSlug/tend" element={<PageTend />} />
         <Route path="/:locationSlug/products" element={<PageProducts />} />
+        <Route path="/:locationSlug/stock" element={<PageStock />} />
         <Route path="/:locationSlug/sales" element={<PageSales />} />
         <Route path="/:locationSlug/menu" element={<PageMenu />} />
         <Route path="/stats" element={<PageStats />} />

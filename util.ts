@@ -57,3 +57,10 @@ export function getCorrectTextColor(hex: string, invert = false) {
 
   return (invert ? !passesThreshold : passesThreshold) ? "#000000" : "#ffffff";
 }
+
+declare abstract class As<Tag extends keyof never> {
+  private static readonly $as$: unique symbol;
+  private [As.$as$]: Record<Tag, true>;
+}
+
+export type Flavor<T, FlavorT extends string> = T & As<FlavorT>;

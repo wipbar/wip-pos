@@ -48,7 +48,7 @@ const Label = ({
     </div>
   </label>
 );
-export default function PageStockItem({
+export default function PageProductsItem({
   onCancel,
   product,
 }: {

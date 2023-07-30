@@ -1,9 +1,12 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { isUserInTeam } from "./accounts";
+import { Flavor } from "/util";
+
+export type LocationID = Flavor<string, "LocationID">;
 
 export interface ILocation {
-  _id: string;
+  _id: LocationID;
   slug: string;
   name: string;
   teamName: string;
@@ -23,7 +26,7 @@ if (Meteor.isServer) {
 export default Locations;
 
 Meteor.methods({
-  "Locations.toggleCurfew"({ locationId }) {
+  "Locations.toggleCurfew"({ locationId }: { locationId: LocationID }) {
     const location = Locations.findOne(locationId);
 
     if (!isUserInTeam(this.userId, location?.teamName)) {

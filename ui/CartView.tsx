@@ -3,7 +3,7 @@ import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
-import Products, { IProduct } from "../api/products";
+import Products, { IProduct, ProductID } from "../api/products";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMethod from "../hooks/useMethod";
@@ -105,8 +105,8 @@ export default function CartView({
   isActive,
   onSetActive,
 }: {
-  pickedProductIds: string[];
-  setPickedProductIds: (value: string[]) => void;
+  pickedProductIds: ProductID[];
+  setPickedProductIds: (value: ProductID[]) => void;
   isActive?: boolean;
   onSetActive?: () => void;
 }) {

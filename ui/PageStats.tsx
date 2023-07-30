@@ -4,7 +4,7 @@ import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import Countdown from "react-countdown";
 import Camps, { ICamp } from "../api/camps";
-import Products from "../api/products";
+import Products, { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
@@ -131,7 +131,7 @@ export default function PageStats() {
   const mostSold = useMemo(
     () =>
       Object.entries(
-        sales.reduce<Record<string, number>>((m, sale) => {
+        sales.reduce<Record<ProductID, number>>((m, sale) => {
           sale.products.forEach((product) => {
             m[product._id] = (m[product._id] || 0) + 1;
           });

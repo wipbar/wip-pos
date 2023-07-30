@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import React, { HTMLProps, useCallback, useEffect, useState } from "react";
-import Products, { isAlcoholic } from "../api/products";
+import Products, { ProductID, isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
@@ -18,8 +18,8 @@ export default function ProductPicker({
   setPickedProductIds,
   ...props
 }: {
-  pickedProductIds: string[];
-  setPickedProductIds: (value: string[]) => void;
+  pickedProductIds: ProductID[];
+  setPickedProductIds: (value: ProductID[]) => void;
 } & HTMLProps<HTMLDivElement>) {
   const { location } = useCurrentLocation();
   const currentCamp = useCurrentCamp();
@@ -191,8 +191,9 @@ export default function ProductPicker({
             if (!activeFilters.length) return true;
             if (!product.tags) return true;
 
-            return activeFilters.every((filter) =>
-              product.tags?.map((tag) => tag.trim()).includes(filter.trim()),
+            return activeFilters.every(
+              (filter) =>
+                product.tags?.map((tag) => tag.trim()).includes(filter.trim()),
             );
           })
           .filter(({ locationIds }) =>

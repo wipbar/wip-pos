@@ -1,10 +1,14 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
+import { Flavor } from "/util";
+
+export type StockID = Flavor<string, "StockID">;
 
 interface IStock {
-  _id: string;
+  _id: StockID;
   barCode?: string;
   name: string;
+  unit: string;
   approxCount: null | number;
   levels: {
     count: number;

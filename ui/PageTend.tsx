@@ -10,6 +10,7 @@ import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
+import { ProductID } from "/api/products";
 
 function MostRecentSale() {
   const currentCamp = useCurrentCamp();
@@ -64,7 +65,7 @@ export default function PageTend() {
 
   const [currentCart, setCurrentCart] = useState(0);
   const [pickedProductIdsLists, setPickedProductIdsLists] = useSession<
-    string[][]
+    ProductID[][]
   >("pickedProductIdsLists", [[]]);
   console.log({ pickedProductIdsLists, setPickedProductIdsLists });
   const current = useMemo(
