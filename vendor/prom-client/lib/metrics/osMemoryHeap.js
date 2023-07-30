@@ -1,35 +1,35 @@
-'use strict';
+"use strict";
 
-const Gauge = require('../gauge');
-const linuxVariant = require('./osMemoryHeapLinux');
-const safeMemoryUsage = require('./helpers/safeMemoryUsage');
+const Gauge = require("../gauge");
+const linuxVariant = require("./osMemoryHeapLinux");
+const safeMemoryUsage = require("./helpers/safeMemoryUsage");
 
-const PROCESS_RESIDENT_MEMORY = 'process_resident_memory_bytes';
+const PROCESS_RESIDENT_MEMORY = "process_resident_memory_bytes";
 
 function notLinuxVariant(registry, config = {}) {
-	const namePrefix = config.prefix ? config.prefix : '';
+  const namePrefix = config.prefix ? config.prefix : "";
 
-	new Gauge({
-		name: namePrefix + PROCESS_RESIDENT_MEMORY,
-		help: 'Resident memory size in bytes.',
-		registers: registry ? [registry] : undefined,
-		collect() {
-			const memUsage = safeMemoryUsage();
+  new Gauge({
+    name: namePrefix + PROCESS_RESIDENT_MEMORY,
+    help: "Resident memory size in bytes.",
+    registers: registry ? [registry] : undefined,
+    collect() {
+      const memUsage = safeMemoryUsage();
 
-			// I don't think the other things returned from `process.memoryUsage()` is relevant to a standard export
-			if (memUsage) {
-				this.set(memUsage.rss);
-			}
-		},
-	});
+      // I don't think the other things returned from `process.memoryUsage()` is relevant to a standard export
+      if (memUsage) {
+        this.set(memUsage.rss);
+      }
+    },
+  });
 }
 
 module.exports = (registry, config) =>
-	process.platform === 'linux'
-		? linuxVariant(registry, config)
-		: notLinuxVariant(registry, config);
+  process.platform === "linux"
+    ? linuxVariant(registry, config)
+    : notLinuxVariant(registry, config);
 
 module.exports.metricNames =
-	process.platform === 'linux'
-		? linuxVariant.metricNames
-		: [PROCESS_RESIDENT_MEMORY];
+  process.platform === "linux"
+    ? linuxVariant.metricNames
+    : [PROCESS_RESIDENT_MEMORY];

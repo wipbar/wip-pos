@@ -297,9 +297,7 @@ export default function PageProductsItem({
               ?.filter((id) => id !== location?._id)
               .map((id) => locations.find(({ _id }) => id === _id))
               .filter((location): location is ILocation => Boolean(location))
-              .map(({ slug, name }) => (
-                <span key={slug}>{name}</span>
-              ))}
+              .map(({ slug, name }) => <span key={slug}>{name}</span>)}
           </small>
         ) : null}
       </div>

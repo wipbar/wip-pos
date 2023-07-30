@@ -1,32 +1,32 @@
-'use strict';
+"use strict";
 
 function aggregateByObjectName(list) {
-	const data = {};
+  const data = {};
 
-	for (let i = 0; i < list.length; i++) {
-		const listElement = list[i];
+  for (let i = 0; i < list.length; i++) {
+    const listElement = list[i];
 
-		if (!listElement || typeof listElement.constructor === 'undefined') {
-			continue;
-		}
+    if (!listElement || typeof listElement.constructor === "undefined") {
+      continue;
+    }
 
-		if (Object.hasOwnProperty.call(data, listElement.constructor.name)) {
-			data[listElement.constructor.name] += 1;
-		} else {
-			data[listElement.constructor.name] = 1;
-		}
-	}
-	return data;
+    if (Object.hasOwnProperty.call(data, listElement.constructor.name)) {
+      data[listElement.constructor.name] += 1;
+    } else {
+      data[listElement.constructor.name] = 1;
+    }
+  }
+  return data;
 }
 
 function updateMetrics(gauge, data) {
-	gauge.reset();
-	for (const key in data) {
-		gauge.set({ type: key }, data[key]);
-	}
+  gauge.reset();
+  for (const key in data) {
+    gauge.set({ type: key }, data[key]);
+  }
 }
 
 module.exports = {
-	aggregateByObjectName,
-	updateMetrics,
+  aggregateByObjectName,
+  updateMetrics,
 };

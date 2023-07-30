@@ -1,43 +1,42 @@
-'use strict';
-const Gauge = require('../gauge');
-const { aggregateByObjectName } = require('./helpers/processMetricsHelpers');
-const { updateMetrics } = require('./helpers/processMetricsHelpers');
+"use strict";
+const Gauge = require("../gauge");
+const { aggregateByObjectName } = require("./helpers/processMetricsHelpers");
+const { updateMetrics } = require("./helpers/processMetricsHelpers");
 
-const NODEJS_ACTIVE_REQUESTS = 'nodejs_active_requests';
-const NODEJS_ACTIVE_REQUESTS_TOTAL = 'nodejs_active_requests_total';
+const NODEJS_ACTIVE_REQUESTS = "nodejs_active_requests";
+const NODEJS_ACTIVE_REQUESTS_TOTAL = "nodejs_active_requests_total";
 
 module.exports = (registry, config = {}) => {
-	// Don't do anything if the function is removed in later nodes (exists in node@6)
-	if (typeof process._getActiveRequests !== 'function') {
-		return;
-	}
+  // Don't do anything if the function is removed in later nodes (exists in node@6)
+  if (typeof process._getActiveRequests !== "function") {
+    return;
+  }
 
-	const namePrefix = config.prefix ? config.prefix : '';
+  const namePrefix = config.prefix ? config.prefix : "";
 
-	new Gauge({
-		name: namePrefix + NODEJS_ACTIVE_REQUESTS,
-		help:
-			'Number of active libuv requests grouped by request type. Every request type is C++ class name.',
-		labelNames: ['type'],
-		registers: registry ? [registry] : undefined,
-		collect() {
-			const requests = process._getActiveRequests();
-			updateMetrics(this, aggregateByObjectName(requests));
-		},
-	});
+  new Gauge({
+    name: namePrefix + NODEJS_ACTIVE_REQUESTS,
+    help: "Number of active libuv requests grouped by request type. Every request type is C++ class name.",
+    labelNames: ["type"],
+    registers: registry ? [registry] : undefined,
+    collect() {
+      const requests = process._getActiveRequests();
+      updateMetrics(this, aggregateByObjectName(requests));
+    },
+  });
 
-	new Gauge({
-		name: namePrefix + NODEJS_ACTIVE_REQUESTS_TOTAL,
-		help: 'Total number of active requests.',
-		registers: registry ? [registry] : undefined,
-		collect() {
-			const requests = process._getActiveRequests();
-			this.set(requests.length);
-		},
-	});
+  new Gauge({
+    name: namePrefix + NODEJS_ACTIVE_REQUESTS_TOTAL,
+    help: "Total number of active requests.",
+    registers: registry ? [registry] : undefined,
+    collect() {
+      const requests = process._getActiveRequests();
+      this.set(requests.length);
+    },
+  });
 };
 
 module.exports.metricNames = [
-	NODEJS_ACTIVE_REQUESTS,
-	NODEJS_ACTIVE_REQUESTS_TOTAL,
+  NODEJS_ACTIVE_REQUESTS,
+  NODEJS_ACTIVE_REQUESTS_TOTAL,
 ];
