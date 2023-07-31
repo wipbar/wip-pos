@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { useFind } from "meteor/react-meteor-data";
@@ -12,6 +13,8 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 import PageStockItem from "./PageStockItem";
+import PageStockItemStock from "./PageStockItemStock";
+import { packageTypes } from "../data";
 
 export const Modal = ({
   children,
@@ -66,6 +69,7 @@ export default function PageStock() {
   const [removeStock] = useMethod("Stock.removeStock");
   const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState<null | StockID | typeof NEW>(null);
+  const [isStocking, setIsStocking] = useState<null | StockID>(null);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
   const stocks = useFind(
@@ -81,14 +85,21 @@ export default function PageStock() {
     <div>
       <button onClick={() => setIsEditing(NEW)}>Create Stock</button>
       {isEditing === NEW ? (
-        <Modal>
+        <Modal onDismiss={() => setIsEditing(null)}>
           <PageStockItem onCancel={() => setIsEditing(null)} />
         </Modal>
       ) : isEditing ? (
-        <Modal>
+        <Modal onDismiss={() => setIsEditing(null)}>
           <PageStockItem
             onCancel={() => setIsEditing(null)}
             stock={stocks.find(({ _id }) => _id === isEditing)}
+          />
+        </Modal>
+      ) : isStocking ? (
+        <Modal onDismiss={() => setIsStocking(null)}>
+          <PageStockItemStock
+            onCancel={() => setIsStocking(null)}
+            stock={stocks.find(({ _id }) => _id === isStocking)}
           />
         </Modal>
       ) : null}
@@ -118,20 +129,32 @@ export default function PageStock() {
         >
           <thead>
             <tr>
-              <th>Name</th>
+              <th align="right">Count</th>
+              <th align="left">Name</th>
               <th>Size</th>
+              <th>Type</th>
               <th />
             </tr>
           </thead>
           <tbody>
             {stocks.map((stock) => (
               <tr key={stock._id}>
+                <td align="right">{stock.approxCount}</td>
                 <td>{stock.name}</td>
                 <td>
                   {stock.unitSize}
                   {stock.sizeUnit}
                 </td>
-                <td style={{ whiteSpace: "nowrap" }}>
+                <td>
+                  {
+                    packageTypes.find(({ code }) => code === stock.packageType)
+                      ?.name
+                  }
+                </td>
+                <td style={{ whiteSpace: "nowrap" }} align="right">
+                  <button onClick={() => setIsStocking(stock._id)}>
+                    <FontAwesomeIcon icon={faBoxesStacked} />
+                  </button>
                   <button onClick={() => setIsEditing(stock._id)}>
                     <FontAwesomeIcon icon={faPencilAlt} />
                   </button>

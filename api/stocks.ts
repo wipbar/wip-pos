@@ -28,15 +28,18 @@ const Stocks = new Mongo.Collection<IStock>("stocks");
 
 export default Stocks;
 
-Meteor.methods({
-  "Stock.addStock"({
-    data,
-  }: {
-    data: Pick<
-      IStock,
-      "barCode" | "name" | "packageType" | "sizeUnit" | "unitSize"
-    >;
-  }) {
+export const stocksMethods = {
+  "Stock.addStock"(
+    this: Meteor.MethodThisType,
+    {
+      data,
+    }: {
+      data: Pick<
+        IStock,
+        "barCode" | "name" | "packageType" | "sizeUnit" | "unitSize"
+      >;
+    },
+  ) {
     assertUserInAnyTeam(this.userId);
     const createdAt = new Date();
     return Stocks.insert({
@@ -46,25 +49,45 @@ Meteor.methods({
       ...data,
     });
   },
-  "Stock.editStock"({
-    stockId,
-    data: updatedStock,
-  }: {
-    stockId: StockID;
-    data: Partial<IStock>;
-  }) {
+  "Stock.editStock"(
+    this: Meteor.MethodThisType,
+    {
+      stockId,
+      data: updatedStock,
+    }: {
+      stockId: StockID;
+      data: Partial<IStock>;
+    },
+  ) {
     assertUserInAnyTeam(this.userId);
     const updatedAt = new Date();
     return Stocks.update(stockId, {
       $set: { ...updatedStock, updatedAt },
     });
   },
-  "Stock.removeStock"({ stockId }: { stockId: StockID }) {
+  "Stock.takeStock"(
+    this: Meteor.MethodThisType,
+    { stockId, count }: { stockId: StockID; count: number },
+  ) {
+    assertUserInAnyTeam(this.userId);
+    if (stockId) {
+      return Stocks.update(stockId, {
+        $set: { approxCount: count },
+        $push: { levels: { count, timestamp: new Date() } },
+      });
+    }
+  },
+  "Stock.removeStock"(
+    this: Meteor.MethodThisType,
+    { stockId }: { stockId: StockID },
+  ) {
     assertUserInAnyTeam(this.userId);
     if (stockId)
       return Stocks.update(stockId, { $set: { removedAt: new Date() } });
   },
-});
+} as const;
+
+Meteor.methods(stocksMethods);
 
 // @ts-expect-error
 if (Meteor.isClient) window.Stocks = Stocks;

@@ -125,11 +125,11 @@ export default function PageProducts() {
     <div>
       <button onClick={() => setIsEditing(NEW)}>Create Product</button>
       {isEditing === NEW ? (
-        <Modal>
+        <Modal onDismiss={() => setIsEditing(null)}>
           <PageProductsItem onCancel={() => setIsEditing(null)} />
         </Modal>
       ) : isEditing ? (
-        <Modal>
+        <Modal onDismiss={() => setIsEditing(null)}>
           <PageProductsItem
             onCancel={() => setIsEditing(null)}
             product={products.find(({ _id }) => _id === isEditing)}
