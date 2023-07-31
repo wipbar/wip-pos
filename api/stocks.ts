@@ -1,16 +1,24 @@
+import { Mass, Volume } from "convert";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
+import { PackageTypeCode } from "../data";
 import { Flavor } from "../util";
+import { assertUserInAnyTeam } from "./accounts";
 
 export type StockID = Flavor<string, "StockID">;
 
-interface IStock {
+export interface IStock {
   _id: StockID;
+  createdAt: Date;
+  updatedAt?: Date;
+  removedAt?: Date;
   barCode?: string;
   name: string;
-  unit: string;
+  packageType: PackageTypeCode | null;
+  unitSize?: number;
+  sizeUnit?: Volume | Mass | null;
   approxCount: null | number;
-  levels: {
+  levels?: {
     count: number;
     timestamp: Date;
   }[];
@@ -18,17 +26,45 @@ interface IStock {
 
 const Stocks = new Mongo.Collection<IStock>("stocks");
 
-if (Meteor.isServer)
-  Meteor.startup(() => {
-    Stocks.remove({});
-    if (Stocks.find().count() === 0) {
-      // Nothing yet
-    }
-  });
-
 export default Stocks;
 
-Meteor.methods({});
+Meteor.methods({
+  "Stock.addStock"({
+    data,
+  }: {
+    data: Pick<
+      IStock,
+      "barCode" | "name" | "packageType" | "sizeUnit" | "unitSize"
+    >;
+  }) {
+    assertUserInAnyTeam(this.userId);
+    const createdAt = new Date();
+    return Stocks.insert({
+      createdAt,
+      updatedAt: createdAt,
+      approxCount: null,
+      ...data,
+    });
+  },
+  "Stock.editStock"({
+    stockId,
+    data: updatedStock,
+  }: {
+    stockId: StockID;
+    data: Partial<IStock>;
+  }) {
+    assertUserInAnyTeam(this.userId);
+    const updatedAt = new Date();
+    return Stocks.update(stockId, {
+      $set: { ...updatedStock, updatedAt },
+    });
+  },
+  "Stock.removeStock"({ stockId }: { stockId: StockID }) {
+    assertUserInAnyTeam(this.userId);
+    if (stockId)
+      return Stocks.update(stockId, { $set: { removedAt: new Date() } });
+  },
+});
 
 // @ts-expect-error
 if (Meteor.isClient) window.Stocks = Stocks;

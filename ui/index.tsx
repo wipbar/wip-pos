@@ -43,6 +43,7 @@ export default function UI() {
   useSubscription("products");
   useSubscription("camps");
   useSubscription("locations");
+  useSubscription("stocks");
 
   const camps = useFind(() => Camps.find({}, { sort: { end: -1 } }), []);
   const currentCamp = useCurrentCamp();

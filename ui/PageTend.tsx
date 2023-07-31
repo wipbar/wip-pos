@@ -67,7 +67,7 @@ export default function PageTend() {
   const [pickedProductIdsLists, setPickedProductIdsLists] = useSession<
     ProductID[][]
   >("pickedProductIdsLists", [[]]);
-  console.log({ pickedProductIdsLists, setPickedProductIdsLists });
+
   const current = useMemo(
     () => (pickedProductIdsLists.length >= currentCart ? currentCart : 0),
     [currentCart, pickedProductIdsLists.length],

@@ -85,7 +85,6 @@ export default function PageProductsItem({
     setValue,
   } = useForm<Partial<IProduct> & { buyPrice: number }>();
   const onSubmit2 = async (data: Partial<IProduct> & { buyPrice: number }) => {
-    console.log(data);
     if (!product) {
       await addProduct({ data: { ...data, tap: data.tap || null } });
     } else if (product) {

@@ -3,6 +3,7 @@ import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { Flavor } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
+import { StockID } from "./stocks";
 
 export type ProductID = Flavor<string, "ProductID">;
 
@@ -10,16 +11,22 @@ export interface IProduct {
   _id: ProductID;
   createdAt: Date;
   updatedAt?: Date;
+  removedAt?: Date;
   brandName: string;
   name: string;
   description?: string;
   salePrice?: number;
   unitSize?: number | string;
-  sizeUnit?: Volume | Mass;
+  sizeUnit?: Volume | Mass | "pc" | "crate";
   abv?: number;
   ibu?: number;
   tags?: string[];
   shopPrices?: { buyPrice: number; timestamp: Date }[];
+  components?: {
+    stockId: StockID;
+    unitSize?: number | string;
+    sizeUnit?: Volume | Mass | null;
+  }[];
   locationIds?: string[];
   tap?: string;
   barCode?: string;
@@ -29,8 +36,13 @@ const Products = new Mongo.Collection<IProduct>("products");
 
 export default Products;
 
-Meteor.methods({
-  "Products.addProduct"({ data }) {
+export const productsMethods = {
+  "Products.addProduct"(
+    this: Meteor.MethodThisType,
+    {
+      data,
+    }: { data: Omit<IProduct, "_id" | "createdAt"> & { buyPrice?: number } },
+  ) {
     assertUserInAnyTeam(this.userId);
     const createdAt = new Date();
     return Products.insert({
@@ -39,17 +51,26 @@ Meteor.methods({
       brandName: data.brandName.trim(),
       name: data.name.trim(),
       description: data.description?.trim(),
-      salePrice: data.salePrice && Number(data.salePrice.trim()),
-      unitSize: data.unitSize && Number(data.unitSize.trim()),
-      sizeUnit: data.sizeUnit.trim(),
-      abv: data.abv?.trim() && Number(data.abv.trim()),
+      salePrice: data.salePrice,
+      unitSize: data.unitSize,
+      sizeUnit: data.sizeUnit as Volume | Mass | "pc" | "crate",
+      abv: data.abv || undefined,
       tags: data.tags?.map((tag: string) => tag.trim().toLowerCase()) || [],
       shopPrices: data.buyPrice
-        ? [{ buyPrice: Number(data.buyPrice.trim()), timestamp: createdAt }]
+        ? [{ buyPrice: Number(data.buyPrice), timestamp: createdAt }]
         : undefined,
     });
   },
-  "Products.editProduct"({ productId, data: { buyPrice, ...updatedProduct } }) {
+  "Products.editProduct"(
+    this: Meteor.MethodThisType,
+    {
+      productId,
+      data: { buyPrice, ...updatedProduct },
+    }: {
+      productId: ProductID;
+      data: Partial<IProduct> & { buyPrice?: number };
+    },
+  ) {
     assertUserInAnyTeam(this.userId);
     const oldProduct = Products.findOne({ _id: productId });
     const updatedAt = new Date();
@@ -57,20 +78,25 @@ Meteor.methods({
       $set: {
         ...updatedProduct,
         updatedAt,
-        shopPrices: buyPrice?.trim()
+        shopPrices: buyPrice
           ? (oldProduct?.shopPrices || []).concat([
-              { buyPrice: +buyPrice.trim(), timestamp: updatedAt },
+              { buyPrice: buyPrice, timestamp: updatedAt },
             ])
           : undefined,
       },
     });
   },
-  "Products.removeProduct"({ productId }) {
+  "Products.removeProduct"(
+    this: Meteor.MethodThisType,
+    { productId }: { productId: ProductID },
+  ) {
     assertUserInAnyTeam(this.userId);
     if (productId)
       return Products.update(productId, { $set: { removedAt: new Date() } });
   },
-});
+} as const;
+
+Meteor.methods(productsMethods);
 
 // @ts-expect-error
 if (Meteor.isClient) window.Products = Products;

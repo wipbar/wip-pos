@@ -106,7 +106,7 @@ export default function DayByDay() {
     }),
     [currentCamp],
   );
-  console.log(data);
+
   return (
     <div>
       <ResponsiveContainer width="100%" height={350}>
