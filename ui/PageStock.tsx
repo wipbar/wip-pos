@@ -139,7 +139,11 @@ export default function PageStock() {
           <tbody>
             {stocks.map((stock) => (
               <tr key={stock._id}>
-                <td align="right">{stock.approxCount}</td>
+                <td align="right">
+                  {stock.approxCount?.toLocaleString("en-US", {
+                    maximumSignificantDigits: 3,
+                  })}
+                </td>
                 <td>{stock.name}</td>
                 <td>
                   {stock.unitSize}

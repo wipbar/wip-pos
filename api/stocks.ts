@@ -15,7 +15,7 @@ export interface IStock {
   barCode?: string;
   name: string;
   packageType: PackageTypeCode | null;
-  unitSize?: number;
+  unitSize?: number | string;
   sizeUnit?: Volume | Mass | null;
   approxCount: null | number;
   levels?: {
