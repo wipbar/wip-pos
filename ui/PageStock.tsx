@@ -4,6 +4,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useState } from "react";
 import { isUserAdmin } from "../api/accounts";
+import Products from "../api/products";
 import Stocks, { StockID } from "../api/stocks";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
@@ -16,17 +17,21 @@ const NEW = Symbol("New");
 export default function PageStock() {
   const user = useCurrentUser();
   const [removeStock] = useMethod("Stock.removeStock");
-  const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState<null | StockID | typeof NEW>(null);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
   const stocks = useFind(
     () =>
       Stocks.find(
-        { removedAt: { $exists: showRemoved } },
+        { removedAt: { $exists: false } },
         { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
       ),
-    [showRemoved, sortBy],
+    [sortBy],
+  );
+
+  const products = useFind(
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
 
   return (
@@ -89,7 +94,23 @@ export default function PageStock() {
                     : "❔"}
                 </td>
                 <td>{stock.barCode ? "✅" : "❌"}</td>
-                <td>{stock.name}</td>
+                <td>
+                  {stock.name}{" "}
+                  <small>
+                    <small>
+                      Part of{" "}
+                      {
+                        products.filter(
+                          (product) =>
+                            product?.components?.some(
+                              (component) => component.stockId === stock._id,
+                            ),
+                        ).length
+                      }{" "}
+                      products
+                    </small>
+                  </small>
+                </td>
                 <td>
                   {stock.unitSize}
                   {stock.sizeUnit}
