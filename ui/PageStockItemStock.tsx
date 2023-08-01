@@ -40,13 +40,13 @@ export default function PageStockItemStock({
               align-items: center;
             `}
           >
-            <label
+            <div
               className={css`
                 margin-bottom: 4px;
               `}
             >
               {String(level.timestamp)} - {String(level.count)}
-            </label>
+            </div>
           </div>
         </div>
       ))}

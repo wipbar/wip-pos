@@ -178,7 +178,6 @@ export default function PageProducts() {
         >
           <thead>
             <tr>
-              <th />
               <th>Brand</th>
               <th>Name</th>
               <th>Price</th>
@@ -196,51 +195,6 @@ export default function PageProducts() {
                 location && product.locationIds?.includes(location?._id);
               return (
                 <tr key={product._id}>
-                  <td>
-                    <button
-                      onClick={() => {
-                        if (!location) return;
-
-                        editProduct({
-                          productId: product._id,
-                          data: isOnMenu
-                            ? {
-                                locationIds: product.locationIds?.filter(
-                                  (id) => id !== location._id,
-                                ),
-                              }
-                            : {
-                                locationIds: [
-                                  ...(product.locationIds || []),
-                                  location._id,
-                                ],
-                              },
-                        });
-                      }}
-                      disabled={location?.curfew && isAlcoholic(product)}
-                      style={{
-                        whiteSpace: "nowrap",
-                        background:
-                          location?.curfew && isAlcoholic(product)
-                            ? "gray"
-                            : isOnMenu
-                            ? "red"
-                            : "limegreen",
-                        color: "white",
-                      }}
-                    >
-                      <FontAwesomeIcon
-                        icon={
-                          location?.curfew && isAlcoholic(product)
-                            ? faBan
-                            : isOnMenu
-                            ? faMinus
-                            : faPlus
-                        }
-                      />{" "}
-                      Menu
-                    </button>
-                  </td>
                   <td>{product.brandName}</td>
                   <td>{product.name}</td>
                   <td
@@ -284,28 +238,86 @@ export default function PageProducts() {
                     ))}
                   </td>
                   <td>{product.tap}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    <button onClick={() => setIsStocking(product._id)}>
-                      <FontAwesomeIcon icon={faBoxesStacked} />
+                  <td>
+                    <button
+                      onClick={() => {
+                        if (!location) return;
+
+                        editProduct({
+                          productId: product._id,
+                          data: isOnMenu
+                            ? {
+                                locationIds: product.locationIds?.filter(
+                                  (id) => id !== location._id,
+                                ),
+                              }
+                            : {
+                                locationIds: [
+                                  ...(product.locationIds || []),
+                                  location._id,
+                                ],
+                              },
+                        });
+                      }}
+                      disabled={location?.curfew && isAlcoholic(product)}
+                      style={{
+                        whiteSpace: "nowrap",
+                        width: "100%",
+                        background:
+                          location?.curfew && isAlcoholic(product)
+                            ? "gray"
+                            : isOnMenu
+                            ? "red"
+                            : "limegreen",
+                        color: "white",
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={
+                          location?.curfew && isAlcoholic(product)
+                            ? faBan
+                            : isOnMenu
+                            ? faMinus
+                            : faPlus
+                        }
+                      />{" "}
+                      Menu
                     </button>
-                    <button onClick={() => setIsEditing(product._id)}>
-                      <FontAwesomeIcon icon={faPencilAlt} />
-                    </button>
-                    {product && isUserAdmin(user) && (
+                    <div
+                      className={css`
+                        white-space: nowrap;
+                      `}
+                    >
                       <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Are you sure you want to delete " + product.name,
-                            )
-                          ) {
-                            removeProduct({ productId: product._id });
-                          }
+                        onClick={() => setIsStocking(product._id)}
+                        style={{
+                          background: product.components?.length
+                            ? "limegreen"
+                            : "red",
                         }}
                       >
-                        <FontAwesomeIcon icon={faTrash} />
+                        <FontAwesomeIcon icon={faBoxesStacked} />
                       </button>
-                    )}
+                      <button onClick={() => setIsEditing(product._id)}>
+                        <FontAwesomeIcon icon={faPencilAlt} />
+                      </button>
+                      {product && isUserAdmin(user) && (
+                        <button
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete " +
+                                  product.name,
+                              )
+                            ) {
+                              removeProduct({ productId: product._id });
+                            }
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

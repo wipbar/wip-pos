@@ -141,9 +141,11 @@ export default function PageStock() {
             {stocks.map((stock) => (
               <tr key={stock._id}>
                 <td align="right">
-                  {stock.approxCount?.toLocaleString("en-US", {
-                    maximumSignificantDigits: 3,
-                  })}
+                  {stock.approxCount
+                    ? stock.approxCount?.toLocaleString("en-US", {
+                        maximumSignificantDigits: 3,
+                      })
+                    : "❔"}
                 </td>
                 <td>{stock.barCode ? "✅" : "❌"}</td>
                 <td>{stock.name}</td>
@@ -158,7 +160,12 @@ export default function PageStock() {
                   }
                 </td>
                 <td style={{ whiteSpace: "nowrap" }} align="right">
-                  <button onClick={() => setIsStocking(stock._id)}>
+                  <button
+                    onClick={() => setIsStocking(stock._id)}
+                    style={{
+                      background: stock.levels?.length ? "limegreen" : "red",
+                    }}
+                  >
                     <FontAwesomeIcon icon={faBoxesStacked} />
                   </button>
                   <button onClick={() => setIsEditing(stock._id)}>

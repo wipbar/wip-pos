@@ -16,7 +16,7 @@ const Label = ({
   label: string;
   children: ReactNode | ReactNode[];
 }) => (
-  <label
+  <div
     className={css`
       display: flex;
       width: 480px;
@@ -42,7 +42,7 @@ const Label = ({
     >
       {children}
     </div>
-  </label>
+  </div>
 );
 export default function PageStockItem({
   onCancel,
