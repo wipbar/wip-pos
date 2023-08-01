@@ -85,7 +85,6 @@ export const salesMethods = {
                 )
               : Number(component.unitSize);
 
-          console.log({ component, stock, componentInStockSize });
           const newApproxCount =
             (stock.approxCount * Number(stock.unitSize) -
               componentInStockSize) /

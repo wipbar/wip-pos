@@ -73,7 +73,6 @@ if (!Meteor.isClient) {
         identity = HTTP.get("https://bornhack.dk/profile/api/", {
           headers: { Authorization: `Bearer ${accessToken}` },
         }).data;
-        console.log()
       } catch ({ message, response }: any) {
         throw Object.assign(
           new Error("Failed to fetch identity from Bornhack. " + message),
