@@ -25,8 +25,11 @@ if (Meteor.isServer) {
 }
 export default Locations;
 
-Meteor.methods({
-  "Locations.toggleCurfew"({ locationId }: { locationId: LocationID }) {
+export const locationMethods = {
+  "Locations.toggleCurfew"(
+    this: Meteor.MethodThisType,
+    { locationId }: { locationId: LocationID },
+  ) {
     const location = Locations.findOne(locationId);
 
     if (!isUserInTeam(this.userId, location?.teamName)) {
@@ -39,7 +42,9 @@ Meteor.methods({
       }) && Locations.findOne(locationId)
     );
   },
-});
+} as const;
+
+Meteor.methods(locationMethods);
 
 // @ts-expect-error
 if (Meteor.isClient) window.Locations = Locations;

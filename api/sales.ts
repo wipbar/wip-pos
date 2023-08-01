@@ -22,7 +22,7 @@ export interface ISale {
 
 const Sales = new Mongo.Collection<ISale>("sales");
 
-Meteor.methods({
+export const salesMethods = {
   async "Sales.sellProducts"(
     this: Meteor.MethodThisType,
     {
@@ -103,7 +103,9 @@ Meteor.methods({
 
     return insertResult;
   },
-});
+} as const;
+
+Meteor.methods(salesMethods);
 
 export default Sales;
 

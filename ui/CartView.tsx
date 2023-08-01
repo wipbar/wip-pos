@@ -122,6 +122,8 @@ export default function CartView({
     useMethod("Sales.sellProducts");
 
   const handleSellClick = useCallback(async () => {
+    if (!locationSlug) return;
+
     crankSound.play();
     doSellProducts({ locationSlug, productIds: pickedProductIds });
 

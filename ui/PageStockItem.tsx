@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import React, { ReactNode, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
-import { IStock, stocksMethods } from "../api/stocks";
+import { IStock } from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import { packageTypes } from "../data";
 import useMethod from "../hooks/useMethod";
@@ -55,10 +55,7 @@ export default function PageStockItem({
   const [scanningBarcode, setScanningBarcode] = useState(false);
   const [addStock] = useMethod("Stock.addStock");
   const [editStock] = useMethod("Stock.editStock");
-  const [takeStock] =
-    useMethod<Parameters<(typeof stocksMethods)["Stock.takeStock"]>[0]>(
-      "Stock.takeStock",
-    );
+  const [takeStock] = useMethod("Stock.takeStock");
 
   const {
     handleSubmit,

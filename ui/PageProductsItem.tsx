@@ -95,11 +95,11 @@ export default function PageProductsItem({
   });
   const onSubmit2 = async (data: Partial<IProduct> & { buyPrice: number }) => {
     if (!product) {
-      await addProduct({ data: { ...data, tap: data.tap || null } });
+      await addProduct({ data: { ...data, tap: data.tap || undefined } });
     } else if (product) {
       await editProduct({
         productId: product._id,
-        data: { ...data, tap: data.tap || null },
+        data: { ...data, tap: data.tap || undefined },
       });
     }
     onCancel?.();

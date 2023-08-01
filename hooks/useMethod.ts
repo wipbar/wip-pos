@@ -1,7 +1,20 @@
 import { Meteor } from "meteor/meteor";
 import { useCallback, useReducer } from "react";
+import { locationMethods } from "../api/locations";
+import { productsMethods } from "../api/products";
+import { salesMethods } from "../api/sales";
+import { stocksMethods } from "../api/stocks";
 
-export default function useMethod<Input = any, Output = any>(method: string) {
+type MethodMap = typeof stocksMethods &
+  typeof productsMethods &
+  typeof salesMethods &
+  typeof locationMethods;
+
+export default function useMethod<
+  M extends keyof MethodMap,
+  Input = Parameters<MethodMap[M]>[0],
+  Output = ReturnType<MethodMap[M]>,
+>(method: M) {
   const [{ isLoading, error, data }, dispatch] = useReducer(
     (
       state: {
@@ -40,7 +53,7 @@ export default function useMethod<Input = any, Output = any>(method: string) {
 
   const call = useCallback(
     (params: Input) =>
-      new Promise((resolve, reject) => {
+      new Promise<Output>((resolve, reject) => {
         dispatch({ type: "loading" });
         const callbackHandler = (err: Error, result: Output) => {
           if (err) {

@@ -9,11 +9,7 @@ import { opacify } from "polished";
 import React, { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import type { ILocation } from "../api/locations";
-import Products, {
-  ProductID,
-  isAlcoholic,
-  productsMethods,
-} from "../api/products";
+import Products, { ProductID, isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -71,15 +67,11 @@ export const Modal = ({
   );
 };
 function CurfewButton({ location }: { location: ILocation }) {
-  const [toggleCurfew] = useMethod<{ locationId: string }>(
-    "Locations.toggleCurfew",
-  );
+  const [toggleCurfew] = useMethod("Locations.toggleCurfew");
   return (
     <button
       type="button"
-      onClick={() => {
-        toggleCurfew({ locationId: location._id });
-      }}
+      onClick={() => toggleCurfew({ locationId: location._id })}
     >
       {location.curfew ? "Exit curfew" : "Enter curfew"}
     </button>
@@ -88,12 +80,8 @@ function CurfewButton({ location }: { location: ILocation }) {
 const NEW = Symbol("New");
 export default function PageProducts() {
   const user = useCurrentUser();
-  const [editProduct] = useMethod<
-    Parameters<(typeof productsMethods)["Products.editProduct"]>[0]
-  >("Products.editProduct");
-  const [removeProduct] = useMethod<
-    Parameters<(typeof productsMethods)["Products.removeProduct"]>[0]
-  >("Products.removeProduct");
+  const [editProduct] = useMethod("Products.editProduct");
+  const [removeProduct] = useMethod("Products.removeProduct");
   const { location, error } = useCurrentLocation(true);
   const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState<null | ProductID | typeof NEW>(
