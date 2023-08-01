@@ -130,6 +130,7 @@ export default function PageStock() {
           <thead>
             <tr>
               <th align="right">Count</th>
+              <th align="left">UPC</th>
               <th align="left">Name</th>
               <th>Size</th>
               <th>Type</th>
@@ -144,6 +145,7 @@ export default function PageStock() {
                     maximumSignificantDigits: 3,
                   })}
                 </td>
+                <td>{stock.barCode ? "✅" : "❌"}</td>
                 <td>{stock.name}</td>
                 <td>
                   {stock.unitSize}

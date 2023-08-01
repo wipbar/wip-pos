@@ -64,3 +64,6 @@ declare abstract class As<Tag extends keyof never> {
 }
 
 export type Flavor<T, FlavorT extends string> = T & As<FlavorT>;
+
+export const units = ["cl", "l", "pc", "ml", "g"] as const;
+export type SizeUnit = (typeof units)[number];

@@ -2,12 +2,14 @@ import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
 import React, { ReactNode, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import ReactSelect from "react-select";
 import CreatableSelect from "react-select/creatable";
 import Locations, { ILocation } from "../api/locations";
 import Products, { IProduct } from "../api/products";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
+import { units } from "../util";
 import { Modal } from "./PageProducts";
 
 const toOptions = (items: any[]) =>
@@ -20,7 +22,7 @@ const Label = ({
   label: string;
   children: ReactNode | ReactNode[];
 }) => (
-  <label
+  <div
     className={css`
       display: flex;
       width: 480px;
@@ -42,11 +44,15 @@ const Label = ({
     <div
       className={css`
         flex: 1;
+        display: flex;
+        > * {
+          flex: 50%;
+        }
       `}
     >
       {children}
     </div>
-  </label>
+  </div>
 );
 export default function PageProductsItem({
   onCancel,
@@ -159,12 +165,20 @@ export default function PageProductsItem({
           defaultValue={product?.unitSize || ""}
           {...register("unitSize")}
         />
-      </Label>
-      <Label label="Size Unit">
-        <input
-          type="text"
-          defaultValue={product?.sizeUnit || ""}
-          {...register("sizeUnit")}
+        <Controller
+          name="sizeUnit"
+          control={control}
+          defaultValue={product?.sizeUnit}
+          render={({ field: { onBlur, value } }) => (
+            <ReactSelect
+              value={value && { value: value, label: value }}
+              options={units.map((code) => ({ value: code, label: code }))}
+              onBlur={onBlur}
+              onChange={(newValue) =>
+                setValue("sizeUnit", newValue?.value, { shouldDirty: true })
+              }
+            />
+          )}
         />
       </Label>
       <Label label="Alcohol %">

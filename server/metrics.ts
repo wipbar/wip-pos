@@ -29,7 +29,7 @@ new client.Gauge({
 });
 client.collectDefaultMetrics();
 
-WebApp.connectHandlers.use("/metrics", (req, res) =>
+WebApp.connectHandlers.use("/metrics", (_req, res) =>
   Fiber(async () => {
     try {
       res.setHeader("content-type", "text/plain; version=0.0.4; charset=utf-8");

@@ -71,12 +71,18 @@ Meteor.methods({
           if (!stock.approxCount) continue;
 
           const componentInStockSize =
-            component.sizeUnit !== stock.sizeUnit
-              ? // @ts-expect-error
-                convert(Number(component.unitSize), component.sizeUnit).to(
-                  // @ts-expect-error
+            component.sizeUnit !== stock.sizeUnit &&
+            component.sizeUnit !== "pc" &&
+            stock.sizeUnit !== "pc" &&
+            component.sizeUnit !== "g" &&
+            stock.sizeUnit !== "g"
+              ? convert(component.unitSize, component.sizeUnit).to(
                   stock.sizeUnit,
-                ).quantity
+                )
+              : component.sizeUnit === "g" && stock.sizeUnit === "g"
+              ? convert(component.unitSize, component.sizeUnit).to(
+                  stock.sizeUnit,
+                )
               : Number(component.unitSize);
 
           console.log({ component, stock, componentInStockSize });

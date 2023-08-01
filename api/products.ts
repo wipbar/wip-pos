@@ -1,7 +1,6 @@
-import { Mass, Volume } from "convert";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import { Flavor } from "../util";
+import { Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
 import { StockID } from "./stocks";
 
@@ -17,15 +16,15 @@ export interface IProduct {
   description?: string;
   salePrice?: number;
   unitSize?: number | string;
-  sizeUnit?: Volume | Mass | "pc" | "crate";
+  sizeUnit?: SizeUnit;
   abv?: number;
   ibu?: number;
   tags?: string[];
   shopPrices?: { buyPrice: number; timestamp: Date }[];
   components?: {
     stockId: StockID;
-    unitSize?: number | string;
-    sizeUnit?: Volume | Mass | null;
+    unitSize: number;
+    sizeUnit: SizeUnit;
   }[];
   locationIds?: string[];
   tap?: string;
@@ -53,7 +52,7 @@ export const productsMethods = {
       description: data.description?.trim(),
       salePrice: data.salePrice,
       unitSize: data.unitSize,
-      sizeUnit: data.sizeUnit as Volume | Mass | "pc" | "crate",
+      sizeUnit: data.sizeUnit,
       abv: data.abv || undefined,
       tags: data.tags?.map((tag: string) => tag.trim().toLowerCase()) || [],
       shopPrices: data.buyPrice

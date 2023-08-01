@@ -6,6 +6,7 @@ import { IStock } from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import { packageTypes } from "../data";
 import useMethod from "../hooks/useMethod";
+import { units } from "../util";
 import { Modal } from "./PageProducts";
 
 const Label = ({
@@ -132,8 +133,6 @@ export default function PageStockItem({
           defaultValue={stock?.unitSize || ""}
           {...register("unitSize")}
         />
-      </Label>
-      <Label label="Size Unit">
         <Controller
           name="sizeUnit"
           control={control}
@@ -141,11 +140,7 @@ export default function PageStockItem({
           render={({ field: { onBlur, value } }) => (
             <ReactSelect
               value={value && { value: value, label: value }}
-              // @ts-expect-error
-              options={["cl", "l", "pc"].map((code) => ({
-                value: code,
-                label: code,
-              }))}
+              options={units.map((code) => ({ value: code, label: code }))}
               onBlur={onBlur}
               onChange={(newValue) =>
                 setValue("sizeUnit", newValue?.value, { shouldDirty: true })

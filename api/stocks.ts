@@ -1,8 +1,7 @@
-import { Mass, Volume } from "convert";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { PackageTypeCode } from "../data";
-import { Flavor } from "../util";
+import { Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
 
 export type StockID = Flavor<string, "StockID">;
@@ -15,8 +14,8 @@ export interface IStock {
   barCode?: string;
   name: string;
   packageType: PackageTypeCode | null;
-  unitSize?: number | string;
-  sizeUnit?: Volume | Mass | null;
+  unitSize: number;
+  sizeUnit: SizeUnit;
   approxCount: null | number;
   levels?: {
     count: number;

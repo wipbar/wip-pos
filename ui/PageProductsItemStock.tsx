@@ -1,11 +1,13 @@
 import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
-import React, { ReactNode, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
-import ReactSelect from "react-select";
+import React, { ReactNode } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import ReactSelect, { createFilter } from "react-select";
 import { IProduct, productsMethods } from "../api/products";
 import Stocks from "../api/stocks";
 import useMethod from "../hooks/useMethod";
+import { units } from "../util";
+import { setValue } from "../vendor/prom-client/lib/util";
 
 const Label = ({
   label,
@@ -52,7 +54,6 @@ export default function PageProductsItemStock({
   const [editProduct] = useMethod<
     Parameters<(typeof productsMethods)["Products.editProduct"]>[0]
   >("Products.editProduct");
-  const [showRemoved] = useState(false);
 
   const {
     handleSubmit,
@@ -75,12 +76,8 @@ export default function PageProductsItemStock({
   };
 
   const stocks = useFind(
-    () =>
-      Stocks.find(
-        { removedAt: { $exists: showRemoved } },
-        { sort: { name: -1, createdAt: -1 } },
-      ),
-    [showRemoved],
+    () => Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
+    [],
   );
 
   return (
@@ -107,7 +104,22 @@ export default function PageProductsItemStock({
               {...register(`components.${index}.unitSize`)}
               type="number"
             />
-            <input {...register(`components.${index}.sizeUnit`)} />
+            <Controller
+              name={`components.${index}.sizeUnit`}
+              control={control}
+              render={({ field: { onBlur, value } }) => (
+                <ReactSelect
+                  value={value && { value: value, label: value }}
+                  options={units.map((code) => ({ value: code, label: code }))}
+                  onBlur={onBlur}
+                  onChange={(newValue) =>
+                    setValue(`components.${index}.sizeUnit`, newValue?.value, {
+                      shouldDirty: true,
+                    })
+                  }
+                />
+              )}
+            />
             <button type="button" onClick={() => remove(index)}>
               <small>Remove</small>
             </button>
@@ -116,6 +128,10 @@ export default function PageProductsItemStock({
         <Label label="Components">
           <ReactSelect
             value={null}
+            filterOption={createFilter({
+              stringify: (option) =>
+                `${option.label} ${option.value} ${option.data?.barCode || ""}`,
+            })}
             options={stocks
               .filter(
                 ({ _id }) =>
@@ -125,6 +141,7 @@ export default function PageProductsItemStock({
               .map((stock) => ({
                 label: stock.name,
                 value: stock._id,
+                barCode: stock.barCode,
               }))}
             onChange={(newValue) => {
               const stock = stocks.find(({ _id }) => _id === newValue?.value);
