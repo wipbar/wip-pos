@@ -7,7 +7,6 @@ import { IProduct, productsMethods } from "../api/products";
 import Stocks from "../api/stocks";
 import useMethod from "../hooks/useMethod";
 import { units } from "../util";
-import { setValue } from "../vendor/prom-client/lib/util";
 
 const Label = ({
   label,
@@ -60,6 +59,7 @@ export default function PageProductsItemStock({
     control,
     register,
     reset,
+    setValue,
     formState: { isDirty, isSubmitting },
   } = useForm<Partial<IProduct> & { buyPrice: number }>({
     defaultValues: { components: product?.components },
@@ -112,11 +112,13 @@ export default function PageProductsItemStock({
                   value={value && { value: value, label: value }}
                   options={units.map((code) => ({ value: code, label: code }))}
                   onBlur={onBlur}
-                  onChange={(newValue) =>
-                    setValue(`components.${index}.sizeUnit`, newValue?.value, {
-                      shouldDirty: true,
-                    })
-                  }
+                  onChange={(newValue) => {
+                    const newSizeUnit = newValue?.value;
+                    if (newSizeUnit)
+                      setValue(`components.${index}.sizeUnit`, newSizeUnit, {
+                        shouldDirty: true,
+                      });
+                  }}
                 />
               )}
             />
