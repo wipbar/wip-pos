@@ -128,6 +128,7 @@ export default function PageProductsItem({
           defaultValue={product?.brandName || ""}
           render={({ field: { onBlur, value } }) => (
             <CreatableSelect
+              required
               value={value ? { value, label: value } : null}
               isClearable
               options={toOptions(allBrandNames || [])}
@@ -147,6 +148,7 @@ export default function PageProductsItem({
       </Label>
       <Label label="Name">
         <input
+          required
           type="text"
           defaultValue={product?.name || ""}
           {...register("name", { required: true })}
@@ -154,6 +156,7 @@ export default function PageProductsItem({
       </Label>
       <Label label="Price">
         <input
+          required
           type="number"
           defaultValue={product?.salePrice || ""}
           {...register("salePrice", { required: true })}
@@ -161,6 +164,7 @@ export default function PageProductsItem({
       </Label>
       <Label label="Unit Size">
         <input
+          required
           type="number"
           defaultValue={product?.unitSize || ""}
           {...register("unitSize")}
@@ -171,6 +175,7 @@ export default function PageProductsItem({
           defaultValue={product?.sizeUnit}
           render={({ field: { onBlur, value } }) => (
             <ReactSelect
+              required
               value={value && { value: value, label: value }}
               options={units.map((code) => ({ value: code, label: code }))}
               onBlur={onBlur}

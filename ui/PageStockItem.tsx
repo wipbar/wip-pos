@@ -92,6 +92,7 @@ export default function PageStockItem({
     >
       <Label label="Name">
         <input
+          required
           type="text"
           defaultValue={stock?.name || ""}
           {...register("name", { required: true })}
@@ -106,6 +107,7 @@ export default function PageStockItem({
             const packageType = packageTypes.find(({ code }) => code === value);
             return (
               <ReactSelect
+                required
                 value={
                   packageType && {
                     value: packageType.code,
@@ -129,6 +131,7 @@ export default function PageStockItem({
       </Label>
       <Label label="Unit Size">
         <input
+          required
           type="number"
           defaultValue={stock?.unitSize || ""}
           {...register("unitSize")}
@@ -139,6 +142,7 @@ export default function PageStockItem({
           defaultValue={stock?.sizeUnit}
           render={({ field: { onBlur, value } }) => (
             <ReactSelect
+              required
               value={value && { value: value, label: value }}
               options={units.map((code) => ({ value: code, label: code }))}
               onBlur={onBlur}

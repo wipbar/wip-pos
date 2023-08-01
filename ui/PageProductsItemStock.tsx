@@ -101,7 +101,10 @@ export default function PageProductsItemStock({
               {stocks.find(({ _id }) => _id === field.stockId)?.name}
             </div>
             <input
-              {...register(`components.${index}.unitSize`)}
+              required
+              {...register(`components.${index}.unitSize`, {
+                required: true,
+              })}
               type="number"
             />
             <Controller
@@ -109,6 +112,7 @@ export default function PageProductsItemStock({
               control={control}
               render={({ field: { onBlur, value } }) => (
                 <ReactSelect
+                  required
                   value={value && { value: value, label: value }}
                   options={units.map((code) => ({ value: code, label: code }))}
                   onBlur={onBlur}
