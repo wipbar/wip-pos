@@ -51,6 +51,7 @@ export const Modal = ({
         className={css`
           background-color: ${currentCamp &&
           getCorrectTextColor(currentCamp.color)};
+          color: ${currentCamp?.color};
           box-shadow: 0 0 24px
             ${currentCamp &&
             opacify(-0.25, getCorrectTextColor(currentCamp.color, true))};

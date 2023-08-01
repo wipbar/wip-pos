@@ -1,75 +1,23 @@
 import { css } from "@emotion/css";
-import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { useFind } from "meteor/react-meteor-data";
-import { opacify } from "polished";
-import React, { ReactNode, useState } from "react";
+import React, { useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Stocks, { StockID } from "../api/stocks";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
-import useCurrentCamp from "../hooks/useCurrentCamp";
+import { packageTypes } from "../data";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
-import { getCorrectTextColor } from "../util";
+import { Modal } from "./PageProducts";
 import PageStockItem from "./PageStockItem";
-import PageStockItemStock from "./PageStockItemStock";
-import { packageTypes } from "../data";
 
-export const Modal = ({
-  children,
-  onDismiss,
-}: {
-  children: ReactNode | ReactNode[];
-  onDismiss?: () => void;
-}) => {
-  const currentCamp = useCurrentCamp();
-  return (
-    <div
-      onClick={onDismiss}
-      className={css`
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: ${currentCamp &&
-        opacify(-0.25, getCorrectTextColor(currentCamp.color))};
-        z-index: 665;
-      `}
-    >
-      <div
-        className={css`
-          background-color: ${currentCamp &&
-          getCorrectTextColor(currentCamp.color)};
-          box-shadow: 0 0 24px
-            ${currentCamp &&
-            opacify(-0.25, getCorrectTextColor(currentCamp.color, true))};
-          padding: 8px 8px;
-          border-radius: 8px;
-          position: relative;
-          z-index: 667;
-        `}
-        onClick={(e) => {
-          //  e.preventDefault();
-          e.stopPropagation();
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-};
 const NEW = Symbol("New");
 export default function PageStock() {
   const user = useCurrentUser();
   const [removeStock] = useMethod("Stock.removeStock");
   const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState<null | StockID | typeof NEW>(null);
-  const [isStocking, setIsStocking] = useState<null | StockID>(null);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
   const stocks = useFind(
@@ -93,13 +41,6 @@ export default function PageStock() {
           <PageStockItem
             onCancel={() => setIsEditing(null)}
             stock={stocks.find(({ _id }) => _id === isEditing)}
-          />
-        </Modal>
-      ) : isStocking ? (
-        <Modal onDismiss={() => setIsStocking(null)}>
-          <PageStockItemStock
-            onCancel={() => setIsStocking(null)}
-            stock={stocks.find(({ _id }) => _id === isStocking)}
           />
         </Modal>
       ) : null}
@@ -160,14 +101,6 @@ export default function PageStock() {
                   }
                 </td>
                 <td style={{ whiteSpace: "nowrap" }} align="right">
-                  <button
-                    onClick={() => setIsStocking(stock._id)}
-                    style={{
-                      background: stock.levels?.length ? "limegreen" : "red",
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faBoxesStacked} />
-                  </button>
                   <button onClick={() => setIsEditing(stock._id)}>
                     <FontAwesomeIcon icon={faPencilAlt} />
                   </button>

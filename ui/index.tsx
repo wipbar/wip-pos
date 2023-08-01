@@ -97,11 +97,11 @@ export default function UI() {
           cursor: pointer;
         }
         html {
-          color: ${currentCamp?.color};
-          background-color: ${
-            currentCamp && getCorrectTextColor(currentCamp.color)
-          };
-
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+            "Cantarell", "Open Sans", "Helvetica Neue", Arial, sans-serif;
+          color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
+          background-color: ${currentCamp?.color};
+          /*
           background: linear-gradient(
               to right,
               #750787,
@@ -128,6 +128,7 @@ export default function UI() {
               rgba(255, 0, 0, 1)
             )
             0 0/100% 100%;
+          */
         }
         a {
           color: ${currentCamp?.color};
@@ -156,8 +157,8 @@ export default function UI() {
       </div>
       <div
         className={css`
-          background: rgba(255, 255, 255, 0.2);
-          border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.3);
+          border-bottom: 2px solid rgba(255, 255, 255, 0.6);
         `}
         hidden={
           (pageSlug === "menu" ||

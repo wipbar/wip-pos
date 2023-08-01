@@ -297,77 +297,86 @@ export default function PageProductsItem({
         </small>
       </Label>
       <fieldset>
-        <legend>{product?.name}</legend>
+        <legend>Components From Stock</legend>
         {fields.map((field, index) => (
           <fieldset key={field.id}>
-            <div
+            <legend
               className={css`
                 flex: 1;
               `}
             >
               {stocks.find(({ _id }) => _id === field.stockId)?.name}
+            </legend>
+            <div
+              className={css`
+                display: flex;
+              `}
+            >
+              <input
+                required
+                {...register(`components.${index}.unitSize`, {
+                  required: true,
+                })}
+                type="number"
+              />
+              <Controller
+                name={`components.${index}.sizeUnit`}
+                control={control}
+                render={({ field: { onBlur, value } }) => (
+                  <ReactSelect
+                    required
+                    value={value && { value: value, label: value }}
+                    options={units.map((code) => ({
+                      value: code,
+                      label: code,
+                    }))}
+                    onBlur={onBlur}
+                    onChange={(newValue) => {
+                      const newSizeUnit = newValue?.value;
+                      if (newSizeUnit)
+                        setValue(`components.${index}.sizeUnit`, newSizeUnit, {
+                          shouldDirty: true,
+                        });
+                    }}
+                  />
+                )}
+              />
+              <button type="button" onClick={() => remove(index)}>
+                <small>Remove</small>
+              </button>
             </div>
-            <input
-              required
-              {...register(`components.${index}.unitSize`, {
-                required: true,
-              })}
-              type="number"
-            />
-            <Controller
-              name={`components.${index}.sizeUnit`}
-              control={control}
-              render={({ field: { onBlur, value } }) => (
-                <ReactSelect
-                  required
-                  value={value && { value: value, label: value }}
-                  options={units.map((code) => ({ value: code, label: code }))}
-                  onBlur={onBlur}
-                  onChange={(newValue) => {
-                    const newSizeUnit = newValue?.value;
-                    if (newSizeUnit)
-                      setValue(`components.${index}.sizeUnit`, newSizeUnit, {
-                        shouldDirty: true,
-                      });
-                  }}
-                />
-              )}
-            />
-            <button type="button" onClick={() => remove(index)}>
-              <small>Remove</small>
-            </button>
           </fieldset>
         ))}
-        <Label label="Components">
-          <ReactSelect
-            value={null}
-            filterOption={createFilter({
-              stringify: (option) =>
-                `${option.label} ${option.value} ${option.data?.barCode || ""}`,
-            })}
-            options={stocks
-              .filter(
-                ({ _id }) =>
-                  !fields.length ||
-                  fields.some(({ stockId }) => stockId !== _id),
-              )
-              .map((stock) => ({
-                label: stock.name,
-                value: stock._id,
-                barCode: stock.barCode,
-              }))}
-            onChange={(newValue) => {
-              const stock = stocks.find(({ _id }) => _id === newValue?.value);
-              if (stock) {
-                append({
-                  stockId: stock._id,
-                  unitSize: stock.unitSize,
-                  sizeUnit: stock.sizeUnit,
-                });
-              }
-            }}
-          />
-        </Label>
+        <ReactSelect
+          value={null}
+          placeholder={
+            fields.length ? "Additional component..." : "Add component..."
+          }
+          filterOption={createFilter({
+            stringify: (option) =>
+              `${option.label} ${option.value} ${option.data?.barCode || ""}`,
+          })}
+          options={stocks
+            .filter(
+              ({ _id }) =>
+                !fields.length || fields.some(({ stockId }) => stockId !== _id),
+            )
+            .map((stock) => ({
+              label: stock.name,
+              value: stock._id,
+              barCode: stock.barCode,
+            }))}
+          onChange={(newValue) => {
+            const stock = stocks.find(({ _id }) => _id === newValue?.value);
+            if (stock) {
+              append({
+                stockId: stock._id,
+                unitSize: stock.unitSize,
+                sizeUnit: stock.sizeUnit,
+              });
+            }
+          }}
+        />
       </fieldset>
       <hr />
       <div
