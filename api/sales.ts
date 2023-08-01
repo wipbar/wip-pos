@@ -76,11 +76,11 @@ export const salesMethods = {
             stock.sizeUnit !== "pc" &&
             component.sizeUnit !== "g" &&
             stock.sizeUnit !== "g"
-              ? convert(component.unitSize, component.sizeUnit).to(
+              ? convert(+component.unitSize, component.sizeUnit).to(
                   stock.sizeUnit,
                 )
               : component.sizeUnit === "g" && stock.sizeUnit === "g"
-              ? convert(component.unitSize, component.sizeUnit).to(
+              ? convert(+component.unitSize, component.sizeUnit).to(
                   stock.sizeUnit,
                 )
               : Number(component.unitSize);
