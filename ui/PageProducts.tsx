@@ -1,5 +1,4 @@
 import { css } from "@emotion/css";
-import { faBoxesStacked } from "@fortawesome/free-solid-svg-icons";
 import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
@@ -22,7 +21,6 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor, stringToColour } from "../util";
 import PageProductsItem from "./PageProductsItem";
-import PageProductsItemStock from "./PageProductsItemStock";
 
 export const Modal = ({
   children,
@@ -100,7 +98,6 @@ export default function PageProducts() {
   const [isEditing, setIsEditing] = useState<null | ProductID | typeof NEW>(
     null,
   );
-  const [isStocking, setIsStocking] = useState<null | ProductID>(null);
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
 
@@ -133,13 +130,6 @@ export default function PageProducts() {
           <PageProductsItem
             onCancel={() => setIsEditing(null)}
             product={products.find(({ _id }) => _id === isEditing)}
-          />
-        </Modal>
-      ) : isStocking ? (
-        <Modal onDismiss={() => setIsStocking(null)}>
-          <PageProductsItemStock
-            onCancel={() => setIsStocking(null)}
-            product={products.find(({ _id }) => _id === isStocking)}
           />
         </Modal>
       ) : null}
@@ -288,16 +278,6 @@ export default function PageProducts() {
                         white-space: nowrap;
                       `}
                     >
-                      <button
-                        onClick={() => setIsStocking(product._id)}
-                        style={{
-                          background: product.components?.length
-                            ? "limegreen"
-                            : "red",
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faBoxesStacked} />
-                      </button>
                       <button onClick={() => setIsEditing(product._id)}>
                         <FontAwesomeIcon icon={faPencilAlt} />
                       </button>

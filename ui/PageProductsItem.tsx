@@ -1,11 +1,12 @@
 import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
 import React, { ReactNode, useCallback, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import ReactSelect from "react-select";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import Locations, { ILocation } from "../api/locations";
 import Products, { IProduct } from "../api/products";
+import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
@@ -89,7 +90,9 @@ export default function PageProductsItem({
     reset,
     formState: { errors, isDirty, isSubmitting },
     setValue,
-  } = useForm<Partial<IProduct> & { buyPrice: number }>();
+  } = useForm<Partial<IProduct> & { buyPrice: number }>({
+    defaultValues: { components: product?.components },
+  });
   const onSubmit2 = async (data: Partial<IProduct> & { buyPrice: number }) => {
     if (!product) {
       await addProduct({ data: { ...data, tap: data.tap || null } });
@@ -109,6 +112,16 @@ export default function PageProductsItem({
       setScanningBarcode(false);
     },
     [setValue],
+  );
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "components",
+  });
+
+  const stocks = useFind(
+    () => Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
+    [],
   );
 
   return (
@@ -283,6 +296,79 @@ export default function PageProductsItem({
           </ul>
         </small>
       </Label>
+      <fieldset>
+        <legend>{product?.name}</legend>
+        {fields.map((field, index) => (
+          <fieldset key={field.id}>
+            <div
+              className={css`
+                flex: 1;
+              `}
+            >
+              {stocks.find(({ _id }) => _id === field.stockId)?.name}
+            </div>
+            <input
+              required
+              {...register(`components.${index}.unitSize`, {
+                required: true,
+              })}
+              type="number"
+            />
+            <Controller
+              name={`components.${index}.sizeUnit`}
+              control={control}
+              render={({ field: { onBlur, value } }) => (
+                <ReactSelect
+                  required
+                  value={value && { value: value, label: value }}
+                  options={units.map((code) => ({ value: code, label: code }))}
+                  onBlur={onBlur}
+                  onChange={(newValue) => {
+                    const newSizeUnit = newValue?.value;
+                    if (newSizeUnit)
+                      setValue(`components.${index}.sizeUnit`, newSizeUnit, {
+                        shouldDirty: true,
+                      });
+                  }}
+                />
+              )}
+            />
+            <button type="button" onClick={() => remove(index)}>
+              <small>Remove</small>
+            </button>
+          </fieldset>
+        ))}
+        <Label label="Components">
+          <ReactSelect
+            value={null}
+            filterOption={createFilter({
+              stringify: (option) =>
+                `${option.label} ${option.value} ${option.data?.barCode || ""}`,
+            })}
+            options={stocks
+              .filter(
+                ({ _id }) =>
+                  !fields.length ||
+                  fields.some(({ stockId }) => stockId !== _id),
+              )
+              .map((stock) => ({
+                label: stock.name,
+                value: stock._id,
+                barCode: stock.barCode,
+              }))}
+            onChange={(newValue) => {
+              const stock = stocks.find(({ _id }) => _id === newValue?.value);
+              if (stock) {
+                append({
+                  stockId: stock._id,
+                  unitSize: stock.unitSize,
+                  sizeUnit: stock.sizeUnit,
+                });
+              }
+            }}
+          />
+        </Label>
+      </fieldset>
       <hr />
       <div
         className={css`
