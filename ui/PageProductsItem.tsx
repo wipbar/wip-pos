@@ -8,6 +8,7 @@ import Locations, { ILocation } from "../api/locations";
 import Products, { IProduct } from "../api/products";
 import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
+import { packageTypes } from "../data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import { units } from "../util";
@@ -361,7 +362,10 @@ export default function PageProductsItem({
                 !fields.length || fields.some(({ stockId }) => stockId !== _id),
             )
             .map((stock) => ({
-              label: stock.name,
+              label: `${stock.name} (${stock.unitSize}${
+                stock.sizeUnit
+              }, ${packageTypes.find(({ code }) => stock.packageType === code)
+                ?.name})`,
               value: stock._id,
               barCode: stock.barCode,
             }))}

@@ -53,6 +53,7 @@ export const productsMethods = {
       salePrice: data.salePrice,
       unitSize: data.unitSize,
       sizeUnit: data.sizeUnit,
+      components: data.components,
       abv: data.abv || undefined,
       tags: data.tags?.map((tag: string) => tag.trim().toLowerCase()) || [],
       shopPrices: data.buyPrice
