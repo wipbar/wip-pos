@@ -65,15 +65,6 @@ export default function PageStockItem({
     formState: { isDirty, isSubmitting },
     setValue,
   } = useForm<Partial<IStock>>();
-  const onSubmit2 = async (data: Partial<IStock>) => {
-    if (!stock) {
-      await addStock({ data });
-    } else if (stock) {
-      await editStock({ stockId: stock._id, data });
-    }
-    onCancel?.();
-    reset();
-  };
 
   const handleBarCode = useCallback(
     (resultBarCode: string) => {
@@ -84,131 +75,143 @@ export default function PageStockItem({
   );
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit2)}
-      className={css`
-        display: flex;
-        flex-direction: column;
-        align-content: center;
-      `}
-    >
-      <Label label="Name">
-        <input
-          required
-          type="text"
-          defaultValue={stock?.name || ""}
-          {...register("name", { required: true })}
-        />
-      </Label>
-      <Label label="Packaging">
-        <Controller
-          name="packageType"
-          control={control}
-          defaultValue={stock?.packageType}
-          render={({ field: { onBlur, value } }) => {
-            const packageType = packageTypes.find(({ code }) => code === value);
-            return (
-              <ReactSelect
-                required
-                value={
-                  packageType && {
-                    value: packageType.code,
-                    label: packageType.name,
+    <>
+      <form
+        onSubmit={handleSubmit(async (data) => {
+          if (!stock) {
+            await addStock({ data });
+          } else if (stock) {
+            await editStock({ stockId: stock._id, data });
+          }
+          onCancel?.();
+          reset();
+        })}
+        className={css`
+          display: flex;
+          flex-direction: column;
+          align-content: center;
+        `}
+      >
+        <Label label="Name">
+          <input
+            required
+            type="text"
+            defaultValue={stock?.name || ""}
+            {...register("name", { required: true })}
+          />
+        </Label>
+        <Label label="Packaging">
+          <Controller
+            name="packageType"
+            control={control}
+            defaultValue={stock?.packageType}
+            render={({ field: { onBlur, value } }) => {
+              const packageType = packageTypes.find(
+                ({ code }) => code === value,
+              );
+              return (
+                <ReactSelect
+                  required
+                  value={
+                    packageType && {
+                      value: packageType.code,
+                      label: packageType.name,
+                    }
                   }
-                }
-                options={packageTypes.map(({ code, name }) => ({
-                  value: code,
-                  label: name,
-                }))}
-                onBlur={onBlur}
-                onChange={(newValue) =>
-                  setValue("packageType", newValue?.value, {
-                    shouldDirty: true,
-                  })
-                }
-              />
-            );
-          }}
-        />
-      </Label>
-      <Label label="Unit Size">
+                  options={packageTypes.map(({ code, name }) => ({
+                    value: code,
+                    label: name,
+                  }))}
+                  onBlur={onBlur}
+                  onChange={(newValue) =>
+                    setValue("packageType", newValue?.value, {
+                      shouldDirty: true,
+                    })
+                  }
+                />
+              );
+            }}
+          />
+        </Label>
+        <Label label="Unit Size">
+          <div
+            className={css`
+              display: flex;
+
+              > * {
+                flex: 1;
+              }
+            `}
+          >
+            <input
+              required
+              type="number"
+              defaultValue={stock?.unitSize || ""}
+              {...register("unitSize")}
+            />
+            <Controller
+              name="sizeUnit"
+              control={control}
+              defaultValue={stock?.sizeUnit}
+              render={({ field: { onBlur, value } }) => (
+                <ReactSelect
+                  required
+                  value={value && { value: value, label: value }}
+                  options={units.map((code) => ({ value: code, label: code }))}
+                  onBlur={onBlur}
+                  onChange={(newValue) =>
+                    setValue("sizeUnit", newValue?.value, { shouldDirty: true })
+                  }
+                />
+              )}
+            />
+          </div>
+        </Label>
+        <Label label="Bar Code">
+          <div
+            className={css`
+              white-space: nowrap;
+            `}
+          >
+            <button type="button" onClick={() => setScanningBarcode(true)}>
+              Scan
+            </button>
+            <input
+              type="text"
+              defaultValue={stock?.barCode || ""}
+              {...register("barCode")}
+            />
+          </div>
+          {scanningBarcode ? (
+            <Modal onDismiss={() => setScanningBarcode(false)}>
+              <BarcodeScannerComponent onResult={handleBarCode} />
+            </Modal>
+          ) : null}
+        </Label>
+        <hr />
         <div
           className={css`
             display: flex;
-
-            > * {
-              flex: 1;
-            }
+            justify-content: space-around;
           `}
         >
-          <input
-            required
-            type="number"
-            defaultValue={stock?.unitSize || ""}
-            {...register("unitSize")}
-          />
-          <Controller
-            name="sizeUnit"
-            control={control}
-            defaultValue={stock?.sizeUnit}
-            render={({ field: { onBlur, value } }) => (
-              <ReactSelect
-                required
-                value={value && { value: value, label: value }}
-                options={units.map((code) => ({ value: code, label: code }))}
-                onBlur={onBlur}
-                onChange={(newValue) =>
-                  setValue("sizeUnit", newValue?.value, { shouldDirty: true })
-                }
-              />
-            )}
-          />
-        </div>
-      </Label>
-      <Label label="Bar Code">
-        <div
-          className={css`
-            white-space: nowrap;
-          `}
-        >
-          <button type="button" onClick={() => setScanningBarcode(true)}>
-            Scan
+          <button
+            disabled={!isDirty}
+            type="submit"
+            className={css`
+              width: 200px;
+            `}
+          >
+            {stock ? "Update" : "Create"} {isSubmitting ? "..." : ""}
           </button>
-          <input
-            type="text"
-            defaultValue={stock?.barCode || ""}
-            {...register("barCode")}
-          />
+          <button disabled={!isDirty} type="button" onClick={() => reset()}>
+            Reset
+          </button>
+          <button type="button" onClick={onCancel}>
+            Cancel
+          </button>
         </div>
-        {scanningBarcode ? (
-          <Modal onDismiss={() => setScanningBarcode(false)}>
-            <BarcodeScannerComponent onResult={handleBarCode} />
-          </Modal>
-        ) : null}
-      </Label>
-      <hr />
-      <div
-        className={css`
-          display: flex;
-          justify-content: space-around;
-        `}
-      >
-        <button
-          disabled={!isDirty}
-          type="submit"
-          className={css`
-            width: 200px;
-          `}
-        >
-          {stock ? "Update" : "Create"} {isSubmitting ? "..." : ""}
-        </button>
-        <button disabled={!isDirty} type="button" onClick={() => reset()}>
-          Reset
-        </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
-      </div>
+      </form>
       <hr />
       {stock ? (
         <fieldset
@@ -273,6 +276,6 @@ export default function PageStockItem({
           </form>
         </fieldset>
       ) : null}
-    </form>
+    </>
   );
 }

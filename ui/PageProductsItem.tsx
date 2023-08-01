@@ -93,18 +93,6 @@ export default function PageProductsItem({
   } = useForm<Partial<IProduct> & { buyPrice: number }>({
     defaultValues: { components: product?.components },
   });
-  const onSubmit2 = async (data: Partial<IProduct> & { buyPrice: number }) => {
-    if (!product) {
-      await addProduct({ data: { ...data, tap: data.tap || undefined } });
-    } else if (product) {
-      await editProduct({
-        productId: product._id,
-        data: { ...data, tap: data.tap || undefined },
-      });
-    }
-    onCancel?.();
-    reset();
-  };
 
   const handleBarCode = useCallback(
     (resultBarCode: string) => {
@@ -126,7 +114,18 @@ export default function PageProductsItem({
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit2)}
+      onSubmit={handleSubmit(async (data) => {
+        if (!product) {
+          await addProduct({ data: { ...data, tap: data.tap || undefined } });
+        } else if (product) {
+          await editProduct({
+            productId: product._id,
+            data: { ...data, tap: data.tap || undefined },
+          });
+        }
+        onCancel?.();
+        reset();
+      })}
       className={css`
         display: flex;
         flex-direction: column;
