@@ -97,7 +97,7 @@ export default function PageProductsItem({
 
   const handleBarCode = useCallback(
     (resultBarCode: string) => {
-      setValue("barCode", resultBarCode);
+      setValue("barCode", resultBarCode, { shouldDirty: true });
       setScanningBarcode(false);
     },
     [setValue],
