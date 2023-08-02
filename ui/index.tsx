@@ -40,10 +40,18 @@ export default function UI() {
   const pageSlug = (match?.params as any)?.["*"] as string | undefined;
 
   // Hold permanent subscriptions to small, low-churn datasets
-  useSubscription("products");
-  useSubscription("camps");
-  useSubscription("locations");
-  useSubscription("stocks");
+  const productsLoading = useSubscription("products");
+  const campsLoading = useSubscription("camps");
+  const locationsLoading = useSubscription("locations");
+  const stocksLoading = useSubscription("stocks");
+  useEffect(() => {
+    console.log({
+      productsLoading,
+      campsLoading,
+      locationsLoading,
+      stocksLoading,
+    });
+  }, [productsLoading, campsLoading, locationsLoading, stocksLoading]);
 
   const camps = useFind(() => Camps.find({}, { sort: { end: -1 } }), []);
   const currentCamp = useCurrentCamp();

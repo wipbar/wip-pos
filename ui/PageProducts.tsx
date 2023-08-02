@@ -5,7 +5,7 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { useFind } from "meteor/react-meteor-data";
-import { opacify } from "polished";
+import { opacify, transparentize } from "polished";
 import React, { ReactNode, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import type { ILocation } from "../api/locations";
@@ -158,13 +158,14 @@ export default function PageProducts() {
             width: 99%;
             max-width: 1000px;
 
-            > tbody > tr:nth-child(even) > td {
+            > tbody > tr > td {
               color: ${camp && getCorrectTextColor(camp.color)};
               background: ${camp && camp.color};
             }
+
             > tbody > tr:nth-child(odd) > td {
-              background: ${camp && getCorrectTextColor(camp.color)};
-              color: ${camp && camp.color};
+              background: ${camp &&
+              transparentize(4 / 5, getCorrectTextColor(camp?.color))};
             }
           `}
         >

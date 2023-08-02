@@ -171,6 +171,12 @@ export default function CartView({
       setConfirmOpen(true);
     }
   }, [isGiven, isReceived]);
+  useEffect(() => {
+    if (haxTotal) {
+      setIsGiven(false);
+      setIsReceived(false);
+    }
+  }, [haxTotal]);
 
   return (
     <div
