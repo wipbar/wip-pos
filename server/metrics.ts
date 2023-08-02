@@ -4,7 +4,7 @@ import { WebApp } from "meteor/webapp";
 import Locations from "../api/locations";
 import Products from "../api/products";
 import Sales from "../api/sales";
-import * as promClient from "prom-client";
+import * as promClient from "../vendor/prom-client";
 
 // define application specific metrics
 export const SalesCounter = new promClient.Counter({

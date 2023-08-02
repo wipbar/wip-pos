@@ -23,7 +23,6 @@
     "lodash": "^4.17.21",
     "meteor-node-stubs": "^1.2.5",
     "polished": "^4.2.2",
-    "prom-client": "^14.2.0",
     "react": "^18.2.0",
     "react-countdown": "^2.3.5",
     "react-dom": "^18.2.0",
