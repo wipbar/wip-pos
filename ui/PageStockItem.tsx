@@ -146,6 +146,7 @@ export default function PageStockItem({
             <input
               required
               type="number"
+              step="any"
               defaultValue={stock?.unitSize || ""}
               {...register("unitSize")}
             />
@@ -268,6 +269,7 @@ export default function PageStockItem({
             <input
               required
               min={0}
+              step={1}
               name="count"
               type="number"
               placeholder="New Stock Level"

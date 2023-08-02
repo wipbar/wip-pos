@@ -179,6 +179,7 @@ export default function PageProductsItem({
         <input
           required
           type="number"
+          step="any"
           defaultValue={product?.unitSize || ""}
           {...register("unitSize")}
         />
@@ -317,6 +318,7 @@ export default function PageProductsItem({
                 {...register(`components.${index}.unitSize`, {
                   required: true,
                 })}
+                step="any"
                 type="number"
               />
               <Controller
