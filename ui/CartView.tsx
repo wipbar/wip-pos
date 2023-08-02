@@ -164,6 +164,7 @@ export default function CartView({
     <div
       className={css`
         background: rgba(255, 255, 255, 0.25);
+        color: black;
         display: flex;
         flex-direction: column;
         max-height: 100%;
