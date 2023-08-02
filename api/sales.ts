@@ -6,7 +6,6 @@ import { isUserInTeam } from "./accounts";
 import Locations, { ILocation } from "./locations";
 import Products, { IProduct, ProductID } from "./products";
 import Stocks from "./stocks";
-import * as promClient from "../vendor/prom-client";
 
 export type SaleID = Flavor<string, "SaleID">;
 
@@ -61,16 +60,6 @@ export const salesMethods = {
       for (const _id of productIds) {
         const product = Products.findOne({ _id });
         if (!product) continue;
-
-        if(Meteor.isServer) {
-          import {SalesCounter} from "./server/metrics.ts";
-
-          SalesCounter.labels({
-            location: location.name,
-            brand: product.brandName,
-            product: product.name,
-          }).inc();
-        }
 
         for (const component of product.components ?? []) {
           const stock = Stocks.findOne({ _id: component.stockId });
