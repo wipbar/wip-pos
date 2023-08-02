@@ -175,7 +175,7 @@ export default function CampByCamp() {
             domain={XYAxisDomain}
             tickFormatter={(amount: number) => String(~~amount)}
             label={{
-              value: "Revenue (HAX)",
+              value: "Revenue (ʜᴀx)",
               angle: -90,
               offset: 70,
               position: "insideLeft",

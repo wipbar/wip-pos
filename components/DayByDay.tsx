@@ -98,7 +98,7 @@ export default function DayByDay() {
   );
   const YAxisLabel = useMemo(
     () => ({
-      value: "Revenue (HAX)",
+      value: "Revenue (ʜᴀx)",
       angle: -90,
       offset: 70,
       position: "insideLeft",

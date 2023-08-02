@@ -260,7 +260,7 @@ export default function PageMenu() {
                       `}
                     >
                       <small>{brandName}</small>
-                      <small>HAX</small>
+                      <small>ʜᴀx</small>
                     </small>
                     {products.map((product) => (
                       <div

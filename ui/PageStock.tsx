@@ -69,29 +69,58 @@ export default function PageStock() {
       <div
         className={css`
           overflow-x: auto;
+          display: flex;
+          justify-content: center;
         `}
       >
         <table
           className={css`
-            width: 100%;
-            > tbody > tr > td {
-              border-top: 1px solid ${camp && getCorrectTextColor(camp.color)};
+            width: 99%;
+            max-width: 1000px;
+
+            > tbody > tr:nth-child(even) > td {
+              color: ${camp && getCorrectTextColor(camp.color)};
+              background: ${camp && camp.color};
+            }
+            > tbody > tr:nth-child(odd) > td {
+              background: ${camp && getCorrectTextColor(camp.color)};
+              color: ${camp && camp.color};
             }
           `}
         >
           <thead>
             <tr>
+              <th />
               <th align="right">Count</th>
               <th align="left">UPC</th>
               <th align="left">Name</th>
               <th>Size</th>
               <th>Type</th>
-              <th />
             </tr>
           </thead>
           <tbody>
             {stocks.map((stock) => (
               <tr key={stock._id}>
+                <td style={{ whiteSpace: "nowrap" }} align="right">
+                  <button onClick={() => setIsEditing(stock._id)}>
+                    <FontAwesomeIcon icon={faPencilAlt} />
+                  </button>
+                  {stock && isUserAdmin(user) && (
+                    <button
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to delete " + stock.name,
+                          )
+                        ) {
+                          removeStock({ stockId: stock._id });
+                        }
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  )}
+                </td>
                 <td align="right">
                   {stock.approxCount?.toLocaleString("en-US", {
                     maximumSignificantDigits: 3,
@@ -124,26 +153,6 @@ export default function PageStock() {
                     packageTypes.find(({ code }) => code === stock.packageType)
                       ?.name
                   }
-                </td>
-                <td style={{ whiteSpace: "nowrap" }} align="right">
-                  <button onClick={() => setIsEditing(stock._id)}>
-                    <FontAwesomeIcon icon={faPencilAlt} />
-                  </button>
-                  {stock && isUserAdmin(user) && (
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete " + stock.name,
-                          )
-                        ) {
-                          removeStock({ stockId: stock._id });
-                        }
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  )}
                 </td>
               </tr>
             ))}

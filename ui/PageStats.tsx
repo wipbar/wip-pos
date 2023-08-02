@@ -146,7 +146,7 @@ export default function PageStats() {
   console.log(`${campSales.reduce(
     (revenue, { amount }) => revenue + amount,
     0,
-  )} HAX revenue
+  )} ʜᴀx revenue
 ${productsSold.length} items sold
 ${campSales.length} discrete transactions
 ${Math.round(

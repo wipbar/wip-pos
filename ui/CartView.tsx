@@ -84,7 +84,7 @@ function CartViewProductsItem({
         >
           <div>{product.salePrice}</div>
           <small>
-            <small>HAX</small>
+            <small>ʜᴀx</small>
           </small>
         </b>
       </div>
@@ -238,7 +238,7 @@ export default function CartView({
                 <b>
                   {haxTotal}{" "}
                   <small>
-                    <small>HAX</small>
+                    <small>ʜᴀx</small>
                   </small>
                 </b>
               </big>
@@ -314,7 +314,7 @@ export default function CartView({
               <b>{haxTotal}</b>
             </code>
             <small>
-              <small>HAX</small>
+              <small>ʜᴀx</small>
             </small>{" "}
             for
             <ul>

@@ -149,28 +149,35 @@ export default function PageProducts() {
       <div
         className={css`
           overflow-x: auto;
+          display: flex;
+          justify-content: center;
         `}
       >
         <table
           className={css`
-            width: 100%;
+            width: 99%;
+            max-width: 1000px;
 
-            > tbody > tr > td {
-              border-top: 1px solid ${camp && getCorrectTextColor(camp.color)};
+            > tbody > tr:nth-child(even) > td {
+              color: ${camp && getCorrectTextColor(camp.color)};
+              background: ${camp && camp.color};
+            }
+            > tbody > tr:nth-child(odd) > td {
+              background: ${camp && getCorrectTextColor(camp.color)};
+              color: ${camp && camp.color};
             }
           `}
         >
           <thead>
             <tr>
-              <th>Brand</th>
-              <th>Name</th>
+              <th />
+              <th>Brand & Name</th>
               <th>Price</th>
               <th>Size</th>
-              <th>ABV</th>
-              <th>Description</th>
               <th>Tags</th>
+              <th>Description</th>
+              <th>ABV</th>
               <th>Tap</th>
-              <th />
             </tr>
           </thead>
           <tbody>
@@ -179,49 +186,6 @@ export default function PageProducts() {
                 location && product.locationIds?.includes(location?._id);
               return (
                 <tr key={product._id}>
-                  <td>{product.brandName}</td>
-                  <td>{product.name}</td>
-                  <td
-                    className={css`
-                      white-space: nowrap;
-                    `}
-                  >
-                    {product.salePrice}{" "}
-                    {product.shopPrices?.some(
-                      ({ buyPrice }) =>
-                        buyPrice &&
-                        Number(buyPrice) !== Number(product.salePrice) &&
-                        Number(buyPrice) < Number(product.salePrice),
-                    ) ? null : (
-                      <small>?</small>
-                    )}
-                  </td>
-                  <td>
-                    {product.unitSize}
-                    {product.sizeUnit}
-                  </td>
-                  <td>{product.abv ? `${product.abv}%` : null}</td>
-                  <td>{product.description}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    {[...(product.tags || [])].sort()?.map((tag) => (
-                      <span
-                        key={tag}
-                        className={css`
-                          display: inline-block;
-                          background: ${stringToColour(tag) ||
-                          `rgba(0, 0, 0, 0.4)`};
-                          color: ${getCorrectTextColor(stringToColour(tag)) ||
-                          "white"};
-                          padding: 0 3px;
-                          border-radius: 4px;
-                          margin-left: 2px;
-                        `}
-                      >
-                        {tag.trim()}
-                      </span>
-                    ))}
-                  </td>
-                  <td>{product.tap}</td>
                   <td>
                     <button
                       onClick={() => {
@@ -293,6 +257,54 @@ export default function PageProducts() {
                       )}
                     </div>
                   </td>
+                  <td>
+                    <small>{product.brandName}</small>
+                    <br />
+                    <b>{product.name}</b>
+                  </td>
+                  <td
+                    align="center"
+                    className={css`
+                      white-space: nowrap;
+                    `}
+                  >
+                    {product.salePrice}{" "}
+                    {product.shopPrices?.some(
+                      ({ buyPrice }) =>
+                        buyPrice &&
+                        Number(buyPrice) !== Number(product.salePrice) &&
+                        Number(buyPrice) < Number(product.salePrice),
+                    ) ? null : (
+                      <small>?</small>
+                    )}
+                    ʜᴀx
+                  </td>
+                  <td align="center">
+                    {product.unitSize}
+                    {product.sizeUnit}
+                  </td>
+                  <td style={{ whiteSpace: "nowrap" }}>
+                    {[...(product.tags || [])].sort()?.map((tag) => (
+                      <span
+                        key={tag}
+                        className={css`
+                          display: inline-block;
+                          background: ${stringToColour(tag) ||
+                          `rgba(0, 0, 0, 0.4)`};
+                          color: ${getCorrectTextColor(stringToColour(tag)) ||
+                          "white"};
+                          padding: 0 3px;
+                          border-radius: 4px;
+                          margin-left: 2px;
+                        `}
+                      >
+                        {tag.trim()}
+                      </span>
+                    ))}
+                  </td>
+                  <td>{product.description}</td>
+                  <td>{product.abv ? `${product.abv}%` : null}</td>
+                  <td>{product.tap}</td>
                 </tr>
               );
             })}

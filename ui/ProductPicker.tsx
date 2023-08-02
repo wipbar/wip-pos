@@ -293,7 +293,7 @@ export default function ProductPicker({
                     <code>
                       <b>{product.salePrice}</b>
                     </code>
-                    <small>HAX</small>
+                    <small>ʜᴀx</small>
                   </span>
                 )}
                 {product.tap ? <small> 🚰 {product.tap}</small> : null}
