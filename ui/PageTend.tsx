@@ -127,11 +127,13 @@ export default function PageTend() {
                     // If this would remove the last list make the new list of lists a list with an empty list
                     return [[]];
                   }
-                  return oldPickedProductIdsLists.filter(
-                    (l) => l !== pickedProductIds,
-                  );
+                  return [
+                    ...oldPickedProductIdsLists.filter(
+                      (l) => l !== pickedProductIds,
+                    ),
+                    [],
+                  ];
                 });
-                setCurrentCart(0);
               }
             }}
             onSetActive={() => {
