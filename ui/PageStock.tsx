@@ -13,6 +13,7 @@ import useMethod from "../hooks/useMethod";
 import { Modal } from "./PageProducts";
 import PageStockItem from "./PageStockItem";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import { getCorrectTextColor } from "../util";
 
 const NEW = Symbol("New");
 export default function PageStock() {
