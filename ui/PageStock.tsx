@@ -93,11 +93,9 @@ export default function PageStock() {
             {stocks.map((stock) => (
               <tr key={stock._id}>
                 <td align="right">
-                  {stock.approxCount
-                    ? stock.approxCount?.toLocaleString("en-US", {
-                        maximumSignificantDigits: 3,
-                      })
-                    : "❔"}
+                  {stock.approxCount?.toLocaleString("en-US", {
+                    maximumSignificantDigits: 3,
+                  }) ?? "❔"}
                 </td>
                 <td>{stock.barCode ? "✅" : "❌"}</td>
                 <td>
