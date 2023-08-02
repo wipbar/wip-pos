@@ -62,6 +62,7 @@ Session.setDefault("pickedProductIdsLists", [[]]);
 
 export default function PageTend() {
   const { error } = useCurrentLocation(true);
+  const currentCamp = useCurrentCamp();
 
   const [currentCart, setCurrentCart] = useState(0);
   const [pickedProductIdsLists, setPickedProductIdsLists] = useSession<
@@ -147,6 +148,15 @@ export default function PageTend() {
         ))}
         {!pickedProductIdsLists.some(({ length }) => !length) ? (
           <button
+            className={css`
+              margin: 0.5em 1em;
+              padding: 0.5em;
+              border-radius: 24px;
+
+              background-color: rgba(255, 255, 255, 0.9);
+              color: ${currentCamp ? currentCamp.color : "white"};
+              border: 0;
+            `}
             onClick={() => {
               setPickedProductIdsLists((oldPickedProductIdsLists) => [
                 ...oldPickedProductIdsLists,
@@ -155,7 +165,7 @@ export default function PageTend() {
               setCurrentCart(pickedProductIdsLists.length);
             }}
           >
-            start new cart
+            Start New Cart 🛒
           </button>
         ) : null}
         <MostRecentSale />

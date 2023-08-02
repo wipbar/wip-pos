@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Products, { IProduct, ProductID } from "../api/products";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
@@ -108,7 +108,7 @@ export default function CartView({
   pickedProductIds: ProductID[];
   setPickedProductIds: (value: ProductID[]) => void;
   isActive?: boolean;
-  onSetActive?: () => void;
+  onSetActive: () => void;
 }) {
   const currentCamp = useCurrentCamp();
 
@@ -160,9 +160,22 @@ export default function CartView({
     ],
   );
 
+  const [isGiven, setIsGiven] = useState(false);
+  const toggleGiven = useCallback(() => setIsGiven((v) => !v), []);
+
+  const [isReceived, setIsReceived] = useState(false);
+  const toggleReceived = useCallback(() => setIsReceived((v) => !v), []);
+
+  useEffect(() => {
+    if (isGiven && isReceived) {
+      setConfirmOpen(true);
+    }
+  }, [isGiven, isReceived]);
+
   return (
     <div
       className={css`
+        margin-right: 6px;
         background: rgba(255, 255, 255, 0.25);
         color: black;
         display: flex;
@@ -170,7 +183,8 @@ export default function CartView({
         max-height: 100%;
         border-left: 1px solid rgba(255, 255, 255, 0.4);
         transition: all 300ms ease-in-out;
-        margin-bottom: 12px;
+        margin-top: 6px;
+        margin-bottom: 6px;
         ${isActive
           ? css`
               box-shadow: ${currentCamp?.color} 0px 0 10px 0px;
@@ -245,23 +259,54 @@ export default function CartView({
             </big>
 
             {isActive ? (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setConfirmOpen(true)}
-                  className={css`
-                    display: block;
+              <div
+                className={css`
+                  display: grid;
+                  gap: 1em;
+                  grid-auto-flow: column;
+                  padding: 0 1em;
+                  margin-top: 1em;
+                  > label {
+                    cursor: pointer;
+                    background-color: ${currentCamp?.color || "black"};
+                    color: ${currentCamp
+                      ? getCorrectTextColor(currentCamp.color)
+                      : "white"};
 
-                    background-color: ${currentCamp?.color};
-                    color: ${currentCamp &&
-                    getCorrectTextColor(currentCamp.color)};
+                    padding: 0.5em;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    grid-gap: 0.5em;
 
-                    margin-top: 1em;
-                    padding: 1em;
-                  `}
-                >
-                  Press To Sell
-                </button>
+                    user-select: none;
+                  }
+                `}
+              >
+                <label>
+                  <input
+                    type="checkbox"
+                    onChange={toggleReceived}
+                    checked={isReceived}
+                  />
+                  <span>
+                    Money
+                    <br />
+                    Received
+                  </span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    onChange={toggleGiven}
+                    checked={isGiven}
+                  />
+                  <span>
+                    Items
+                    <br />
+                    Given
+                  </span>
+                </label>
               </div>
             ) : null}
           </div>
@@ -273,6 +318,7 @@ export default function CartView({
             display: flex;
             align-items: center;
             flex-direction: column;
+            padding: 1em;
           `}
         >
           No items in this cart yet...
