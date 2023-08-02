@@ -61,6 +61,16 @@ export const salesMethods = {
         const product = Products.findOne({ _id });
         if (!product) continue;
 
+        if (Meteor.isServer) {
+          const { SalesCounter } = await import("../server/metrics");
+
+          SalesCounter.labels({
+            location: location.name,
+            brand: product.brandName,
+            product: product.name,
+          }).inc();
+        }
+
         for (const component of product.components ?? []) {
           const stock = Stocks.findOne({ _id: component.stockId });
           if (!stock) continue;
