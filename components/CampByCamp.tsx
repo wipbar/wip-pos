@@ -188,7 +188,7 @@ export default function CampByCamp() {
                 Math.ceil(hour / 24),
               ).padStart(2, "0")}`
             }
-            contentStyle={{ background: "#000" }}
+            contentStyle={{ background: "#fff", color: "#000" }}
           />
           <Legend />
           <ReferenceDot
@@ -232,7 +232,7 @@ export default function CampByCamp() {
               key={camp.slug}
               dataKey={camp.slug}
               name={"Σ" + camp.start.getFullYear()}
-              stroke={camp.color}
+              stroke={camp.slug === currentCamp?.slug ? "#ffffff" : camp.color}
               fill={getCorrectTextColor(camp.color)}
               strokeDasharray={
                 camp.slug === currentCamp?.slug ? undefined : "3 3"

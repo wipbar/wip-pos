@@ -123,7 +123,7 @@ export default function DayByDay() {
           />
           <Tooltip
             labelFormatter={tooltipLabelFormatter}
-            contentStyle={{ background: "#000", color: "#FFF" }}
+            contentStyle={{ background: "#fff", color: "#000" }}
           />
           <Legend />
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
@@ -155,7 +155,7 @@ export default function DayByDay() {
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
               strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 4 : 3}
-              stroke={currentCamp?.color}
+              stroke={"#ffffff" || currentCamp?.color}
               strokeOpacity={1 - (numberOfDaysInCurrentCamp - 1 - i) / 10}
               style={{
                 opacity: 1 - (numberOfDaysInCurrentCamp - 1 - i) / 10,
