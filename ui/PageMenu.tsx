@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import { addHours, isWithinRange, subHours } from "date-fns";
 import { groupBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
-import { opacify } from "polished";
+import { transparentize } from "polished";
 import React, { Fragment, SVGProps, useMemo } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
@@ -182,7 +182,7 @@ export default function PageMenu() {
               key={tags}
               className={css`
                 background: ${currentCamp &&
-                opacify(-(2 / 3), getCorrectTextColor(currentCamp?.color))};
+                transparentize(4 / 5, getCorrectTextColor(currentCamp?.color))};
 
                 break-inside: avoid;
                 border: 3px solid transparent;
@@ -243,8 +243,8 @@ export default function PageMenu() {
                       display: flex;
                       flex-direction: column;
                       background: ${currentCamp &&
-                      opacify(
-                        -(2 / 3),
+                      transparentize(
+                        4 / 5,
                         getCorrectTextColor(currentCamp?.color),
                       )};
                       margin-top: 4px;
