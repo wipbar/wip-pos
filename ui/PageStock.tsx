@@ -12,10 +12,12 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { Modal } from "./PageProducts";
 import PageStockItem from "./PageStockItem";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 
 const NEW = Symbol("New");
 export default function PageStock() {
   const user = useCurrentUser();
+  const camp = useCurrentCamp();
   const [removeStock] = useMethod("Stock.removeStock");
   const [isEditing, setIsEditing] = useState<null | StockID | typeof NEW>(null);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
@@ -71,6 +73,9 @@ export default function PageStock() {
         <table
           className={css`
             width: 100%;
+            > tbody > tr > td {
+              border-top: 1px solid ${camp && getCorrectTextColor(camp.color)};
+            }
           `}
         >
           <thead>

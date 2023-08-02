@@ -80,6 +80,7 @@ function CurfewButton({ location }: { location: ILocation }) {
 const NEW = Symbol("New");
 export default function PageProducts() {
   const user = useCurrentUser();
+  const camp = useCurrentCamp();
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
   const { location, error } = useCurrentLocation(true);
@@ -153,6 +154,10 @@ export default function PageProducts() {
         <table
           className={css`
             width: 100%;
+
+            > tbody > tr > td {
+              border-top: 1px solid ${camp && getCorrectTextColor(camp.color)};
+            }
           `}
         >
           <thead>
