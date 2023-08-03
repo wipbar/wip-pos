@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import { format } from "date-fns";
+import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import React, { useMemo, useState } from "react";
@@ -9,6 +10,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
+import { Flavor } from "../util";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 
@@ -58,20 +60,25 @@ function MostRecentSale() {
   );
 }
 
-Session.setDefault("pickedProductIdsLists", [[]]);
+Session.setDefault("carts", []);
+
+type CartID = Flavor<string, "CartID">;
+export interface Cart {
+  id: CartID;
+  openedAt: Date;
+  productIds: ProductID[];
+}
 
 export default function PageTend() {
   const { error } = useCurrentLocation(true);
   const currentCamp = useCurrentCamp();
 
-  const [currentCart, setCurrentCart] = useState(0);
-  const [pickedProductIdsLists, setPickedProductIdsLists] = useSession<
-    ProductID[][]
-  >("pickedProductIdsLists", [[]]);
+  const [currentCartId, setCurrentCartId] = useState<null | CartID>(null);
+  const [carts, setCarts] = useSession<Cart[]>("carts", []);
 
-  const current = useMemo(
-    () => (pickedProductIdsLists.length >= currentCart ? currentCart : 0),
-    [currentCart, pickedProductIdsLists.length],
+  const currentCart = useMemo(
+    () => carts.find(({ id }) => id === currentCartId) || null,
+    [carts, currentCartId],
   );
 
   if (error) return error;
@@ -94,14 +101,26 @@ export default function PageTend() {
           overflow-y: scroll;
           overflow-x: hidden;
         `}
-        pickedProductIds={pickedProductIdsLists[current]!}
-        setPickedProductIds={(newPickedProductIds) =>
-          setPickedProductIdsLists((oldPickedProductIdsLists) =>
-            oldPickedProductIdsLists.map((l) =>
-              l === pickedProductIdsLists[current] ? newPickedProductIds : l,
-            ),
-          )
-        }
+        pickedProductIds={currentCart?.productIds || []}
+        setPickedProductIds={(newPickedProductIds) => {
+          if (!currentCart) {
+            const newCart = {
+              id: Random.id() as CartID,
+              openedAt: new Date(),
+              productIds: newPickedProductIds,
+            } satisfies Cart;
+            setCarts((oldCarts) => [...oldCarts, newCart]);
+            setCurrentCartId(newCart.id);
+          } else {
+            setCarts((oldCarts) =>
+              oldCarts.map((oldCart) =>
+                oldCart.id !== currentCart?.id
+                  ? oldCart
+                  : { ...oldCart, productIds: newPickedProductIds },
+              ),
+            );
+          }
+        }}
       />
       <div
         className={css`
@@ -111,42 +130,36 @@ export default function PageTend() {
           overflow-y: auto;
         `}
       >
-        {pickedProductIdsLists.map((pickedProductIds, i) => (
+        {carts.map((cart) => (
           <CartView
-            key={i}
-            pickedProductIds={pickedProductIds}
+            key={cart.id}
+            cart={cart}
             setPickedProductIds={(newPickedProductIds) => {
               if (newPickedProductIds.length) {
-                setPickedProductIdsLists((oldPickedProductIdsLists) =>
-                  oldPickedProductIdsLists.map((l) =>
-                    l === pickedProductIds ? newPickedProductIds : l,
+                setCarts((oldCarts) =>
+                  oldCarts.map((oldCart) =>
+                    oldCart.id !== cart.id
+                      ? oldCart
+                      : { ...oldCart, productIds: newPickedProductIds },
                   ),
                 );
               } else {
-                setPickedProductIdsLists((oldPickedProductIdsLists) => {
-                  if (oldPickedProductIdsLists.length === 1) {
-                    // If this would remove the last list make the new list of lists a list with an empty list
-                    return [[]];
-                  }
-                  return [
-                    ...oldPickedProductIdsLists.filter(
-                      (l) => l !== pickedProductIds,
-                    ),
-                    [],
-                  ];
-                });
+                setCarts((oldCarts) =>
+                  oldCarts.filter((oldCart) => oldCart.id !== cart.id),
+                );
+                setCurrentCartId(null);
               }
             }}
             onSetActive={() => {
-              setCurrentCart(i);
-              setPickedProductIdsLists((oldPickedProductIdsLists) =>
-                oldPickedProductIdsLists.filter((l) => l.length),
+              setCurrentCartId(cart.id);
+              setCarts((oldCarts) =>
+                oldCarts.filter((oldCart) => oldCart.productIds.length),
               );
             }}
-            isActive={current === i}
+            isActive={currentCartId === cart.id}
           />
         ))}
-        {!pickedProductIdsLists.some(({ length }) => !length) ? (
+        {currentCartId ? (
           <button
             className={css`
               margin: 0.5em 1em;
@@ -157,17 +170,24 @@ export default function PageTend() {
               color: ${currentCamp ? currentCamp.color : "white"};
               border: 0;
             `}
-            onClick={() => {
-              setPickedProductIdsLists((oldPickedProductIdsLists) => [
-                ...oldPickedProductIdsLists,
-                [],
-              ]);
-              setCurrentCart(pickedProductIdsLists.length);
-            }}
+            onClick={() => setCurrentCartId(null)}
           >
             Start New Cart 🛒
           </button>
-        ) : null}
+        ) : (
+          <CartView
+            setPickedProductIds={(newPickedProductIds) => {
+              const newCart = {
+                id: Random.id() as CartID,
+                openedAt: new Date(),
+                productIds: newPickedProductIds,
+              } satisfies Cart;
+              setCarts((oldCarts) => [...oldCarts, newCart]);
+              setCurrentCartId(newCart.id);
+            }}
+            isActive
+          />
+        )}
         <MostRecentSale />
       </div>
     </div>

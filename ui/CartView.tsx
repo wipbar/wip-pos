@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { differenceInSeconds } from "date-fns";
 import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useEffect, useState } from "react";
@@ -6,9 +7,11 @@ import { useParams } from "react-router-dom";
 import Products, { IProduct, ProductID } from "../api/products";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import useCurrentDate from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor } from "../util";
+import { Cart } from "./PageTend";
 
 function CartViewProductsItem({
   product,
@@ -99,17 +102,37 @@ function removeItem<T>(items: T[], i: number): T[] {
 const crankSound = new Audio("/cashregistercrank.mp3");
 const dingSound = new Audio("/cashregisterding.mp3");
 
+function fancyTimeFormat(duration: number) {
+  // Hours, minutes and seconds
+  const hrs = ~~(duration / 3600);
+  const mins = ~~((duration % 3600) / 60);
+  const secs = ~~duration % 60;
+
+  // Output like "1:01" or "4:03:59" or "123:03:59"
+  let ret = "";
+
+  if (hrs > 0) {
+    ret += "" + hrs + ":" + (mins < 10 ? "0" : "");
+  }
+
+  ret += "" + mins + ":" + (secs < 10 ? "0" : "");
+  ret += "" + secs;
+
+  return ret;
+}
+
 export default function CartView({
-  pickedProductIds,
+  cart,
   setPickedProductIds,
   isActive,
   onSetActive,
 }: {
-  pickedProductIds: ProductID[];
+  cart?: Cart;
   setPickedProductIds: (value: ProductID[]) => void;
   isActive?: boolean;
-  onSetActive: () => void;
+  onSetActive?: () => void;
 }) {
+  const currentDate = useCurrentDate();
   const currentCamp = useCurrentCamp();
 
   const { locationSlug } = useParams();
@@ -123,17 +146,18 @@ export default function CartView({
 
   const handleSellClick = useCallback(async () => {
     if (!locationSlug) return;
+    if (!cart) return;
 
     crankSound.play();
-    doSellProducts({ locationSlug, productIds: pickedProductIds });
+    doSellProducts({ locationSlug, productIds: cart.productIds });
 
     setPickedProductIds([]);
     setConfirmOpen(false);
     dingSound.play();
     navigator.vibrate?.(500);
-  }, [doSellProducts, locationSlug, pickedProductIds, setPickedProductIds]);
+  }, [cart, doSellProducts, locationSlug, setPickedProductIds]);
 
-  const haxTotal = sumBy(pickedProductIds, (id) =>
+  const haxTotal = sumBy(cart?.productIds || [], (id) =>
     Number(products.find(({ _id }) => id == _id)?.salePrice),
   );
 
@@ -147,12 +171,12 @@ export default function CartView({
 
       if (!product) return;
 
-      setPickedProductIds([...pickedProductIds, product._id]);
+      setPickedProductIds([...(cart?.productIds || []), product._id]);
 
       if (showOnlyBarCodeLessItems === null) setShowOnlyBarCodeLessItems(true);
     },
     [
-      pickedProductIds,
+      cart?.productIds,
       products,
       setPickedProductIds,
       setShowOnlyBarCodeLessItems,
@@ -208,7 +232,16 @@ export default function CartView({
       `}
       onClick={isActive ? undefined : onSetActive}
     >
-      {pickedProductIds?.length ? (
+      {cart?.openedAt ? (
+        <center>
+          <small>
+            Opened{" "}
+            {fancyTimeFormat(differenceInSeconds(currentDate, cart.openedAt))}{" "}
+            ago
+          </small>
+        </center>
+      ) : null}
+      {cart?.productIds?.length ? (
         <>
           <ul
             className={css`
@@ -221,7 +254,7 @@ export default function CartView({
               max-height: calc(100vh - 230px);
             `}
           >
-            {pickedProductIds.map((id, i) => {
+            {cart.productIds.map((id, i) => {
               const product = products.find(({ _id }) => id == _id);
               return product ? (
                 <CartViewProductsItem
@@ -231,7 +264,7 @@ export default function CartView({
                     isActive
                       ? () =>
                           setPickedProductIds(
-                            removeItem(pickedProductIds, i + 1),
+                            removeItem(cart?.productIds, i + 1),
                           )
                       : undefined
                   }
@@ -370,7 +403,7 @@ export default function CartView({
             </small>{" "}
             for
             <ul>
-              {pickedProductIds.map((id, i) => (
+              {cart?.productIds.map((id, i) => (
                 <li key={i + id}>
                   {products.find(({ _id }) => _id === id)?.brandName}{" "}
                   {products.find(({ _id }) => _id === id)?.name}

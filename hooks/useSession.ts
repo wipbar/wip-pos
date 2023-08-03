@@ -1,6 +1,6 @@
+import { useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { useCallback, useEffect } from "react";
-import { useTracker } from "meteor/react-meteor-data";
 
 type NoFunctionValue =
   | boolean
@@ -8,6 +8,7 @@ type NoFunctionValue =
   | number
   | null
   | undefined
+  | object
   | NoFunctionValue[];
 
 export default function useSession<T extends NoFunctionValue = any>(
