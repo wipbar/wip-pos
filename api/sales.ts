@@ -1,10 +1,11 @@
 import convert from "convert";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import { Flavor } from "../util";
+import type { CartID } from "../ui/PageTend";
+import type { Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
-import Locations, { ILocation } from "./locations";
-import Products, { IProduct, ProductID } from "./products";
+import Locations, { type ILocation } from "./locations";
+import Products, { type IProduct, type ProductID } from "./products";
 import Stocks from "./stocks";
 
 export type SaleID = Flavor<string, "SaleID">;
@@ -12,6 +13,7 @@ export type SaleID = Flavor<string, "SaleID">;
 export interface ISale {
   _id: SaleID;
   userId?: string;
+  cartId?: string;
   locationId: string;
   currency?: string;
   country?: string;
@@ -27,9 +29,11 @@ export const salesMethods = {
     this: Meteor.MethodThisType,
     {
       locationSlug,
+      cartId,
       productIds,
     }: {
       locationSlug: ILocation["slug"];
+      cartId: CartID;
       productIds: ProductID[];
     },
   ) {
@@ -43,9 +47,13 @@ export const salesMethods = {
     if (!isUserInTeam(userId, location.teamName))
       throw new Meteor.Error("Wait that's illegal");
 
+    const existingSale = Sales.findOne({ cartId });
+    if (existingSale) throw new Meteor.Error("Cart already sold");
+
     const insertResult = Sales.insert({
       userId: userId!,
       locationId: location!._id,
+      cartId,
       currency: "HAX",
       country: "DK",
       amount: productIds.reduce(

@@ -4,14 +4,14 @@ import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Products, { IProduct, ProductID } from "../api/products";
+import Products, { type IProduct, type ProductID } from "../api/products";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import { getCorrectTextColor } from "../util";
-import { Cart } from "./PageTend";
+import type { Cart } from "./PageTend";
 
 function CartViewProductsItem({
   product,
@@ -149,7 +149,11 @@ export default function CartView({
     if (!cart) return;
 
     crankSound.play();
-    doSellProducts({ locationSlug, productIds: cart.productIds });
+    doSellProducts({
+      locationSlug,
+      cartId: cart.id,
+      productIds: cart.productIds,
+    });
 
     setPickedProductIds([]);
     setConfirmOpen(false);

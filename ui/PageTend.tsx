@@ -4,13 +4,13 @@ import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import React, { useMemo, useState } from "react";
-import { ProductID } from "../api/products";
+import type { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import { Flavor } from "../util";
+import type { Flavor } from "../util";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 
@@ -62,7 +62,7 @@ function MostRecentSale() {
 
 Session.setDefault("carts", []);
 
-type CartID = Flavor<string, "CartID">;
+export type CartID = Flavor<string, "CartID">;
 export interface Cart {
   id: CartID;
   openedAt: Date;
