@@ -23,6 +23,9 @@ export interface ISale {
 }
 
 const Sales = new Mongo.Collection<ISale>("sales");
+if (Meteor.isServer) {
+  Sales.createIndex({ timestamp: -1 });
+}
 
 export const salesMethods = {
   async "Sales.sellProducts"(
