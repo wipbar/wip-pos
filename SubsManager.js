@@ -7,7 +7,7 @@ class SubsManager {
     // maxiumum number of subscriptions are cached
     this.options.cacheLimit ||= 10;
     // maximum time, subscription stay in the cache
-    this.options.expireIn ||= 5;
+    this.options.expireIn ||= 50;
 
     this._cacheMap = {};
     this._cacheList = [];
