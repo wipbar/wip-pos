@@ -171,7 +171,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
     [nodes],
   );
 
-  const products = useFind(() => Products.find(), []);
+  const products = useFind(() => Products.find());
 
   const data = useMemo(() => {
     const productsSold = sales.reduce<IProduct[]>((memo, sale) => {

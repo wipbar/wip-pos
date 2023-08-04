@@ -3,7 +3,7 @@ import { addDays, isAfter, setHours, startOfHour } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import Countdown from "react-countdown";
-import Camps, { ICamp } from "../api/camps";
+import Camps from "../api/camps";
 import Products, { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
@@ -55,8 +55,8 @@ const renderer = ({
 function CurfewCountdown() {
   const currentDate = useCurrentDate(50);
   const currentCamp = useCurrentCamp();
-  const [newestCamp] = useFind(() => Camps.find({}, { sort: { end: -1 } }), []);
-  const camp: ICamp | undefined = currentCamp || newestCamp;
+  const [newestCamp] = useFind(() => Camps.find({}, { sort: { end: -1 } }));
+  const camp = currentCamp || newestCamp;
   const next2am = useMemo(
     () =>
       isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
@@ -124,9 +124,9 @@ export default function PageStats() {
     () => (campSales?.length ? campSales : allSales),
     [campSales, allSales],
   );
-  const products = useFind(
-    () => Products.find({ removedAt: { $exists: false } }),
-    [],
+
+  const products = useFind(() =>
+    Products.find({ removedAt: { $exists: false } }),
   );
   const mostSold = useMemo(
     () =>

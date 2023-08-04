@@ -17,6 +17,7 @@ import Camps, { ICamp } from "../api/camps";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMongoFetch from "../hooks/useMongoFetch";
+import useSubscription from "../hooks/useSubscription";
 import { getCorrectTextColor } from "../util";
 
 const getAvg = (arr: number[]) =>
@@ -60,7 +61,9 @@ function createTrend<XK extends string, YK extends string>(
 const XYAxisDomain = ["dataMin", "dataMax"];
 
 export default function CampByCamp() {
-  const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }), []);
+  useSubscription("sales");
+
+  const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }));
   const currentCamp = useCurrentCamp();
 
   const { data: sales } = useMongoFetch(() => Sales.find(), []);

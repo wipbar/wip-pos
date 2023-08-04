@@ -11,6 +11,7 @@ import {
   useMatch,
   useNavigate,
 } from "react-router-dom";
+import SubsManager from "../SubsManager";
 import { isUserInTeam } from "../api/accounts";
 import Camps from "../api/camps";
 import Locations from "../api/locations";
@@ -30,7 +31,14 @@ import PageTend from "./PageTend";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
+SubsManager.subscribe("camps");
+SubsManager.subscribe("locations");
+SubsManager.subscribe("stocks");
+SubsManager.subscribe("products");
+
 export default function UI() {
+  useSubscription("camps");
+
   const navigate = useNavigate();
   const GALAXY_APP_VERSION_ID = useTracker(
     () => (Session.get("GALAXY_APP_VERSION_ID") as string | undefined) || "420",
@@ -39,24 +47,10 @@ export default function UI() {
   const locationSlug = match?.params.locationSlug;
   const pageSlug = (match?.params as any)?.["*"] as string | undefined;
 
-  // Hold permanent subscriptions to small, low-churn datasets
-  const productsLoading = useSubscription("products");
-  const campsLoading = useSubscription("camps");
-  const locationsLoading = useSubscription("locations");
-  const stocksLoading = useSubscription("stocks");
-  useEffect(() => {
-    console.log({
-      productsLoading,
-      campsLoading,
-      locationsLoading,
-      stocksLoading,
-    });
-  }, [productsLoading, campsLoading, locationsLoading, stocksLoading]);
-
-  const camps = useFind(() => Camps.find({}, { sort: { end: -1 } }), []);
+  const camps = useFind(() => Camps.find({}, { sort: { end: -1 } }));
   const currentCamp = useCurrentCamp();
   const user = useCurrentUser();
-  const locations = useFind(() => Locations.find(), []);
+  const locations = useFind(() => Locations.find());
   const userLocations = locations.filter(({ teamName }) =>
     isUserInTeam(user, teamName),
   );

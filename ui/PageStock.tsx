@@ -5,15 +5,15 @@ import { useFind } from "meteor/react-meteor-data";
 import React, { useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Products from "../api/products";
-import Stocks, { StockID } from "../api/stocks";
+import Stocks, { IStock, StockID } from "../api/stocks";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
+import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
+import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
 import PageStockItem from "./PageStockItem";
-import useCurrentCamp from "../hooks/useCurrentCamp";
-import { getCorrectTextColor } from "../util";
 
 const NEW = Symbol("New");
 export default function PageStock() {
@@ -21,7 +21,7 @@ export default function PageStock() {
   const camp = useCurrentCamp();
   const [removeStock] = useMethod("Stock.removeStock");
   const [isEditing, setIsEditing] = useState<null | StockID | typeof NEW>(null);
-  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<keyof IStock | undefined>(undefined);
 
   const stocks = useFind(
     () =>
@@ -32,9 +32,8 @@ export default function PageStock() {
     [sortBy],
   );
 
-  const products = useFind(
-    () => Products.find({ removedAt: { $exists: false } }),
-    [],
+  const products = useFind(() =>
+    Products.find({ removedAt: { $exists: false } }),
   );
 
   return (
@@ -53,7 +52,11 @@ export default function PageStock() {
         </Modal>
       ) : null}
       <select
-        onChange={(event) => setSortBy(event.target.value || undefined)}
+        onChange={(event) =>
+          setSortBy(
+            (event.target.value as keyof IStock | undefined) || undefined,
+          )
+        }
         value={sortBy}
       >
         <option value={""}>Sort By...</option>

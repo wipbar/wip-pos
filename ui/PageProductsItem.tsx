@@ -63,12 +63,12 @@ export default function PageProductsItem({
   onCancel: () => void;
   product?: IProduct;
 }) {
-  const locations = useFind(() => Locations.find(), []);
+  const locations = useFind(() => Locations.find());
   const [scanningBarcode, setScanningBarcode] = useState(false);
   const { location } = useCurrentLocation();
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
-  const products = useFind(() => Products.find(), []);
+  const products = useFind(() => Products.find());
   const allTags = [
     ...products.reduce((memo, product) => {
       product.tags?.forEach((tag) => memo.add(tag.trim()));
@@ -108,9 +108,8 @@ export default function PageProductsItem({
     name: "components",
   });
 
-  const stocks = useFind(
-    () => Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
-    [],
+  const stocks = useFind(() =>
+    Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
   );
 
   return (

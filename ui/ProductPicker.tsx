@@ -49,9 +49,9 @@ export default function ProductPicker({
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
-  const products = useFind(
-    () => Products.find({ removedAt: { $exists: false } }),
-    [],
+
+  const products = useFind(() =>
+    Products.find({ removedAt: { $exists: false } }),
   );
   const toggleTag = useCallback(
     (tag: string) =>
