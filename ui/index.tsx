@@ -15,7 +15,6 @@ import {
 import { isUserInTeam } from "../api/accounts";
 import Camps from "../api/camps";
 import Locations from "../api/locations";
-import Products from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";

@@ -3,7 +3,7 @@ import { addHours, isWithinRange, subHours } from "date-fns";
 import { groupBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import { transparentize } from "polished";
-import React, { Fragment, SVGProps, useMemo } from "react";
+import React, { Fragment, SVGProps, useMemo, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
 import ProductTrend from "../components/ProductTrend";
@@ -12,6 +12,7 @@ import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSubscription from "../hooks/useSubscription";
 import { getCorrectTextColor } from "../util";
+import { useKeyDownListener } from "../components/BarcodeScanner";
 
 function SparkLine({
   data,
@@ -74,6 +75,15 @@ export default function PageMenu() {
   const currentDate = useCurrentDate(1000);
   const from = useMemo(() => subHours(currentDate, 24), [currentDate]);
   const { location, error } = useCurrentLocation();
+  const [isExpressMode, setIsExpressMode] = useState(false);
+
+  useKeyDownListener((event) => {
+    if (event.key === "x") {
+      event.preventDefault();
+
+      setIsExpressMode((state) => !state);
+    }
+  });
 
   const sales = useFind(
     () => Sales.find({ timestamp: { $gte: from } }),
@@ -97,13 +107,20 @@ export default function PageMenu() {
     () =>
       Object.entries(
         groupBy(
-          products.filter((product) =>
-            location?.curfew ? !isAlcoholic(product) : true,
-          ),
+          products
+            .filter((product) =>
+              location?.curfew ? !isAlcoholic(product) : true,
+            )
+            .filter((product) =>
+              isExpressMode
+                ? !product.tags?.includes("tap") &&
+                  !product.tags?.includes("cocktail")
+                : true,
+            ),
           ({ tags }) => [...(tags || [])].sort()?.join(",") || "other",
         ),
       ),
-    [location?.curfew, products],
+    [isExpressMode, location?.curfew, products],
   );
 
   if (error) return error;
