@@ -39,6 +39,7 @@ class SubsManager {
           this.dep.depend();
           return this._ready;
         },
+        stop: () => {},
       };
     }
     return Meteor.subscribe(...args);
