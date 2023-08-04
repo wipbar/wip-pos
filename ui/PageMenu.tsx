@@ -204,6 +204,7 @@ export default function PageMenu() {
                 break-inside: avoid;
                 border: 3px solid transparent;
                 padding: 4px;
+                padding-bottom: 0;
                 margin-bottom: 12px;
               `}
             >
@@ -264,9 +265,16 @@ export default function PageMenu() {
                         4 / 5,
                         getCorrectTextColor(currentCamp?.color),
                       )};
-                      margin-top: 4px;
+                      margin-bottom: 4px;
                       align-items: stretch;
                       break-inside: avoid;
+
+                      border: 1px solid
+                        ${currentCamp &&
+                        transparentize(
+                          1 / 5,
+                          getCorrectTextColor(currentCamp?.color),
+                        )};
                     `}
                   >
                     <small
