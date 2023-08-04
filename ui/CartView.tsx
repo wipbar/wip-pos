@@ -101,6 +101,7 @@ function removeItem<T>(items: T[], i: number): T[] {
 
 const crankSound = new Audio("/cashregistercrank.mp3");
 const dingSound = new Audio("/cashregisterding.mp3");
+const ohnoSound = new Audio("/cashregisterohno.mp3");
 
 function fancyTimeFormat(duration: number) {
   // Hours, minutes and seconds
@@ -148,15 +149,20 @@ export default function CartView({
     if (!cart) return;
 
     crankSound.play();
-    doSellProducts({
-      locationSlug,
-      cartId: cart.id,
-      productIds: cart.productIds,
-    });
+    try {
+      await doSellProducts({
+        locationSlug,
+        cartId: cart.id,
+        productIds: cart.productIds,
+      });
 
-    setPickedProductIds([]);
-    setConfirmOpen(false);
-    dingSound.play();
+      setPickedProductIds([]);
+      setConfirmOpen(false);
+      dingSound.play();
+    } catch (sellError) {
+      console.error(sellError);
+      ohnoSound.play();
+    }
     navigator.vibrate?.(500);
   }, [cart, doSellProducts, locationSlug, setPickedProductIds]);
 
