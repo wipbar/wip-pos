@@ -3,13 +3,11 @@ import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import {
-  Bar,
   CartesianGrid,
   ComposedChart,
   Legend,
   Line,
   ReferenceDot,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -85,7 +83,7 @@ export default function CampByCamp() {
       )
     : 0;
 
-  const [data, campTotals] = useMemo(() => {
+  const [data] = useMemo(() => {
     const data = [];
     const campTotals: Record<string, number> = {};
     for (let i = 0; i < longestCampHours; i++) {
@@ -110,7 +108,7 @@ export default function CampByCamp() {
       });
       data.push(datapoint);
     }
-    return [data, campTotals];
+    return [data];
   }, [camps, longestCampHours, sales]);
 
   let prev = 0;
@@ -188,7 +186,11 @@ export default function CampByCamp() {
                 Math.ceil(hour / 24),
               ).padStart(2, "0")}`
             }
-            contentStyle={{ background: "#fff", color: "#000" }}
+            contentStyle={{
+              background: currentCamp?.color,
+              color:
+                currentCamp?.color && getCorrectTextColor(currentCamp?.color),
+            }}
           />
           <Legend />
           <ReferenceDot
@@ -205,27 +207,6 @@ export default function CampByCamp() {
             r={4}
             stroke={currentCamp?.color}
           />
-          {camps.map((camp) =>
-            camp.slug !== currentCamp?.slug ? (
-              <ReferenceLine
-                y={campTotals[camp.slug]}
-                key={camp.slug + "-ReferenceLine"}
-                label={{
-                  value: camp.start?.getFullYear(),
-                  position: "right",
-                  offset: 5,
-                  style: {
-                    fill: camp.color,
-                    stroke: getCorrectTextColor(camp.color),
-                    strokeWidth: 0.2,
-                  },
-                  textAnchor: "end",
-                }}
-                stroke={camp.color}
-                strokeDasharray="3 3"
-              />
-            ) : null,
-          )}
           {camps.map((camp) => (
             <Line
               type="monotone"
@@ -237,39 +218,22 @@ export default function CampByCamp() {
               strokeDasharray={
                 camp.slug === currentCamp?.slug ? undefined : "3 3"
               }
-              strokeWidth={camp.slug === currentCamp?.slug ? 4 : 1}
+              strokeWidth={camp.slug === currentCamp?.slug ? 3 : 2}
               dot={false}
               connectNulls
             />
           ))}
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            domain={XYAxisDomain}
-            strokeOpacity={0.5}
-          />
-
           {currentCamp ? (
-            <>
-              <Bar
-                yAxisId="right"
-                key={currentCamp.slug + "individual"}
-                dataKey={currentCamp.slug + "individual"}
-                name={"Δ" + currentCamp.start.getFullYear()}
-                fill={currentCamp?.color}
-                fillOpacity={0.5}
-              />
-              <Line
-                key={currentCamp.slug + "-trend"}
-                dataKey={currentCamp.slug + "-trend"}
-                stroke={currentCamp.color}
-                fill={getCorrectTextColor(currentCamp?.color)}
-                strokeWidth={2}
-                strokeDasharray="4 2"
-                dot={false}
-                connectNulls
-              />
-            </>
+            <Line
+              key={currentCamp.slug + "-trend"}
+              dataKey={currentCamp.slug + "-trend"}
+              fill={currentCamp.color}
+              stroke={getCorrectTextColor(currentCamp?.color)}
+              strokeWidth={2}
+              strokeDasharray="6 3"
+              dot={false}
+              connectNulls
+            />
           ) : null}
         </ComposedChart>
       </ResponsiveContainer>

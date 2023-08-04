@@ -10,7 +10,6 @@ import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import {
-  Bar,
   CartesianGrid,
   ComposedChart,
   Legend,
@@ -23,6 +22,7 @@ import {
 } from "recharts";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import { getCorrectTextColor } from "../util";
 
 const XYAxisDomain = ["dataMin", "dataMax"];
 const YAxisTickFormatter = (amount: number) => String(~~amount);
@@ -78,16 +78,6 @@ export default function DayByDay() {
                     ),
                     "amount",
                   ),
-                  [j + "individual"]: sumBy(
-                    sales.filter((sale) =>
-                      isWithinRange(
-                        sale.timestamp,
-                        addHours(currentCamp.start, hour + offset),
-                        endOfHour(addHours(currentCamp.start, hour + offset)),
-                      ),
-                    ),
-                    "amount",
-                  ),
                 };
               },
               { x: i },
@@ -123,7 +113,11 @@ export default function DayByDay() {
           />
           <Tooltip
             labelFormatter={tooltipLabelFormatter}
-            contentStyle={{ background: "#fff", color: "#000" }}
+            contentStyle={{
+              background: currentCamp?.color,
+              color:
+                currentCamp?.color && getCorrectTextColor(currentCamp?.color),
+            }}
           />
           <Legend />
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
@@ -154,7 +148,7 @@ export default function DayByDay() {
               strokeDasharray={
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
-              strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 4 : 3}
+              strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 3 : 2}
               stroke={"#ffffff" || currentCamp?.color}
               strokeOpacity={1 - (numberOfDaysInCurrentCamp - 1 - i) / 10}
               style={{
@@ -163,24 +157,6 @@ export default function DayByDay() {
               dot={false}
             />
           ))}
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            domain={XYAxisDomain}
-            strokeOpacity={0.5}
-          />
-          {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) =>
-            numberOfDaysInCurrentCamp - 1 === i ? (
-              <Bar
-                yAxisId="right"
-                key={i + "individual"}
-                dataKey={i + "individual"}
-                name={`ΔD${i + 1}`}
-                fill={currentCamp?.color}
-                fillOpacity={0.5}
-              />
-            ) : null,
-          )}
         </ComposedChart>
       </ResponsiveContainer>
     </div>
