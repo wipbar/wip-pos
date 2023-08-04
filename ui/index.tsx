@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { Meteor } from "meteor/meteor";
 import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
@@ -11,10 +12,10 @@ import {
   useMatch,
   useNavigate,
 } from "react-router-dom";
-import SubsManager from "../SubsManager";
 import { isUserInTeam } from "../api/accounts";
 import Camps from "../api/camps";
 import Locations from "../api/locations";
+import Products from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
@@ -31,10 +32,10 @@ import PageTend from "./PageTend";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
-SubsManager.subscribe("camps");
-SubsManager.subscribe("locations");
-SubsManager.subscribe("stocks");
-SubsManager.subscribe("products");
+Meteor.subscribe("camps");
+Meteor.subscribe("locations");
+Meteor.subscribe("stocks");
+Meteor.subscribe("products");
 
 export default function UI() {
   useSubscription("camps");
