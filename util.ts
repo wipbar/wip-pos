@@ -1,4 +1,4 @@
-export function stringToColour(inputString: string, alpha = 1) {
+export function stringToColours(inputString: string) {
   let sum = 0;
 
   for (const i in inputString.split("")) {
@@ -30,6 +30,10 @@ export function stringToColour(inputString: string, alpha = 1) {
     ) * 256
   );
 
+  return [r, g, b, 255];
+}
+export function stringToColour(inputString: string, alpha = 1) {
+  const [r, g, b] = stringToColours(inputString);
   return `rgba(${r},${g},${b},${alpha})`;
 }
 

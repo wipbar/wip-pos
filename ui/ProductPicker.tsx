@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { FastAverageColor } from "fast-average-color";
 import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import React, { HTMLProps, useCallback, useEffect, useState } from "react";
@@ -6,12 +7,13 @@ import Products, { ProductID, isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
-import { getCorrectTextColor, stringToColour } from "../util";
+import { getCorrectTextColor, stringToColour, stringToColours } from "../util";
 
 function removeItem<T>(items: T[], i: number) {
   return items.slice(0, i).concat(items.slice(i + 1, items.length));
 }
 const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
+const fac = new FastAverageColor();
 
 export default function ProductPicker({
   pickedProductIds,
@@ -222,6 +224,14 @@ export default function ProductPicker({
                     .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
                     .join(", ")}
                 );
+                color: ${getCorrectTextColor(
+                  `rgba(${fac.getColorFromArray4(
+                    [...(product.tags || [])]
+                      .sort()
+                      .map((tag) => stringToColours(tag))
+                      .flat(),
+                  )})`,
+                )};
                 border: 2px solid black;
                 display: flex;
                 flex-direction: column;
