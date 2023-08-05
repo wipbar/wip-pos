@@ -17,7 +17,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSubscription from "../hooks/useSubscription";
 
-const rolloverOffset = 5;
+const rolloverOffset = 6;
 
 function saveAs(blob: string, type: string, name: string) {
   const a = window.document.createElement("a");
