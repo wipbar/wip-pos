@@ -163,14 +163,14 @@ export default function PageProductsItem({
           required
           type="text"
           defaultValue={product?.name || ""}
-          {...register("name", { required: true, valueAsNumber: true })}
+          {...register("name", { required: true })}
         />
       </Label>
       <Label label="Price">
         <input
           required
           type="number"
-          defaultValue={product?.salePrice || ""}
+          defaultValue={product?.salePrice ?? ""}
           {...register("salePrice", { required: true, valueAsNumber: true })}
         />
       </Label>
@@ -179,7 +179,7 @@ export default function PageProductsItem({
           required
           type="number"
           step="any"
-          defaultValue={product?.unitSize || ""}
+          defaultValue={product?.unitSize ?? ""}
           {...register("unitSize", { valueAsNumber: true })}
         />
         <Controller
@@ -203,7 +203,7 @@ export default function PageProductsItem({
         <input
           type="number"
           step="any"
-          defaultValue={product?.abv || ""}
+          defaultValue={product?.abv ?? ""}
           {...register("abv", { valueAsNumber: true })}
         />
       </Label>
