@@ -154,19 +154,10 @@ export default function PageMenu() {
   return (
     <div
       className={css`
-        padding: 10px;
-        column-width: 100vw;
-        @media (min-width: 700px) {
-          column-width: 40vw;
-        }
-        @media (min-width: 1100px) {
-          column-width: 30vw;
-        }
-        @media (min-width: 1400px) {
-          column-width: 18.5vw;
-        }
+        padding: 12px;
+        column-width: 272px;
         column-fill: balance;
-        column-gap: 1vw;
+        column-gap: 12px;
         max-width: 100%;
         break-inside: avoid;
       `}

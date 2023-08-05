@@ -143,7 +143,7 @@ export default function ProductPicker({
           display: grid;
           grid-gap: 0.5vw 1vw;
           padding: 1vw;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 
           > label {
             > input {

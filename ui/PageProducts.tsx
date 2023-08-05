@@ -6,10 +6,10 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify, transparentize } from "polished";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useMemo, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import type { ILocation } from "../api/locations";
-import Products, { ProductID, isAlcoholic } from "../api/products";
+import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -89,22 +89,29 @@ export default function PageProducts() {
     null,
   );
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
-  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<keyof IProduct | undefined>(undefined);
 
   const products = useFind(
     () =>
       Products.find(
-        // @ts-expect-error
         {
           removedAt: { $exists: showRemoved },
           ...(showOnlyMenuItems
-            ? { locationIds: { $elemMatch: { $eq: location?._id } } }
+            ? { locationIds: { $elemMatch: location?._id } }
             : undefined),
         },
         { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
       ),
     [location?._id, showRemoved, showOnlyMenuItems, sortBy],
   );
+
+  const allProductKeys = useMemo(() => {
+    const keys = new Set<string>();
+    products.forEach((product) => {
+      Object.keys(product).forEach((key) => keys.add(key));
+    });
+    return Array.from(keys);
+  }, [products]);
 
   if (error) return error;
 
@@ -132,12 +139,14 @@ export default function PageProducts() {
         show only items on the menu
       </label>
       <select
-        onChange={(event) => setSortBy(event.target.value || undefined)}
-        value={sortBy}
+        onChange={(event) =>
+          setSortBy((event.target.value as keyof IProduct | "") || undefined)
+        }
+        value={sortBy ?? ""}
       >
-        <option value={""}>Sort By...</option>
-        {products[0]
-          ? Object.keys(products[0]).map((key) => (
+        <option value="">Sort By...</option>
+        {allProductKeys?.length
+          ? allProductKeys.map((key) => (
               <option key={key} value={key}>
                 {key}
               </option>
