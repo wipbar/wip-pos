@@ -2,18 +2,28 @@ import { css } from "@emotion/css";
 import { FastAverageColor } from "fast-average-color";
 import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
-import React, { HTMLProps, useCallback, useEffect, useState } from "react";
+import React, {
+  HTMLProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Products, { ProductID, isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
-import { getCorrectTextColor, stringToColour, stringToColours } from "../util";
+import {
+  getCorrectTextColor,
+  removeItem,
+  stringToColour,
+  stringToColours,
+  tagsToString,
+} from "../util";
 
-function removeItem<T>(items: T[], i: number) {
-  return items.slice(0, i).concat(items.slice(i + 1, items.length));
-}
-const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
 const fac = new FastAverageColor();
+
+const collator = new Intl.Collator("en");
 
 export default function ProductPicker({
   pickedProductIds,
@@ -64,20 +74,23 @@ export default function ProductPicker({
       ),
     [activeFilters],
   );
-  const allTags = [
-    ...products
-      .filter(({ locationIds }) =>
-        showOnlyMenuItems && location
-          ? locationIds?.includes(location._id)
-          : true,
-      )
-      .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
-      .reduce((memo, { tags }) => {
-        tags?.forEach((tag) => memo.add(tag.trim()));
 
-        return memo;
-      }, new Set<string>()),
-  ];
+  const allTags = useMemo(() => {
+    return [
+      ...products
+        .filter(({ locationIds }) =>
+          showOnlyMenuItems && location
+            ? locationIds?.includes(location._id)
+            : true,
+        )
+        .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
+        .reduce((memo, { tags }) => {
+          tags?.forEach((tag) => memo.add(tag.trim()));
+
+          return memo;
+        }, new Set<string>()),
+    ].sort(collator.compare);
+  }, [location, products, showOnlyBarCodeLessItems, showOnlyMenuItems]);
 
   return (
     <div
@@ -100,7 +113,9 @@ export default function ProductPicker({
           > label {
             display: flex;
             align-items: center;
-            background-color: ${currentCamp?.color || "initial"};
+            background-color: ${(currentCamp &&
+              getCorrectTextColor(currentCamp?.color, true)) ||
+            "initial"};
             border: 2px solid black;
             color: ${(currentCamp && getCorrectTextColor(currentCamp?.color)) ||
             "initial"};

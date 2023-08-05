@@ -163,7 +163,7 @@ export default function PageProductsItem({
           required
           type="text"
           defaultValue={product?.name || ""}
-          {...register("name", { required: true })}
+          {...register("name", { required: true, valueAsNumber: true })}
         />
       </Label>
       <Label label="Price">
@@ -171,7 +171,7 @@ export default function PageProductsItem({
           required
           type="number"
           defaultValue={product?.salePrice || ""}
-          {...register("salePrice", { required: true })}
+          {...register("salePrice", { required: true, valueAsNumber: true })}
         />
       </Label>
       <Label label="Unit Size">
@@ -180,7 +180,7 @@ export default function PageProductsItem({
           type="number"
           step="any"
           defaultValue={product?.unitSize || ""}
-          {...register("unitSize")}
+          {...register("unitSize", { valueAsNumber: true })}
         />
         <Controller
           name="sizeUnit"
@@ -204,7 +204,7 @@ export default function PageProductsItem({
           type="number"
           step="any"
           defaultValue={product?.abv || ""}
-          {...register("abv")}
+          {...register("abv", { valueAsNumber: true })}
         />
       </Label>
       <Label label="Description">
@@ -270,7 +270,11 @@ export default function PageProductsItem({
         />
       </Label>
       <Label label="Unit Cost">
-        <input type="number" step="any" {...register("buyPrice")} />
+        <input
+          type="number"
+          step="any"
+          {...register("buyPrice", { valueAsNumber: true })}
+        />
         <small>
           <ul
             className={css`
@@ -316,6 +320,7 @@ export default function PageProductsItem({
                 required
                 {...register(`components.${index}.unitSize`, {
                   required: true,
+                  valueAsNumber: true,
                 })}
                 step="any"
                 type="number"

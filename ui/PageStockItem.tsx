@@ -148,7 +148,7 @@ export default function PageStockItem({
               type="number"
               step="any"
               defaultValue={stock?.unitSize || ""}
-              {...register("unitSize")}
+              {...register("unitSize", { valueAsNumber: true })}
             />
             <Controller
               name="sizeUnit"

@@ -1,12 +1,18 @@
 import { css } from "@emotion/css";
-import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
-import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
-import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
-import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
-import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
+import {
+  faBan,
+  faFolderMinus,
+  faFolderPlus,
+  faPencilAlt,
+  faPlus,
+  faSort,
+  faSortDown,
+  faSortUp,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify, transparentize } from "polished";
-import React, { ReactNode, useMemo, useState } from "react";
+import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import type { ILocation } from "../api/locations";
 import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
@@ -15,7 +21,8 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
-import { getCorrectTextColor, stringToColour } from "../util";
+import useSession from "../hooks/useSession";
+import { getCorrectTextColor, removeItem, stringToColour } from "../util";
 import PageProductsItem from "./PageProductsItem";
 
 export const Modal = ({
@@ -77,6 +84,41 @@ function CurfewButton({ location }: { location: ILocation }) {
     </button>
   );
 }
+
+function SortHeader({
+  sortBy,
+  toggleSortBy,
+  children,
+  field,
+}: {
+  sortBy: string | undefined;
+  toggleSortBy: (newSortBy: keyof IProduct) => void;
+  children: any;
+  field: keyof IProduct;
+}) {
+  return (
+    <th
+      onClick={() => toggleSortBy(field)}
+      className={css`
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      `}
+    >
+      {children}{" "}
+      <FontAwesomeIcon
+        icon={
+          sortBy === field
+            ? faSortUp
+            : sortBy === `-${field}`
+            ? faSortDown
+            : faSort
+        }
+      />
+    </th>
+  );
+}
+
 const NEW = Symbol("New");
 export default function PageProducts() {
   const user = useCurrentUser();
@@ -84,26 +126,79 @@ export default function PageProducts() {
   const [editProduct] = useMethod("Products.editProduct");
   const [removeProduct] = useMethod("Products.removeProduct");
   const { location, error } = useCurrentLocation(true);
-  const [showRemoved] = useState(false);
   const [isEditing, setIsEditing] = useState<null | ProductID | typeof NEW>(
     null,
   );
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(false);
-  const [sortBy, setSortBy] = useState<keyof IProduct | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<
+    keyof IProduct | `-${keyof IProduct}` | undefined
+  >(undefined);
+
+  const toggleSortBy = useCallback((newSortBy: keyof IProduct) => {
+    setSortBy((currentSortBy) => {
+      return currentSortBy === `-${newSortBy}`
+        ? undefined
+        : currentSortBy === newSortBy
+        ? `-${newSortBy}`
+        : newSortBy;
+    });
+  }, []);
 
   const products = useFind(
     () =>
       Products.find(
+        { removedAt: { $exists: false } },
         {
-          removedAt: { $exists: showRemoved },
-          ...(showOnlyMenuItems
-            ? { locationIds: { $elemMatch: location?._id } }
-            : undefined),
+          sort: sortBy?.startsWith("-")
+            ? { [sortBy.slice(1)]: -1 }
+            : sortBy
+            ? { [sortBy]: 1 }
+            : { updatedAt: -1, createdAt: -1 },
         },
-        { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
       ),
-    [location?._id, showRemoved, showOnlyMenuItems, sortBy],
+    [sortBy],
   );
+
+  const currentCamp = useCurrentCamp();
+  const [showOnlyBarCodeLessItems, setShowOnlyBarCodeLessItems] = useSession<
+    boolean | null
+  >("showOnlyBarCodeLessItems", null);
+  const toggleOnlyMenuItems = useCallback(
+    () => setShowOnlyMenuItems(!showOnlyMenuItems),
+    [setShowOnlyMenuItems, showOnlyMenuItems],
+  );
+  const toggleShowOnlyBarCodeLessItems = useCallback(
+    () => setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
+    [setShowOnlyBarCodeLessItems, showOnlyBarCodeLessItems],
+  );
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
+  const toggleTag = useCallback(
+    (tag: string) =>
+      setActiveFilters(
+        activeFilters.includes(tag.trim())
+          ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
+          : [...activeFilters, tag.trim()],
+      ),
+    [activeFilters],
+  );
+  const allTags = useMemo(() => {
+    const collator = new Intl.Collator("en");
+    return [
+      ...products
+        .filter(({ locationIds }) =>
+          showOnlyMenuItems && location
+            ? locationIds?.includes(location._id)
+            : true,
+        )
+        .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
+        .reduce((memo, { tags }) => {
+          tags?.forEach((tag) => memo.add(tag.trim()));
+
+          return memo;
+        }, new Set<string>()),
+    ].sort(collator.compare);
+  }, [location, products, showOnlyBarCodeLessItems, showOnlyMenuItems]);
 
   const allProductKeys = useMemo(() => {
     const keys = new Set<string>();
@@ -117,7 +212,6 @@ export default function PageProducts() {
 
   return (
     <div>
-      <button onClick={() => setIsEditing(NEW)}>Create Product</button>
       {isEditing === NEW ? (
         <Modal onDismiss={() => setIsEditing(null)}>
           <PageProductsItem onCancel={() => setIsEditing(null)} />
@@ -130,30 +224,113 @@ export default function PageProducts() {
           />
         </Modal>
       ) : null}
-      <label>
-        <input
-          type="checkbox"
-          onChange={() => setShowOnlyMenuItems(!showOnlyMenuItems)}
-          checked={showOnlyMenuItems}
-        />
-        show only items on the menu
-      </label>
-      <select
-        onChange={(event) =>
-          setSortBy((event.target.value as keyof IProduct | "") || undefined)
-        }
-        value={sortBy ?? ""}
+      <div
+        className={css`
+          width: 99%;
+          max-width: 1000px;
+          margin: 0 auto;
+        `}
       >
-        <option value="">Sort By...</option>
-        {allProductKeys?.length
-          ? allProductKeys.map((key) => (
-              <option key={key} value={key}>
-                {key}
-              </option>
-            ))
-          : null}
-      </select>
-      {location ? <CurfewButton location={location} /> : null}
+        <div
+          className={css`
+            display: grid;
+            grid-gap: 0.5vw 1vw;
+            padding: 1vw;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            text-align: center;
+            > label {
+              display: flex;
+              align-items: center;
+              background-color: ${(currentCamp &&
+                getCorrectTextColor(currentCamp?.color, true)) ||
+              "initial"};
+              border: 2px solid black;
+              color: ${(currentCamp &&
+                getCorrectTextColor(currentCamp?.color)) ||
+              "initial"};
+              padding: 0 6px;
+              border-radius: 3px;
+              font-size: 1em;
+              > input {
+                margin-right: 4px;
+              }
+            }
+          `}
+        >
+          <label>
+            <input
+              type="checkbox"
+              onChange={toggleOnlyMenuItems}
+              checked={showOnlyMenuItems}
+            />
+            show only items on the menu
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              onChange={toggleShowOnlyBarCodeLessItems}
+              checked={showOnlyBarCodeLessItems || false}
+            />
+            show only items without barcodes
+          </label>
+        </div>
+        <div
+          className={css`
+            display: grid;
+            grid-gap: 0.5vw 1vw;
+            padding: 1vw;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+
+            > label {
+              > input {
+                margin-right: 4px;
+              }
+            }
+          `}
+        >
+          {allTags.map((tag) => (
+            <label
+              key={tag}
+              className={css`
+                display: flex;
+                align-items: center;
+                background: ${stringToColour(tag) ||
+                `rgba(255, 255, 255, 0.4)`};
+                color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
+                border: 2px solid black;
+                padding: 0 6px;
+                border-radius: 3px;
+                margin-right: 2px;
+                margin-bottom: 4px;
+                font-size: 1.5em;
+              `}
+            >
+              <input
+                type="checkbox"
+                checked={activeFilters.includes(tag.trim())}
+                onChange={() => toggleTag(tag)}
+              />
+              {tag}
+            </label>
+          ))}
+        </div>
+        <select
+          onChange={(event) =>
+            setSortBy((event.target.value as keyof IProduct | "") || undefined)
+          }
+          value={sortBy ?? ""}
+        >
+          <option value="">Sort By...</option>
+          {allProductKeys?.length
+            ? allProductKeys.map((key) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))
+            : null}
+        </select>
+        {location ? <CurfewButton location={location} /> : null}
+      </div>
       <hr />
       <div
         className={css`
@@ -180,76 +357,213 @@ export default function PageProducts() {
         >
           <thead>
             <tr>
-              <th />
-              <th>Brand & Name</th>
-              <th>Price</th>
-              <th>Size</th>
-              <th>Tags</th>
-              <th>Description</th>
-              <th>ABV</th>
-              <th>Tap</th>
+              <th
+                className={css`
+                  > button {
+                    white-space: nowrap;
+                    width: 100%;
+                    text-align: left;
+                    padding: 6px;
+                    > svg {
+                      margin-right: 4px;
+                    }
+                  }
+                `}
+              >
+                <button onClick={() => setIsEditing(NEW)}>
+                  <FontAwesomeIcon icon={faPlus} /> Create
+                </button>
+              </th>
+              <SortHeader
+                field="name"
+                sortBy={sortBy}
+                toggleSortBy={toggleSortBy}
+              >
+                Brand & Name
+              </SortHeader>
+              <SortHeader
+                field="salePrice"
+                sortBy={sortBy}
+                toggleSortBy={toggleSortBy}
+              >
+                Price
+              </SortHeader>
+              <SortHeader
+                field="unitSize"
+                sortBy={sortBy}
+                toggleSortBy={toggleSortBy}
+              >
+                Size
+              </SortHeader>
+              <SortHeader
+                field="tags"
+                sortBy={sortBy}
+                toggleSortBy={toggleSortBy}
+              >
+                Tags
+              </SortHeader>
+              <SortHeader
+                field="description"
+                sortBy={sortBy}
+                toggleSortBy={toggleSortBy}
+              >
+                Description
+              </SortHeader>
+              <SortHeader
+                field="abv"
+                sortBy={sortBy}
+                toggleSortBy={toggleSortBy}
+              >
+                ABV
+              </SortHeader>
+              <SortHeader
+                field="tap"
+                sortBy={sortBy}
+                toggleSortBy={toggleSortBy}
+              >
+                Tap
+              </SortHeader>
+              {isUserAdmin(user) && <th />}
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => {
-              const isOnMenu =
-                location && product.locationIds?.includes(location?._id);
-              return (
-                <tr key={product._id}>
-                  <td>
-                    <button
-                      onClick={() => {
-                        if (!location) return;
+            {[...products]
+              .filter((product) =>
+                location?.curfew ? !isAlcoholic(product) : true,
+              )
+              .filter((product) => {
+                if (!activeFilters.length) return true;
+                if (!product.tags) return true;
 
-                        editProduct({
-                          productId: product._id,
-                          data: isOnMenu
-                            ? {
-                                locationIds: product.locationIds?.filter(
-                                  (id) => id !== location._id,
-                                ),
-                              }
-                            : {
-                                locationIds: [
-                                  ...(product.locationIds || []),
-                                  location._id,
-                                ],
-                              },
-                        });
-                      }}
-                      disabled={location?.curfew && isAlcoholic(product)}
-                      style={{
-                        whiteSpace: "nowrap",
-                        width: "100%",
-                        background:
-                          location?.curfew && isAlcoholic(product)
-                            ? "gray"
-                            : isOnMenu
-                            ? "red"
-                            : "limegreen",
-                        color: "white",
-                      }}
-                    >
-                      <FontAwesomeIcon
-                        icon={
-                          location?.curfew && isAlcoholic(product)
-                            ? faBan
-                            : isOnMenu
-                            ? faMinus
-                            : faPlus
+                return activeFilters.every(
+                  (filter) =>
+                    product.tags
+                      ?.map((tag) => tag.trim())
+                      .includes(filter.trim()),
+                );
+              })
+              .filter(({ locationIds }) =>
+                showOnlyMenuItems && location
+                  ? locationIds?.includes(location._id)
+                  : true,
+              )
+              .filter(({ barCode }) =>
+                showOnlyBarCodeLessItems ? !barCode : true,
+              )
+              .map((product) => {
+                const isOnMenu =
+                  location && product.locationIds?.includes(location?._id);
+                return (
+                  <tr key={product._id}>
+                    <td
+                      className={css`
+                        > button {
+                          white-space: nowrap;
+                          width: 100%;
+                          text-align: left;
+                          padding: 6px;
+                          > svg {
+                            margin-right: 4px;
+                          }
                         }
-                      />{" "}
-                      Menu
-                    </button>
-                    <div
+                      `}
+                    >
+                      <button
+                        onClick={() => {
+                          if (!location) return;
+
+                          editProduct({
+                            productId: product._id,
+                            data: isOnMenu
+                              ? {
+                                  locationIds: product.locationIds?.filter(
+                                    (id) => id !== location._id,
+                                  ),
+                                }
+                              : {
+                                  locationIds: [
+                                    ...(product.locationIds || []),
+                                    location._id,
+                                  ],
+                                },
+                          });
+                        }}
+                        disabled={location?.curfew && isAlcoholic(product)}
+                        style={{
+                          background:
+                            location?.curfew && isAlcoholic(product)
+                              ? "gray"
+                              : isOnMenu
+                              ? "red"
+                              : "limegreen",
+                          color: "white",
+                        }}
+                      >
+                        <FontAwesomeIcon
+                          icon={
+                            location?.curfew && isAlcoholic(product)
+                              ? faBan
+                              : isOnMenu
+                              ? faFolderMinus
+                              : faFolderPlus
+                          }
+                        />{" "}
+                        Menu
+                      </button>
+                      <button onClick={() => setIsEditing(product._id)}>
+                        <FontAwesomeIcon icon={faPencilAlt} /> Edit
+                      </button>
+                    </td>
+                    <td>
+                      <small>{product.brandName}</small>
+                      <br />
+                      <b>{product.name}</b>
+                    </td>
+                    <td
+                      align="center"
                       className={css`
                         white-space: nowrap;
                       `}
                     >
-                      <button onClick={() => setIsEditing(product._id)}>
-                        <FontAwesomeIcon icon={faPencilAlt} />
-                      </button>
-                      {product && isUserAdmin(user) && (
+                      {product.salePrice}{" "}
+                      {product.shopPrices?.some(
+                        ({ buyPrice }) =>
+                          buyPrice &&
+                          Number(buyPrice) !== Number(product.salePrice) &&
+                          Number(buyPrice) < Number(product.salePrice),
+                      ) ? null : (
+                        <small>?</small>
+                      )}
+                      ʜᴀx
+                    </td>
+                    <td align="center">
+                      {product.unitSize}
+                      {product.sizeUnit}
+                    </td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      {[...(product.tags || [])].sort()?.map((tag) => (
+                        <span
+                          key={tag}
+                          className={css`
+                            display: inline-block;
+                            background: ${stringToColour(tag) ||
+                            `rgba(0, 0, 0, 0.4)`};
+                            color: ${getCorrectTextColor(stringToColour(tag)) ||
+                            "white"};
+                            padding: 0 3px;
+                            border-radius: 4px;
+                            margin-left: 2px;
+                          `}
+                        >
+                          {tag.trim()}
+                        </span>
+                      ))}
+                    </td>
+                    <td>{product.description}</td>
+                    <td>{product.abv ? `${product.abv}%` : null}</td>
+                    <td>{product.tap}</td>
+                    {isUserAdmin(user) && (
+                      <td>
                         <button
                           onClick={() => {
                             if (
@@ -264,60 +578,11 @@ export default function PageProducts() {
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <small>{product.brandName}</small>
-                    <br />
-                    <b>{product.name}</b>
-                  </td>
-                  <td
-                    align="center"
-                    className={css`
-                      white-space: nowrap;
-                    `}
-                  >
-                    {product.salePrice}{" "}
-                    {product.shopPrices?.some(
-                      ({ buyPrice }) =>
-                        buyPrice &&
-                        Number(buyPrice) !== Number(product.salePrice) &&
-                        Number(buyPrice) < Number(product.salePrice),
-                    ) ? null : (
-                      <small>?</small>
+                      </td>
                     )}
-                    ʜᴀx
-                  </td>
-                  <td align="center">
-                    {product.unitSize}
-                    {product.sizeUnit}
-                  </td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    {[...(product.tags || [])].sort()?.map((tag) => (
-                      <span
-                        key={tag}
-                        className={css`
-                          display: inline-block;
-                          background: ${stringToColour(tag) ||
-                          `rgba(0, 0, 0, 0.4)`};
-                          color: ${getCorrectTextColor(stringToColour(tag)) ||
-                          "white"};
-                          padding: 0 3px;
-                          border-radius: 4px;
-                          margin-left: 2px;
-                        `}
-                      >
-                        {tag.trim()}
-                      </span>
-                    ))}
-                  </td>
-                  <td>{product.description}</td>
-                  <td>{product.abv ? `${product.abv}%` : null}</td>
-                  <td>{product.tap}</td>
-                </tr>
-              );
-            })}
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

@@ -71,3 +71,9 @@ export type Flavor<T, FlavorT extends string> = T & As<FlavorT>;
 
 export const units = ["cl", "l", "pc", "ml", "g"] as const;
 export type SizeUnit = (typeof units)[number];
+
+export function removeItem<T>(items: T[], i: number) {
+  return items.slice(0, i).concat(items.slice(i + 1, items.length));
+}
+
+export const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
