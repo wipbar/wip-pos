@@ -332,6 +332,7 @@ export default function CartView({
                 <div
                   className={css`
                     margin-top: 12px;
+                    padding: 0 8px;
                     display: flex;
                     width: 100%;
                     flex-direction: row;
