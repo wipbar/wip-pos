@@ -20,6 +20,7 @@ function CartViewProductsItem({
   product: IProduct;
   onRemoveClick?: () => any;
 }) {
+  const currentCamp = useCurrentCamp();
   if (!product) null;
   return (
     <li
@@ -27,7 +28,8 @@ function CartViewProductsItem({
         margin: 0;
         list-style: none;
         padding: 8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid ${currentCamp && currentCamp?.color};
       `}
     >
       <div
@@ -40,8 +42,8 @@ function CartViewProductsItem({
       >
         <button
           className={css`
-            align-self: flex-start;
             display: flex;
+            align-self: flex-end;
             border-radius: 100%;
             margin-right: 5px;
             width: 32px;
@@ -62,6 +64,7 @@ function CartViewProductsItem({
         <div
           className={css`
             flex: 1;
+            line-height: 1;
           `}
         >
           {product.brandName ? (
@@ -71,13 +74,13 @@ function CartViewProductsItem({
             </>
           ) : null}
           {product.name}
-          <br />
-          <small>
-            <i>
-              {product.unitSize}
-              {product.sizeUnit}
-            </i>
-          </small>
+          {product.unitSize || product.sizeUnit ? (
+            <small>
+              {" "}
+              ({product.unitSize}
+              {product.sizeUnit})
+            </small>
+          ) : null}
         </div>
         <b
           className={css`
@@ -256,7 +259,11 @@ export default function CartView({
       onClick={isActive ? undefined : onSetActive}
     >
       {cart?.openedAt ? (
-        <center>
+        <center
+          className={css`
+            border-bottom: 1px solid ${currentCamp && currentCamp?.color};
+          `}
+        >
           <small>
             Opened{" "}
             {fancyTimeFormat(differenceInSeconds(currentDate, cart.openedAt))}{" "}
@@ -298,7 +305,7 @@ export default function CartView({
           <div
             className={css`
               flex-shrink: 0;
-              border-top: 2px solid rgba(255, 255, 255, 0.1);
+              border-top: 1px solid rgba(255, 255, 255, 0.1);
               display: flex;
               bottom: 0;
               flex-direction: column;
