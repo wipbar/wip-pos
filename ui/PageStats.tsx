@@ -260,7 +260,10 @@ ${
                   </div>
                   <div>
                     {product.brandName ? <>{product.brandName} - </> : null}
-                    {product.name}({product.unitSize} {product.sizeUnit})
+                    {product.name}{" "}
+                    <small>
+                      ({product.unitSize} {product.sizeUnit})
+                    </small>
                   </div>
                 </li>
               );
