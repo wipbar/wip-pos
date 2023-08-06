@@ -85,7 +85,9 @@ function CartViewProductsItem({
             text-align: center;
           `}
         >
-          <div>{product.salePrice}</div>
+          <div>
+            <code>{product.salePrice}</code>
+          </div>
           <small>
             <small>ʜᴀx</small>
           </small>
@@ -199,10 +201,22 @@ export default function CartView({
   const [isReceived, setIsReceived] = useState(false);
   const toggleReceived = useCallback(() => setIsReceived((v) => !v), []);
 
+  const [amountReceived, setAmountReceived] = useState(0);
+  const addReceived = useCallback(
+    (amount: number) => setAmountReceived((v) => v + amount),
+    [],
+  );
   useEffect(() => {
-    if (isGiven && isReceived) {
-      setConfirmOpen(true);
+    if (amountReceived && haxTotal && amountReceived >= haxTotal) {
+      setIsReceived(true);
     }
+  }, [amountReceived, haxTotal]);
+  useEffect(() => {
+    if (!isReceived) setAmountReceived(0);
+  }, [isReceived]);
+
+  useEffect(() => {
+    if (isGiven && isReceived) setConfirmOpen(true);
   }, [isGiven, isReceived]);
   useEffect(() => {
     if (haxTotal) {
@@ -298,7 +312,7 @@ export default function CartView({
             <big>
               <big>
                 <b>
-                  {haxTotal}{" "}
+                  <code>{haxTotal}</code>
                   <small>
                     <small>ʜᴀx</small>
                   </small>
@@ -307,55 +321,142 @@ export default function CartView({
             </big>
 
             {isActive ? (
-              <div
-                className={css`
-                  display: grid;
-                  gap: 1em;
-                  grid-auto-flow: column;
-                  padding: 0 1em;
-                  margin-top: 1em;
-                  > label {
-                    cursor: pointer;
-                    background-color: ${currentCamp?.color || "black"};
-                    color: ${currentCamp
-                      ? getCorrectTextColor(currentCamp.color)
-                      : "white"};
-
-                    padding: 0.5em;
+              <>
+                <div
+                  className={css`
+                    margin-top: 12px;
                     display: flex;
+                    width: 100%;
+                    flex-direction: row;
                     align-items: center;
-                    justify-content: center;
-                    grid-gap: 0.5em;
+                    justify-content: space-around;
+                    > button {
+                      border-radius: 100%;
+                      width: 15%;
+                      font-size: 14px;
+                      aspect-ratio: 1 / 1;
+                      line-height: 0.9;
+                      > small {
+                        display: block;
+                      }
+                      > code {
+                        font-weight: bold;
+                      }
 
-                    user-select: none;
-                  }
-                `}
-              >
-                <label>
-                  <input
-                    type="checkbox"
-                    onChange={toggleReceived}
-                    checked={isReceived}
-                  />
-                  <span>
-                    Money
-                    <br />
-                    Received
-                  </span>
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    onChange={toggleGiven}
-                    checked={isGiven}
-                  />
-                  <span>
-                    Items
-                    <br />
-                    Given
-                  </span>
-                </label>
-              </div>
+                      &:nth-child(1) {
+                        background-color: hotpink;
+                      }
+                      &:nth-child(2) {
+                        background-color: #ff8800;
+                      }
+                      &:nth-child(3) {
+                        background-color: greenyellow;
+                      }
+                      &:nth-child(4) {
+                        background-color: aqua;
+                      }
+                      &:nth-child(5) {
+                        background-color: white;
+                      }
+                    }
+                  `}
+                >
+                  <button onClick={() => addReceived(100)}>
+                    <code>100</code>
+                    <small>ʜᴀx</small>
+                  </button>
+                  <button onClick={() => addReceived(50)}>
+                    <code>50</code>
+                    <small>ʜᴀx</small>
+                  </button>
+                  <button onClick={() => addReceived(20)}>
+                    <code>20</code>
+                    <small>ʜᴀx</small>
+                  </button>
+                  <button onClick={() => addReceived(10)}>
+                    <code>10</code>
+                    <small>ʜᴀx</small>
+                  </button>
+                  <button onClick={() => addReceived(5)}>
+                    <code>5</code>
+                    <small>ʜᴀx</small>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAmountReceived(0);
+                      setIsReceived(false);
+                    }}
+                  >
+                    X
+                  </button>
+                </div>
+                <div
+                  className={css`
+                    display: grid;
+                    gap: 1em;
+                    grid-auto-flow: column;
+                    padding: 0 1em;
+                    margin-top: 1em;
+                    > label {
+                      cursor: pointer;
+                      background-color: ${currentCamp?.color || "black"};
+                      color: ${currentCamp
+                        ? getCorrectTextColor(currentCamp.color)
+                        : "white"};
+
+                      padding: 0.5em;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      grid-gap: 0.5em;
+
+                      user-select: none;
+                    }
+                  `}
+                >
+                  <label>
+                    <input
+                      type="checkbox"
+                      onChange={toggleReceived}
+                      checked={isReceived}
+                    />
+                    <span>
+                      {amountReceived ? (
+                        <>
+                          <code>{amountReceived}</code>/
+                        </>
+                      ) : null}
+                      <code>{haxTotal}</code>
+                      <small>ʜᴀx</small>
+                      <br />
+                      Received
+                    </span>
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      onChange={toggleGiven}
+                      checked={isGiven}
+                    />
+                    <span>
+                      Items
+                      <br />
+                      Given
+                    </span>
+                  </label>
+                </div>
+                {amountReceived > haxTotal ? (
+                  <div
+                    className={css`
+                      color: red;
+                      margin-top: 0.5em;
+                    `}
+                  >
+                    Change: {amountReceived - haxTotal}
+                    <small>ʜᴀx</small>
+                  </div>
+                ) : null}
+              </>
             ) : null}
           </div>
         </>
