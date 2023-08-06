@@ -60,6 +60,7 @@ function createTrend<XK extends string, YK extends string>(
 
 const XYAxisDomain = ["dataMin", "dataMax"];
 
+const offset = -6;
 export default function CampByCamp() {
   useSubscription("sales");
 
@@ -96,8 +97,8 @@ export default function CampByCamp() {
           sales.filter((sale) =>
             isWithinRange(
               sale.timestamp,
-              addHours(camp.start, i),
-              endOfHour(addHours(camp.start, i)),
+              addHours(camp.start, i + offset),
+              endOfHour(addHours(camp.start, i + offset)),
             ),
           ),
           ({ amount }) => amount,
@@ -169,7 +170,7 @@ export default function CampByCamp() {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="hour"
-            tickFormatter={(hour) => "D" + String(Math.ceil((hour + 12) / 24))}
+            tickFormatter={(hour) => "D" + String(Math.ceil((hour + 6) / 24))}
             interval={23}
           />
           <YAxis
@@ -185,7 +186,7 @@ export default function CampByCamp() {
           />
           <Tooltip
             labelFormatter={(hour) =>
-              `H${String((hour + 12) % 24).padStart(2, "0")}D${String(
+              `H${String((hour + 6) % 24).padStart(2, "0")}D${String(
                 Math.ceil(hour / 24),
               ).padStart(2, "0")}`
             }

@@ -27,11 +27,11 @@ import { getCorrectTextColor } from "../util";
 const XYAxisDomain = ["dataMin", "dataMax"];
 const YAxisTickFormatter = (amount: number) => String(~~amount);
 const XAxisTickFormatter = (hour: number) =>
-  String((hour + 8) % 24).padStart(2, "0");
+  String((hour + 6) % 24).padStart(2, "0");
 const tooltipLabelFormatter = (hour: number) =>
-  `H${String((hour + 8) % 24).padStart(2, "0")}`;
+  `H${String((hour + 6) % 24).padStart(2, "0")}`;
 
-const offset = -4;
+const offset = -6;
 const emptyArray: [] = [];
 export default function DayByDay() {
   const currentCamp = useCurrentCamp();

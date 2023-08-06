@@ -47,7 +47,12 @@ export default function UI() {
   const locationSlug = match?.params.locationSlug;
   const pageSlug = (match?.params as any)?.["*"] as string | undefined;
 
-  const camps = useFind(() => Camps.find({}, { sort: { end: -1 } }));
+  const camps = useFind(() =>
+    Camps.find(
+      { start: { $gte: new Date(2018, 0, 1) } },
+      { sort: { end: -1 } },
+    ),
+  );
   const currentCamp = useCurrentCamp();
   const user = useCurrentUser();
   const locations = useFind(() => Locations.find());
