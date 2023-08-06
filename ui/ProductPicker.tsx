@@ -75,22 +75,30 @@ export default function ProductPicker({
     [activeFilters],
   );
 
-  const allTags = useMemo(() => {
-    return [
-      ...products
-        .filter(({ locationIds }) =>
-          showOnlyMenuItems && location
-            ? locationIds?.includes(location._id)
-            : true,
-        )
-        .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
-        .reduce((memo, { tags }) => {
-          tags?.forEach((tag) => memo.add(tag.trim()));
+  const allTags = useMemo(
+    () =>
+      [
+        ...products
+          .filter(({ locationIds }) =>
+            showOnlyMenuItems && location
+              ? locationIds?.includes(location._id)
+              : true,
+          )
+          .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
+          .reduce((memo, { tags }) => {
+            tags?.forEach((tag) => memo.add(tag.trim()));
 
-          return memo;
-        }, new Set<string>()),
-    ].sort(collator.compare);
-  }, [location, products, showOnlyBarCodeLessItems, showOnlyMenuItems]);
+            return memo;
+          }, new Set<string>(activeFilters)),
+      ].sort(collator.compare),
+    [
+      activeFilters,
+      location,
+      products,
+      showOnlyBarCodeLessItems,
+      showOnlyMenuItems,
+    ],
+  );
 
   return (
     <div

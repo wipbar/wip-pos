@@ -207,9 +207,15 @@ export default function PageProducts() {
           tags?.forEach((tag) => memo.add(tag.trim()));
 
           return memo;
-        }, new Set<string>()),
+        }, new Set<string>(activeFilters)),
     ].sort(collator.compare);
-  }, [location, products, showOnlyBarCodeLessItems, showOnlyMenuItems]);
+  }, [
+    activeFilters,
+    location,
+    products,
+    showOnlyBarCodeLessItems,
+    showOnlyMenuItems,
+  ]);
 
   const allProductKeys = useMemo(() => {
     const keys = new Set<string>();
