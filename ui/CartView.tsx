@@ -444,6 +444,22 @@ export default function CartView({
                       Given
                     </span>
                   </label>
+                  <button
+                    className={css`
+                      background: red;
+                    `}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to cancel this transaction?",
+                        )
+                      ) {
+                        setPickedProductIds([]);
+                      }
+                    }}
+                  >
+                    🗑️
+                  </button>
                 </div>
                 {amountReceived > haxTotal ? (
                   <div
