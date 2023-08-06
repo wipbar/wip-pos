@@ -6,13 +6,13 @@ import { transparentize } from "polished";
 import React, { Fragment, SVGProps, useMemo, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
+import { useKeyDownListener } from "../components/BarcodeScanner";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSubscription from "../hooks/useSubscription";
 import { getCorrectTextColor } from "../util";
-import { useKeyDownListener } from "../components/BarcodeScanner";
 
 function SparkLine({
   data,
@@ -124,6 +124,42 @@ export default function PageMenu() {
   );
 
   if (error) return error;
+
+  if (location?.closed) {
+    return (
+      <div
+        className={css`
+          flex: 1;
+          background: ${Number(currentDate.getSeconds()) % 2
+            ? currentCamp && getCorrectTextColor(currentCamp.color)
+            : currentCamp?.color};
+          color: ${Number(currentDate.getSeconds()) % 2
+            ? currentCamp?.color
+            : currentCamp && getCorrectTextColor(currentCamp.color)};
+          font-size: 6em;
+          height: 80vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+        `}
+      >
+        <center>
+          We are closed
+          <br />
+          at the moment
+          <br />
+          <img
+            src="/img/logo_square_white_on_transparent_500_RGB.png"
+            className={css`
+              width: 20vh;
+              margin: -5vh;
+            `}
+          />
+        </center>
+      </div>
+    );
+  }
 
   if (!productsGroupedByTags.length) {
     return (

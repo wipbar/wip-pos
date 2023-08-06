@@ -11,6 +11,7 @@ export interface ILocation {
   name: string;
   teamName: string;
   curfew?: boolean;
+  closed?: boolean;
 }
 
 const Locations = new Mongo.Collection<ILocation>("locations");
@@ -39,6 +40,22 @@ export const locationMethods = {
     return (
       Locations.update(locationId, {
         $set: { curfew: !location?.curfew, updatedAt: new Date() },
+      }) && Locations.findOne(locationId)
+    );
+  },
+  "Locations.toggleClosed"(
+    this: Meteor.MethodThisType,
+    { locationId }: { locationId: LocationID },
+  ) {
+    const location = Locations.findOne(locationId);
+
+    if (!isUserInTeam(this.userId, location?.teamName)) {
+      throw new Meteor.Error("Wait that's illegal");
+    }
+
+    return (
+      Locations.update(locationId, {
+        $set: { closed: !location?.closed, updatedAt: new Date() },
       }) && Locations.findOne(locationId)
     );
   },

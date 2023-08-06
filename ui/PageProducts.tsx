@@ -84,6 +84,17 @@ function CurfewButton({ location }: { location: ILocation }) {
     </button>
   );
 }
+function OpenCloseButton({ location }: { location: ILocation }) {
+  const [toggleClosed] = useMethod("Locations.toggleClosed");
+  return (
+    <button
+      type="button"
+      onClick={() => toggleClosed({ locationId: location._id })}
+    >
+      {location.closed ? `Open ${location.name}` : `Close ${location.name}`}
+    </button>
+  );
+}
 
 function SortHeader({
   sortBy,
@@ -330,6 +341,7 @@ export default function PageProducts() {
             : null}
         </select>
         {location ? <CurfewButton location={location} /> : null}
+        {location ? <OpenCloseButton location={location} /> : null}
       </div>
       <hr />
       <div
