@@ -127,6 +127,7 @@ export default function PageTend() {
           display: flex;
           flex-direction: column;
           flex: 1;
+          min-width: 180px;
           overflow-y: auto;
         `}
       >

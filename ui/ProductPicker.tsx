@@ -116,7 +116,7 @@ export default function ProductPicker({
           display: grid;
           grid-gap: 0.5vw 1vw;
           padding: 1vw;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
           text-align: center;
           > label {
             display: flex;
@@ -166,7 +166,7 @@ export default function ProductPicker({
           display: grid;
           grid-gap: 0.5vw 1vw;
           padding: 1vw;
-          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
 
           > label {
             > input {
@@ -204,7 +204,7 @@ export default function ProductPicker({
         className={css`
           display: grid;
           grid-gap: 0.5vw 1vw;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
           padding: 1vw;
         `}
       >
