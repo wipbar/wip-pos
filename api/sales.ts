@@ -144,13 +144,22 @@ async function calculateCampByCampStats() {
   const now = new Date();
 
   const offset = -6;
-  const camps = await Camps.find({}, { sort: { start: 1 } }).fetchAsync();
+  const camps = (await Camps.find(
+    {},
+    { sort: { start: 1 }, fields: { slug: 1, start: 1, end: 1 } },
+  ).fetchAsync()) as Pick<ICamp, "slug" | "start" | "end">[];
 
-  const sales = await Sales.find().fetchAsync();
+  const sales = (await Sales.find(
+    {},
+    { fields: { timestamp: 1, amount: 1 } },
+  ).fetchAsync()) as Pick<ISale, "_id" | "amount" | "timestamp">[];
 
   const now2 = new Date();
 
-  const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
+  const longestCamp = camps.reduce<Pick<
+    ICamp,
+    "slug" | "start" | "end"
+  > | null>((memo, camp) => {
     if (!memo) {
       memo = camp;
     } else {
