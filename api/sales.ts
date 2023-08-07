@@ -132,9 +132,11 @@ if (Meteor.isServer) {
   Meteor.startup(async () => {
     statsCampByCamp = await calculateCampByCampStats();
   });
+  /*
   setInterval(async () => {
     statsCampByCamp = await calculateCampByCampStats();
   }, 240000);
+  */
 }
 
 async function calculateCampByCampStats() {
