@@ -302,8 +302,27 @@ export default function PageMenu() {
                           1 / 5,
                           getCorrectTextColor(currentCamp?.color),
                         )};
+                      position: relative;
                     `}
                   >
+                    {brandName === "BornHack" &&
+                    tags.includes("spirit") &&
+                    tags.includes("bottle") ? (
+                      <img
+                        src="/img/logo_square_white_on_transparent_500_RGB.png"
+                        className={css`
+                          object-fit: contain;
+                          position: absolute;
+                          height: 100%;
+                          width: auto;
+                          top: 50%;
+                          left: 50%;
+                          transform: translate(-50%, -50%);
+                          opacity: 0.75;
+                          z-index: 0;
+                        `}
+                      />
+                    ) : null}
                     <small
                       className={css`
                         flex: 1;
