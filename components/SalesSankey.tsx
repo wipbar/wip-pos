@@ -11,7 +11,6 @@ import type { SankeyLink, SankeyNode } from "recharts/types/util/types";
 import type { ICamp } from "../api/camps";
 import Products, { IProduct } from "../api/products";
 import Sales from "../api/sales";
-import useMongoFetch from "../hooks/useMongoFetch";
 import { getCorrectTextColor } from "../util";
 
 function Node({
@@ -126,7 +125,7 @@ function Link({
 }
 
 export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
-  const { data: campSales } = useMongoFetch(
+  const campSales = useFind(
     () =>
       currentCamp
         ? Sales.find({
@@ -138,7 +137,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
         : undefined,
     [currentCamp],
   );
-  const { data: allSales } = useMongoFetch(() => Sales.find(), []);
+  const allSales = useFind(() => Sales.find());
   const sales = useMemo(
     () => (campSales?.length ? campSales : allSales),
     [campSales, allSales],

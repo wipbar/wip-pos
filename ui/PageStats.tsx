@@ -5,13 +5,13 @@ import React, { useMemo } from "react";
 import Countdown from "react-countdown";
 import Camps from "../api/camps";
 import Products, { ProductID } from "../api/products";
-import Sales from "../api/sales";
+import Sales, { ISale } from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
 import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
-import useMongoFetch from "../hooks/useMongoFetch";
+import useSubscription from "../hooks/useSubscription";
 
 const renderer = ({
   days,
@@ -103,23 +103,27 @@ function CurfewCountdown() {
     </div>
   );
 }
-
+const emptyArray: ISale[] = [];
 export default function PageStats() {
+  useSubscription("sales");
+
   const currentCamp = useCurrentCamp();
 
-  const { data: allSales } = useMongoFetch(() => Sales.find(), []);
-  const { data: campSales } = useMongoFetch(
-    () =>
-      currentCamp
-        ? Sales.find({
-            timestamp: {
-              $gte: currentCamp.buildup,
-              $lte: currentCamp.teardown,
-            },
-          })
-        : undefined,
-    [currentCamp],
-  );
+  const allSales = useFind(() => Sales.find());
+  const campSales =
+    useFind(
+      () =>
+        currentCamp
+          ? Sales.find({
+              timestamp: {
+                $gte: currentCamp.buildup,
+                $lte: currentCamp.teardown,
+              },
+            })
+          : undefined,
+      [currentCamp],
+    ) || emptyArray;
+
   const sales = useMemo(
     () => (campSales?.length ? campSales : allSales),
     [campSales, allSales],
