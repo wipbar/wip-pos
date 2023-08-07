@@ -1,4 +1,5 @@
 import convert from "convert";
+import { differenceInHours } from "date-fns";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
@@ -160,28 +161,25 @@ async function calculateCampByCampStats() {
     ICamp,
     "slug" | "start" | "end"
   > | null>((memo, camp) => {
-    if (!memo) {
+    if (!memo) return camp;
+
+    if (
+      Number(camp.end) - Number(camp.start) >
+      Number(memo.end) - Number(memo.start)
+    ) {
       memo = camp;
-    } else {
-      if (
-        Number(camp.end) - Number(camp.start) >
-        Number(memo.end) - Number(memo.start)
-      )
-        memo = camp;
     }
     return memo;
   }, null);
 
   const longestCampHours = longestCamp
-    ? Math.ceil(
-        (Number(longestCamp.end) - Number(longestCamp.start)) / (3600 * 1000),
-      )
+    ? differenceInHours(longestCamp.end, longestCamp.start)
     : 0;
 
-  const data = [];
+  const data: { [key: string]: number; hour: number }[] = [];
   const campTotals: Record<string, number> = {};
   for (let i = 0; i < longestCampHours; i++) {
-    const datapoint: { hour: number; [key: string]: number } = { hour: i };
+    const datapoint: (typeof data)[number] = { hour: i };
 
     for (const { slug, start } of camps) {
       const hourStart = Number(start) + (i + offset) * HOUR_IN_MS;
