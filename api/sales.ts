@@ -1,5 +1,4 @@
 import convert from "convert";
-import { addHours, endOfHour } from "date-fns";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
@@ -140,6 +139,7 @@ if (Meteor.isServer) {
   */
 }
 
+const HOUR_IN_MS = 3600 * 1000;
 async function calculateCampByCampStats() {
   const now = new Date();
 
@@ -174,16 +174,15 @@ async function calculateCampByCampStats() {
   for (let i = 0; i < longestCampHours; i++) {
     const datapoint: { hour: number; [key: string]: number } = { hour: i };
 
-    for (const camp of camps) {
-      const campStart = Number(addHours(camp.start, i + offset));
-      const campEnd = Number(endOfHour(addHours(camp.start, i + offset)));
-      const slug = camp.slug;
+    for (const { slug, start } of camps) {
+      const hourStart = Number(start) + (i + offset) * HOUR_IN_MS;
+      const hourEnd = hourStart + HOUR_IN_MS;
 
       let count = 0;
-      for (const sale of sales) {
-        const timestamp = Number(sale.timestamp);
+      for (const { timestamp, amount } of sales) {
+        const ts = Number(timestamp);
 
-        if (timestamp >= campStart && timestamp < campEnd) count += sale.amount;
+        if (ts >= hourStart && ts < hourEnd) count += amount;
       }
 
       if (count) {
