@@ -1,5 +1,5 @@
 import convert from "convert";
-import { addHours, endOfHour, isWithinRange } from "date-fns";
+import { addHours, endOfHour } from "date-fns";
 import { sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
@@ -130,6 +130,7 @@ let statsCampByCamp: Awaited<
 > | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
+    console.log("Startup statsing");
     statsCampByCamp = await calculateCampByCampStats();
   });
   /*
@@ -170,14 +171,14 @@ async function calculateCampByCampStats() {
   for (let i = 0; i < longestCampHours; i++) {
     const datapoint: { hour: number; [key: string]: number } = { hour: i };
     camps.forEach((camp) => {
+      const campStart = Number(addHours(camp.start, i + offset));
+      const campEnd = Number(endOfHour(addHours(camp.start, i + offset)));
+
       const count = sumBy(
-        sales.filter((sale) =>
-          isWithinRange(
-            sale.timestamp,
-            addHours(camp.start, i + offset),
-            endOfHour(addHours(camp.start, i + offset)),
-          ),
-        ),
+        sales.filter((sale) => {
+          const timestamp = Number(sale.timestamp);
+          return timestamp >= campStart && timestamp < campEnd;
+        }),
         ({ amount }) => amount,
       );
       if (count) {
