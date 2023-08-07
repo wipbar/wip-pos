@@ -1,9 +1,12 @@
 import convert from "convert";
+import { addHours, endOfHour, isWithinRange } from "date-fns";
+import { sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
-import type { Flavor } from "../util";
+import { type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
+import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
 import Products, { type IProduct, type ProductID } from "./products";
 import Stocks from "./stocks";
@@ -113,7 +116,85 @@ export const salesMethods = {
 
     return insertResult;
   },
+
+  async "Sales.stats.CampByCamp"(this: Meteor.MethodThisType) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    return statsCampByCamp;
+  },
 } as const;
+
+let statsCampByCamp: Awaited<
+  ReturnType<typeof calculateCampByCampStats>
+> | null = null;
+if (Meteor.isServer) {
+  Meteor.startup(async () => {
+    statsCampByCamp = await calculateCampByCampStats();
+  });
+  setInterval(async () => {
+    statsCampByCamp = await calculateCampByCampStats();
+  }, 240000);
+}
+
+async function calculateCampByCampStats() {
+  const now = new Date();
+
+  const offset = -6;
+  const camps = await Camps.find({}, { sort: { start: 1 } }).fetchAsync();
+
+  const sales = await Sales.find().fetchAsync();
+  const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
+    if (!memo) {
+      memo = camp;
+    } else {
+      if (
+        Number(camp.end) - Number(camp.start) >
+        Number(memo.end) - Number(memo.start)
+      )
+        memo = camp;
+    }
+    return memo;
+  }, null);
+
+  const longestCampHours = longestCamp
+    ? Math.ceil(
+        (Number(longestCamp.end) - Number(longestCamp.start)) / (3600 * 1000),
+      )
+    : 0;
+
+  const data = [];
+  const campTotals: Record<string, number> = {};
+  for (let i = 0; i < longestCampHours; i++) {
+    const datapoint: { hour: number; [key: string]: number } = { hour: i };
+    camps.forEach((camp) => {
+      const count = sumBy(
+        sales.filter((sale) =>
+          isWithinRange(
+            sale.timestamp,
+            addHours(camp.start, i + offset),
+            endOfHour(addHours(camp.start, i + offset)),
+          ),
+        ),
+        ({ amount }) => amount,
+      );
+      if (count) {
+        const campTotal = (campTotals[camp.slug] || 0) + count;
+        campTotals[camp.slug] = campTotal;
+        datapoint[camp.slug] = campTotal;
+      }
+    });
+    data.push(datapoint);
+  }
+
+  console.log(
+    `Sales.stats.CampByCamp took ${
+      (new Date().getTime() - now.getTime()) / 1000
+    }s`,
+  );
+
+  return { data };
+}
 
 Meteor.methods(salesMethods);
 
