@@ -15,7 +15,7 @@ export default function Fire(props: HTMLProps<HTMLDivElement>) {
               transform: translate(-14%, 75%);
               height: 2em;
               margin-top: -2em;
-              opacity: 0.5;
+              opacity: 0.3;
             }
 
             .particle {
