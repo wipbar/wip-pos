@@ -13,7 +13,7 @@ type MethodMap = typeof stocksMethods &
 export default function useMethod<
   M extends keyof MethodMap,
   Input = Parameters<MethodMap[M]>[0],
-  Output = ReturnType<MethodMap[M]>,
+  Output = Awaited<ReturnType<MethodMap[M]>>,
 >(method: M) {
   const [{ isLoading, error, data }, dispatch] = useReducer(
     (

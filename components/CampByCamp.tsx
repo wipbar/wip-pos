@@ -1,7 +1,6 @@
-import { addHours, endOfHour, isWithinRange } from "date-fns";
 import { sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import {
   CartesianGrid,
   ComposedChart,
@@ -13,10 +12,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Camps, { ICamp } from "../api/camps";
-import Sales from "../api/sales";
+import Camps from "../api/camps";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import useSubscription from "../hooks/useSubscription";
+import { useInterval } from "../hooks/useCurrentDate";
+import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 
 const getAvg = (arr: number[]) =>
@@ -59,60 +58,26 @@ function createTrend<XK extends string, YK extends string>(
 
 const XYAxisDomain = ["dataMin", "dataMax"];
 
-const offset = -6;
 export default function CampByCamp() {
-  useSubscription("sales");
-
   const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }));
   const currentCamp = useCurrentCamp();
 
-  const sales = useFind(() => Sales.find());
-  const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
-    if (!memo) {
-      memo = camp;
-    } else {
-      if (
-        Number(camp.end) - Number(camp.start) >
-        Number(memo.end) - Number(memo.start)
-      )
-        memo = camp;
-    }
-    return memo;
-  }, null);
+  const [getCampByCampData, { data: methodData }] = useMethod(
+    "Sales.stats.CampByCamp",
+  );
 
-  const longestCampHours = longestCamp
-    ? Math.ceil(
-        (Number(longestCamp.end) - Number(longestCamp.start)) / (3600 * 1000),
-      )
-    : 0;
+  const { data } = methodData || { data: [] };
 
-  const [data] = useMemo(() => {
-    const data = [];
-    const campTotals: Record<string, number> = {};
-    for (let i = 0; i < longestCampHours; i++) {
-      const datapoint: { hour: number; [key: string]: number } = { hour: i };
-      camps.forEach((camp) => {
-        const count = sumBy(
-          sales.filter((sale) =>
-            isWithinRange(
-              sale.timestamp,
-              addHours(camp.start, i + offset),
-              endOfHour(addHours(camp.start, i + offset)),
-            ),
-          ),
-          ({ amount }) => amount,
-        );
-        if (count) {
-          const campTotal = (campTotals[camp.slug] || 0) + count;
-          campTotals[camp.slug] = campTotal;
-          datapoint[camp.slug] = campTotal;
-          datapoint[camp.slug + "individual"] = count;
-        }
-      });
-      data.push(datapoint);
+  const updateCampByCampData = useCallback(async () => {
+    if (currentCamp) {
+      await getCampByCampData(undefined);
     }
-    return [data];
-  }, [camps, longestCampHours, sales]);
+  }, [currentCamp, getCampByCampData]);
+
+  useEffect(() => {
+    updateCampByCampData();
+  }, [updateCampByCampData]);
+  useInterval(() => updateCampByCampData(), 10000);
 
   let prev = 0;
   const weights = data.map(

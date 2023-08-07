@@ -10,7 +10,7 @@ export default function useCurrentDate(interval = 1000) {
   return date;
 }
 
-function useInterval(callback: () => any, delay: number) {
+export function useInterval(callback: () => any, delay: number) {
   const savedCallback = useRef<() => any>();
 
   useEffect(() => {
