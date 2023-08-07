@@ -132,6 +132,7 @@ if (Meteor.isServer) {
     console.log("Startup statsing");
     statsCampByCamp = await calculateCampByCampStats();
   });
+
   /*
   setInterval(async () => {
     statsCampByCamp = await calculateCampByCampStats();
@@ -146,6 +147,9 @@ async function calculateCampByCampStats() {
   const camps = await Camps.find({}, { sort: { start: 1 } }).fetchAsync();
 
   const sales = await Sales.find().fetchAsync();
+
+  const now2 = new Date();
+
   const longestCamp = camps.reduce<ICamp | null>((memo, camp) => {
     if (!memo) {
       memo = camp;
@@ -189,11 +193,12 @@ async function calculateCampByCampStats() {
 
     data.push(datapoint);
   }
+  const now3 = new Date();
 
   console.log(
-    `Sales.stats.CampByCamp took ${
-      (new Date().getTime() - now.getTime()) / 1000
-    }s`,
+    `Sales.stats.CampByCamp: ${(now3.getTime() - now.getTime()) / 1000}s,(${
+      (now2.getTime() - now.getTime()) / 1000
+    }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );
 
   return { data };
