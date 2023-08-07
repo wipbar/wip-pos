@@ -1,6 +1,5 @@
 import convert from "convert";
 import { addHours, endOfHour } from "date-fns";
-import { sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
@@ -170,23 +169,24 @@ async function calculateCampByCampStats() {
   const campTotals: Record<string, number> = {};
   for (let i = 0; i < longestCampHours; i++) {
     const datapoint: { hour: number; [key: string]: number } = { hour: i };
-    camps.forEach((camp) => {
+
+    for (const camp of camps) {
       const campStart = Number(addHours(camp.start, i + offset));
       const campEnd = Number(endOfHour(addHours(camp.start, i + offset)));
+      const slug = camp.slug;
 
-      const count = sumBy(
-        sales.filter((sale) => {
-          const timestamp = Number(sale.timestamp);
-          return timestamp >= campStart && timestamp < campEnd;
-        }),
-        ({ amount }) => amount,
-      );
-      if (count) {
-        const campTotal = (campTotals[camp.slug] || 0) + count;
-        campTotals[camp.slug] = campTotal;
-        datapoint[camp.slug] = campTotal;
+      let count = 0;
+      for (const sale of sales) {
+        const timestamp = Number(sale.timestamp);
+
+        if (timestamp >= campStart && timestamp < campEnd) count += sale.amount;
       }
-    });
+
+      if (count) {
+        campTotals[slug] = datapoint[slug] = (campTotals[slug] || 0) + count;
+      }
+    }
+
     data.push(datapoint);
   }
 
