@@ -17,13 +17,15 @@ import ProductPicker from "./ProductPicker";
 function MostRecentSale() {
   const currentCamp = useCurrentCamp();
   const { location } = useCurrentLocation(true);
-  const [sale] = useFind(() =>
-    Sales.find(
-      { locationId: location?._id },
-      { sort: { timestamp: -1 }, limit: 1 },
-    ),
+  const [sale] = useFind(
+    () =>
+      Sales.find(
+        { locationId: location?._id },
+        { sort: { timestamp: -1 }, limit: 1 },
+      ),
+    [location?._id],
   );
-  useSubscription("sales", { from: currentCamp?.buildup }, [
+  useSubscription(currentCamp && "sales", { from: currentCamp?.buildup }, [
     currentCamp?.buildup,
   ]);
 

@@ -105,9 +105,19 @@ function CurfewCountdown() {
 }
 const emptyArray: ISale[] = [];
 export default function PageStats() {
-  useSubscription("sales");
+  const campsLoading = useSubscription("camps");
 
   const currentCamp = useCurrentCamp();
+
+  useSubscription(
+    !campsLoading && currentCamp && "sales",
+    !campsLoading &&
+      currentCamp && {
+        from: currentCamp.buildup,
+        to: currentCamp.teardown,
+      },
+    [campsLoading, currentCamp],
+  );
 
   const allSales = useFind(() => Sales.find());
   const campSales =
@@ -125,8 +135,8 @@ export default function PageStats() {
     ) || emptyArray;
 
   const sales = useMemo(
-    () => (campSales?.length ? campSales : allSales),
-    [campSales, allSales],
+    () => (currentCamp ? campSales : allSales),
+    [currentCamp, campSales, allSales],
   );
 
   const products = useFind(() =>
