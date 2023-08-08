@@ -176,7 +176,7 @@ ${Math.round(
 )} liters of beer
 ${Math.round(
   productsSold
-    .filter(({ brandName }) => brandName === "Club Mate")
+    .filter(({ brandName }) => brandName === "Club Mate" || brandName === "Mio Mio")
     .reduce(
       (totalLiters, { unitSize, sizeUnit }) =>
         unitSize && sizeUnit === "cl"
