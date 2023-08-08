@@ -259,7 +259,8 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
               tags?.includes("spirit") ||
               tags?.includes("cider") ||
               tags?.includes("beer")
-            ) && brandName?.includes("Mate"),
+            ) &&
+            (brandName?.includes("Mate") || brandName?.includes("Mio Mio")),
         ).length,
       },
       {
@@ -272,7 +273,8 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
               tags?.includes("spirit") ||
               tags?.includes("cider") ||
               tags?.includes("beer")
-            ) && !brandName?.includes("Mate"),
+            ) &&
+            !(brandName?.includes("Mate") || brandName?.includes("Mio Mio")),
         ).length,
       },
     ]
