@@ -101,6 +101,8 @@ export default function CampByCamp() {
         currentCamp.slug,
       );
 
+    const endHour = Math.min(xMax, nowHour + 24);
+
     return [
       {
         [currentCamp?.slug + "-trend"]:
@@ -112,8 +114,8 @@ export default function CampByCamp() {
       },
       {
         [currentCamp?.slug + "-trend"]:
-          trend && trend.calcY(Math.min(xMax, nowHour + 24)),
-        hour: Math.min(xMax, nowHour + 24),
+          trend && Math.round(trend.calcY(endHour)),
+        hour: endHour,
       },
     ] as const;
   }, [currentCamp, data, nowHour, xMax]);
@@ -129,7 +131,7 @@ export default function CampByCamp() {
               ? { ...d, ...trendData[1] }
               : d,
           )}
-          margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
+          margin={{ top: 24, right: 8, left: 16, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -169,11 +171,16 @@ export default function CampByCamp() {
               value: currentCamp?.start?.getFullYear(),
               position: "insideBottomRight",
               offset: 8,
-              style: { fill: currentCamp?.color },
+              style: {
+                fill:
+                  currentCamp?.color && getCorrectTextColor(currentCamp?.color),
+              },
             }}
-            fill={currentCamp?.color}
+            fill={currentCamp?.color && getCorrectTextColor(currentCamp?.color)}
             r={4}
-            stroke={currentCamp?.color}
+            stroke={
+              currentCamp?.color && getCorrectTextColor(currentCamp?.color)
+            }
           />
           {camps.map((camp) => (
             <Line
