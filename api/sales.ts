@@ -131,20 +131,21 @@ if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
     statsCampByCamp = await calculateCampByCampStats();
-  });
 
-  /*
-  setInterval(async () => {
-    statsCampByCamp = await calculateCampByCampStats();
-  }, 240000);
-  */
+    setInterval(
+      async () => {
+        statsCampByCamp = await calculateCampByCampStats();
+      },
+      (3600 * 1000) / 6,
+    );
+  });
 }
 
 const HOUR_IN_MS = 3600 * 1000;
+const offset = -6;
 async function calculateCampByCampStats() {
   const now = new Date();
 
-  const offset = -6;
   const camps = (await Camps.find(
     {},
     { sort: { start: 1 }, fields: { slug: 1, start: 1, end: 1 } },
