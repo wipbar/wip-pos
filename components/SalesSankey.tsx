@@ -3,13 +3,13 @@ import React, { useCallback, useMemo } from "react";
 import {
   Layer,
   Rectangle,
-  RectangleProps,
   ResponsiveContainer,
   Sankey,
+  type RectangleProps,
 } from "recharts";
 import type { SankeyLink, SankeyNode } from "recharts/types/util/types";
 import type { ICamp } from "../api/camps";
-import Products, { IProduct } from "../api/products";
+import Products, { isAlcoholic, isMate, type IProduct } from "../api/products";
 import Sales from "../api/sales";
 import { getCorrectTextColor } from "../util";
 
@@ -184,13 +184,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
       {
         source: getNode(salesNode),
         target: getNode("Alcoholic"),
-        value: productsSold.filter(
-          ({ tags }) =>
-            tags?.includes("cocktail") ||
-            tags?.includes("spirit") ||
-            tags?.includes("cider") ||
-            tags?.includes("beer"),
-        ).length,
+        value: productsSold.filter((product) => isAlcoholic(product)).length,
       },
       {
         source: getNode("Alcoholic"),
@@ -239,42 +233,20 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
       {
         source: getNode(salesNode),
         target: getNode("Non-Alcoholic"),
-        value: productsSold.filter(
-          ({ tags }) =>
-            !(
-              tags?.includes("cocktail") ||
-              tags?.includes("spirit") ||
-              tags?.includes("cider") ||
-              tags?.includes("beer")
-            ),
-        ).length,
+        value: productsSold.filter((product) => !isAlcoholic(product)).length,
       },
       {
         source: getNode("Non-Alcoholic"),
         target: getNode("Mate"),
         value: productsSold.filter(
-          ({ brandName, tags }) =>
-            !(
-              tags?.includes("cocktail") ||
-              tags?.includes("spirit") ||
-              tags?.includes("cider") ||
-              tags?.includes("beer")
-            ) &&
-            (brandName?.includes("Mate") || brandName?.includes("Mio Mio")),
+          (product) => !isAlcoholic(product) && isMate(product),
         ).length,
       },
       {
         source: getNode("Non-Alcoholic"),
         target: getNode("Non-Mate"),
         value: productsSold.filter(
-          ({ brandName, tags }) =>
-            !(
-              tags?.includes("cocktail") ||
-              tags?.includes("spirit") ||
-              tags?.includes("cider") ||
-              tags?.includes("beer")
-            ) &&
-            !(brandName?.includes("Mate") || brandName?.includes("Mio Mio")),
+          (product) => !isAlcoholic(product) && !isMate(product),
         ).length,
       },
     ]

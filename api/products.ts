@@ -102,11 +102,17 @@ Meteor.methods(productsMethods);
 if (Meteor.isClient) window.Products = Products;
 
 export function isAlcoholic(product: IProduct) {
-  if (
+  return (
     product.tags?.includes("cocktail") ||
     product.tags?.includes("beer") ||
     product.tags?.includes("cider") ||
     product.tags?.includes("spirit")
-  )
-    return true;
+  );
+}
+
+export function isMate(product: IProduct) {
+  return (
+    product.brandName?.includes("Mate") ||
+    product.brandName?.includes("Mio Mio")
+  );
 }
