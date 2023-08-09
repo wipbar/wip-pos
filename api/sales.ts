@@ -122,6 +122,67 @@ export const salesMethods = {
 
     return statsCampByCamp;
   },
+
+  async "Sales.stats.GoodbyeWorld"(
+    this: Meteor.MethodThisType,
+    { campSlug }: { campSlug: ICamp["slug"] },
+  ) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    const [currentCamp] = await Camps.find({ slug: campSlug }).fetchAsync();
+
+    if (!currentCamp) throw new Meteor.Error("Camp not found");
+
+    const campSales =
+      (currentCamp
+        ? await Sales.find({
+            timestamp: {
+              $gte: currentCamp.buildup,
+              $lte: currentCamp.teardown,
+            },
+          }).fetchAsync()
+        : undefined) || [];
+
+    const productsSold = campSales.map(({ products }) => products).flat();
+
+    return `${campSales.reduce(
+      (revenue, { amount }) => revenue + amount,
+      0,
+    )} ʜᴀx revenue
+  ${productsSold.length} items sold
+  ${campSales.length} discrete transactions
+  ${Math.round(
+    productsSold
+      .filter(({ tags }) => tags?.includes("beer"))
+      .reduce(
+        (totalLiters, { unitSize, sizeUnit }) =>
+          unitSize && sizeUnit === "cl"
+            ? totalLiters + Number(unitSize) / 100
+            : totalLiters,
+        0,
+      ),
+  )} liters of beer
+  ${Math.round(
+    productsSold
+      .filter(
+        ({ brandName }) => brandName === "Club Mate" || brandName === "Mio Mio",
+      )
+      .reduce(
+        (totalLiters, { unitSize, sizeUnit }) =>
+          unitSize && sizeUnit === "cl"
+            ? totalLiters + Number(unitSize) / 100
+            : totalLiters,
+        0,
+      ),
+  )} liters of mate
+  ${
+    productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
+  } cocktails
+  ${
+    productsSold.filter(({ name }) => name.includes("Tsunami")).length
+  } tsunamis`;
+  },
 } as const;
 
 let statsCampByCamp: Awaited<

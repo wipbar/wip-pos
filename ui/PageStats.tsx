@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { addDays, isAfter, setHours, startOfHour } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import Countdown from "react-countdown";
 import Camps from "../api/camps";
 import Products, { ProductID } from "../api/products";
@@ -11,6 +11,7 @@ import DayByDay from "../components/DayByDay";
 import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
+import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
 
 const renderer = ({
@@ -155,42 +156,12 @@ export default function PageStats() {
     [sales],
   );
 
-  const productsSold = campSales.map(({ products }) => products).flat();
-
-  console.log(`${campSales.reduce(
-    (revenue, { amount }) => revenue + amount,
-    0,
-  )} ʜᴀx revenue
-${productsSold.length} items sold
-${campSales.length} discrete transactions
-${Math.round(
-  productsSold
-    .filter(({ tags }) => tags?.includes("beer"))
-    .reduce(
-      (totalLiters, { unitSize, sizeUnit }) =>
-        unitSize && sizeUnit === "cl"
-          ? totalLiters + Number(unitSize) / 100
-          : totalLiters,
-      0,
-    ),
-)} liters of beer
-${Math.round(
-  productsSold
-    .filter(({ brandName }) => brandName === "Club Mate" || brandName === "Mio Mio")
-    .reduce(
-      (totalLiters, { unitSize, sizeUnit }) =>
-        unitSize && sizeUnit === "cl"
-          ? totalLiters + Number(unitSize) / 100
-          : totalLiters,
-      0,
-    ),
-)} liters of mate
-${
-  productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
-} cocktails
-${
-  productsSold.filter(({ name }) => name.includes("Tsunami")).length
-} tsunamis`);
+  const [getGoodbyeWorld] = useMethod("Sales.stats.GoodbyeWorld");
+  useEffect(() => {
+    if (currentCamp) {
+      getGoodbyeWorld({ campSlug: currentCamp.slug }).then(console.log);
+    }
+  }, [currentCamp, getGoodbyeWorld]);
 
   return (
     <div
