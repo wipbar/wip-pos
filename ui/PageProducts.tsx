@@ -13,7 +13,7 @@ import {
 import { useFind } from "meteor/react-meteor-data";
 import { opacify, transparentize } from "polished";
 import React, { ReactNode, useCallback, useMemo, useState } from "react";
-import { isUserAdmin } from "../api/accounts";
+import { isUserAdmin, isUserResponsible } from "../api/accounts";
 import type { ILocation } from "../api/locations";
 import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
@@ -170,6 +170,7 @@ export default function PageProducts() {
     [sortBy],
   );
 
+  const currentUser = useCurrentUser();
   const currentCamp = useCurrentCamp();
   const [showOnlyBarCodeLessItems, setShowOnlyBarCodeLessItems] = useSession<
     boolean | null
@@ -544,12 +545,14 @@ export default function PageProducts() {
                       `}
                     >
                       {product.salePrice}{" "}
-                      {product.shopPrices?.some(
-                        ({ buyPrice }) =>
-                          buyPrice &&
-                          Number(buyPrice) !== Number(product.salePrice) &&
-                          Number(buyPrice) < Number(product.salePrice),
-                      ) ? null : (
+                      {!isUserResponsible(
+                        currentUser,
+                      ) ? null : product.shopPrices?.some(
+                          ({ buyPrice }) =>
+                            buyPrice &&
+                            Number(buyPrice) !== Number(product.salePrice) &&
+                            Number(buyPrice) < Number(product.salePrice),
+                        ) ? null : (
                         <small>?</small>
                       )}
                       ʜᴀx

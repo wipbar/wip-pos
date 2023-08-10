@@ -167,6 +167,25 @@ export const isUserAdmin = (userOrId: string | Meteor.User | null) => {
   if (user?.services?.bornhack?.id === "klarstrup") return true;
 };
 
+export const isUserResponsible = (userOrId: string | Meteor.User | null) => {
+  if (!userOrId) return false;
+  if (isUserAdmin(userOrId)) return true;
+
+  const user = Meteor.users.findOne(
+    typeof userOrId === "string" ? userOrId : userOrId._id,
+  );
+
+  if (
+    user?.services?.bornhack?.id === "klarstrup" ||
+    user?.services?.bornhack?.id === "jagenau" ||
+    user?.services?.bornhack?.id === "tykling" ||
+    user?.services?.bornhack?.id === "zeltophil" ||
+    user?.services?.bornhack?.id === "valberg" ||
+    user?.services?.bornhack?.id === "flummer"
+  )
+    return true;
+};
+
 export const isUserInTeam = (
   userOrId: string | Meteor.User | null,
   inTeam: string | undefined,

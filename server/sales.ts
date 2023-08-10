@@ -6,7 +6,11 @@ WebApp.connectHandlers.use("/sales", (_req, res) =>
   Fiber(async () => {
     try {
       res.setHeader("content-type", "application/json; charset=utf-8");
-      return res.end(JSON.stringify(Sales.find({}).fetch()));
+      return res.end(
+        JSON.stringify(
+          Sales.find({}, { fields: { "products.shopPrices": 0 } }).fetch(),
+        ),
+      );
     } catch (error) {
       console.error(error);
       res.setHeader("content-type", "application/json");

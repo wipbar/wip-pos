@@ -4,12 +4,14 @@ import React, { ReactNode, useCallback, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";
+import { isUserResponsible } from "../api/accounts";
 import Locations, { ILocation } from "../api/locations";
 import Products, { IProduct } from "../api/products";
 import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import { packageTypes } from "../data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { units } from "../util";
 import { Modal } from "./PageProducts";
@@ -63,6 +65,7 @@ export default function PageProductsItem({
   onCancel: () => void;
   product?: IProduct;
 }) {
+  const currentUser = useCurrentUser();
   const locations = useFind(() => Locations.find());
   const [scanningBarcode, setScanningBarcode] = useState(false);
   const { location } = useCurrentLocation();
@@ -269,37 +272,39 @@ export default function PageProductsItem({
           )}
         />
       </Label>
-      <Label label="Unit Cost">
-        <input
-          type="number"
-          step="any"
-          {...register("buyPrice", { valueAsNumber: true })}
-        />
-        <small>
-          <ul
-            className={css`
-              padding: 0;
-              padding-left: 16px;
-              margin: 0;
-            `}
-          >
-            {Array.from(product?.shopPrices || [])
-              .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
-              .map(({ timestamp, buyPrice }) => (
-                <li
-                  key={String(timestamp)}
-                >{`${buyPrice} kr. as of ${new Intl.DateTimeFormat("da-DK", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  second: "numeric",
-                }).format(timestamp)}`}</li>
-              ))}
-          </ul>
-        </small>
-      </Label>
+      {isUserResponsible(currentUser) ? (
+        <Label label="Unit Cost">
+          <input
+            type="number"
+            step="any"
+            {...register("buyPrice", { valueAsNumber: true })}
+          />
+          <small>
+            <ul
+              className={css`
+                padding: 0;
+                padding-left: 16px;
+                margin: 0;
+              `}
+            >
+              {Array.from(product?.shopPrices || [])
+                .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
+                .map(({ timestamp, buyPrice }) => (
+                  <li
+                    key={String(timestamp)}
+                  >{`${buyPrice} kr. as of ${new Intl.DateTimeFormat("da-DK", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric",
+                  }).format(timestamp)}`}</li>
+                ))}
+            </ul>
+          </small>
+        </Label>
+      ) : null}
       <fieldset>
         <legend>Components From Stock</legend>
         {fields.map((field, index) => (

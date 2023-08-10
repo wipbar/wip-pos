@@ -11,10 +11,12 @@ import {
 import { groupBy, sumBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
+import { isUserResponsible } from "../api/accounts";
 import Products, { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useCurrentUser from "../hooks/useCurrentUser";
 import useSubscription from "../hooks/useSubscription";
 
 const rolloverOffset = 6;
@@ -43,6 +45,7 @@ const getSaleExpenses = (sale: ISale, products: IProduct[]) =>
 
 export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
+  const currentUser = useCurrentUser();
   const selectedCamp = useCurrentCamp();
   useSubscription(
     "sales",
@@ -121,15 +124,18 @@ export default function PageSales() {
                 )}{" "}
                 <code>
                   <b>{sumBy(salesOfDay, "amount")}</b>
-                  <span style={{ color: "limegreen" }}>
-                    (+{" "}
-                    {sumBy(
-                      salesOfDay.map(
-                        (sale) => sale.amount - getSaleExpenses(sale, products),
-                      ),
-                    )}
-                    )
-                  </span>
+                  {isUserResponsible(currentUser) ? (
+                    <span style={{ color: "limegreen" }}>
+                      (+{" "}
+                      {sumBy(
+                        salesOfDay.map(
+                          (sale) =>
+                            sale.amount - getSaleExpenses(sale, products),
+                        ),
+                      )}
+                      )
+                    </span>
+                  ) : null}
                 </code>
                 <small>{salesOfDay[0]?.currency}</small>{" "}
                 <small>
@@ -140,7 +146,9 @@ export default function PageSales() {
                       const statements = salesOfDay.map((sale) => ({
                         timestamp: sale.timestamp,
                         amount: sale.amount,
-                        cost: getSaleExpenses(sale, products),
+                        cost: isUserResponsible(currentUser)
+                          ? getSaleExpenses(sale, products)
+                          : undefined,
                       }));
 
                       saveAs(
@@ -160,9 +168,11 @@ export default function PageSales() {
                     {format(sale.timestamp, "HH:mm:ss")}{" "}
                     <code>
                       <b>{sale.amount}</b>
-                      <span style={{ color: "limegreen" }}>
-                        (+ {sale.amount - getSaleExpenses(sale, products)})
-                      </span>
+                      {isUserResponsible(currentUser) ? (
+                        <span style={{ color: "limegreen" }}>
+                          (+ {sale.amount - getSaleExpenses(sale, products)})
+                        </span>
+                      ) : null}
                     </code>
                     <small>{sale.currency}</small>
                     <ul>

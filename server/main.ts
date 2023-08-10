@@ -1,6 +1,7 @@
-import { Meteor } from "meteor/meteor";
+import { Meteor, Subscription } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import "../api/accounts";
+import { isUserAdmin, isUserResponsible } from "../api/accounts";
 import Camps from "../api/camps";
 import Locations from "../api/locations";
 import Products from "../api/products";
@@ -9,9 +10,14 @@ import Stocks from "../api/stocks";
 import "./metrics";
 import "./sales";
 
-Meteor.publish("products", () => Products.find());
+Meteor.publish("products", function (this: Subscription) {
+  return Products.find(
+    {},
+    { fields: isUserResponsible(this.userId) ? undefined : { shopPrices: 0 } },
+  );
+});
 Meteor.publish("camps", () => Camps.find({}, { sort: { end: -1 } }));
-Meteor.publish("sales", (rawOptions) => {
+Meteor.publish("sales", function (this: Subscription, rawOptions) {
   const { from, to } = rawOptions || {};
   let selector: Mongo.Selector<ISale> = {};
 
@@ -29,7 +35,10 @@ Meteor.publish("sales", (rawOptions) => {
     };
   }
 
-  return Sales.find(selector, { sort: { timestamp: -1 } });
+  return Sales.find(selector, {
+    sort: { timestamp: -1 },
+    fields: isUserResponsible(this.userId) ? undefined : { "products.shopPrices": 0 },
+  });
 });
 Meteor.publish("stocks", () => Stocks.find());
 Meteor.publish("locations", () => Locations.find());
