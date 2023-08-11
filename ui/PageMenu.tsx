@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import { addHours, isWithinRange, subHours } from "date-fns";
 import { groupBy } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
-import { transparentize } from "polished";
+import { darken, lighten, transparentize } from "polished";
 import React, { Fragment, SVGProps, useMemo, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
@@ -70,10 +70,14 @@ function SparkLine({
   );
 }
 
+const sparklineDays = 24;
 export default function PageMenu() {
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(1000);
-  const from = useMemo(() => subHours(currentDate, 24), [currentDate]);
+  const from = useMemo(
+    () => subHours(currentDate, sparklineDays),
+    [currentDate],
+  );
   const { location, error } = useCurrentLocation();
   const [isExpressMode, setIsExpressMode] = useState(false);
 
@@ -227,11 +231,15 @@ export default function PageMenu() {
               className={css`
                 background: ${currentCamp &&
                 transparentize(4 / 5, getCorrectTextColor(currentCamp?.color))};
+                color: ${currentCamp &&
+                getCorrectTextColor(
+                  getCorrectTextColor(currentCamp?.color) === "white"
+                    ? lighten(4 / 5, currentCamp?.color)
+                    : darken(4 / 5, currentCamp?.color),
+                )};
 
                 break-inside: avoid;
-                border: 3px solid transparent;
-                padding: 4px;
-                padding-bottom: 0;
+                padding: 6px;
                 margin-bottom: 12px;
               `}
             >
@@ -248,8 +256,8 @@ export default function PageMenu() {
                   border-bottom: ${currentCamp?.color} 1px solid;
                 `}
                 fill={currentCamp?.color}
-                data={Array.from({ length: 24 }, (_, i) => [
-                  23 - i,
+                data={Array.from({ length: sparklineDays }, (_, i) => [
+                  sparklineDays - 1 - i,
                   sales.reduce((memo, sale) => {
                     if (
                       isWithinRange(
@@ -277,6 +285,9 @@ export default function PageMenu() {
                   margin: 0;
                   padding: 0;
                   list-style: none;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
                 `}
               >
                 {productsByBrandName.map(([brandName, products]) => (
@@ -292,7 +303,6 @@ export default function PageMenu() {
                         4 / 5,
                         getCorrectTextColor(currentCamp?.color),
                       )};
-                      margin-bottom: 4px;
                       align-items: stretch;
                       break-inside: avoid;
 
@@ -333,14 +343,21 @@ export default function PageMenu() {
                       <small>{brandName}</small>
                       <small>ʜᴀx</small>
                     </small>
-                    {products.map((product) => (
-                      <div
-                        key={product._id}
-                        className={css`
-                          position: relative;
-                          break-inside: avoid;
-                          ${product.salePrice == 0
-                            ? `
+                    <div
+                      className={css`
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                      `}
+                    >
+                      {products.map((product) => (
+                        <div
+                          key={product._id}
+                          className={css`
+                            position: relative;
+                            break-inside: avoid;
+                            ${product.salePrice == 0
+                              ? `
                                 box-shadow: 0 0 20px black, 0 0 40px black;
                                 color: black;
                                 background: rgba(255, 0, 0, 0.75);
@@ -349,106 +366,112 @@ export default function PageMenu() {
                                 animation-iteration-count: infinite;
                                 animation-duration: 2s;
                             `
-                            : ""}
-                        `}
-                      >
-                        <ProductTrend
-                          product={product}
-                          className={css`
-                            position: absolute !important;
-                            bottom: 0;
-                            width: 100%;
-                            z-index: 0;
-                          `}
-                        />
-                        <div
-                          className={css`
-                            flex: 1;
-                            display: flex;
-                            justify-content: space-between;
+                              : ""}
                           `}
                         >
-                          <span>
-                            <div
-                              className={css`
-                                font-weight: 500;
-                              `}
-                            >
-                              {product.name}
-                            </div>
-                            <small
-                              className={css`
-                                margin-top: -0.25em;
-                                display: block;
-                              `}
-                            >
-                              {[
-                                product.description || null,
-                                typeof product.abv === "number" ||
-                                (typeof product.abv === "string" && product.abv)
-                                  ? `${product.abv}%`
-                                  : null,
-                              ]
-                                .filter(Boolean)
-                                .map((thing, i) => (
-                                  <Fragment key={thing}>
-                                    {i > 0 ? ", " : null}
-                                    <small key={thing}>{thing}</small>
-                                  </Fragment>
-                                ))}
-                            </small>
-                          </span>
+                          <ProductTrend
+                            product={product}
+                            className={css`
+                              position: absolute !important;
+                              bottom: 0;
+                              width: 100%;
+                              z-index: 0;
+                            `}
+                          />
                           <div
                             className={css`
-                              text-align: right;
+                              flex: 1;
+                              display: flex;
+                              justify-content: space-between;
                             `}
                           >
-                            <b>{Number(product.salePrice) || "00"}</b>
-                            {product.tap ? (
+                            <span>
                               <div
                                 className={css`
-                                  line-height: 0.5;
-                                  white-space: nowrap;
+                                  font-weight: 500;
                                 `}
                               >
-                                <small>🚰 {product.tap}</small>
+                                {product.name}
                               </div>
-                            ) : null}
+                              <small
+                                className={css`
+                                  margin-top: -0.25em;
+                                  display: block;
+                                `}
+                              >
+                                {[
+                                  product.description || null,
+                                  (typeof product.abv === "number" &&
+                                    !Number.isNaN(product.abv)) ||
+                                  (typeof product.abv === "string" &&
+                                    product.abv)
+                                    ? `${product.abv}%`
+                                    : null,
+                                ]
+                                  .filter(Boolean)
+                                  .map((thing, i) => (
+                                    <Fragment key={thing}>
+                                      {i > 0 ? ", " : null}
+                                      <small key={thing}>{thing}</small>
+                                    </Fragment>
+                                  ))}
+                              </small>
+                            </span>
+                            <div
+                              className={css`
+                                text-align: right;
+                              `}
+                            >
+                              <b>{Number(product.salePrice) || "00"}</b>
+                              {product.tap ? (
+                                <div
+                                  className={css`
+                                    line-height: 0.5;
+                                    white-space: nowrap;
+                                  `}
+                                >
+                                  <small>🚰 {product.tap}</small>
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
+                          <SparkLine
+                            className={css`
+                              margin-left: -6px;
+                              margin-right: -6px;
+                              width: calc(100% + 12px);
+                              display: block;
+                              border-bottom: ${currentCamp?.color} 1px solid;
+                            `}
+                            fill={currentCamp?.color}
+                            data={Array.from(
+                              { length: sparklineDays },
+                              (_, i) => [
+                                sparklineDays - 1 - i,
+                                sales.reduce((memo, sale) => {
+                                  if (
+                                    isWithinRange(
+                                      sale.timestamp,
+                                      addHours(currentDate, -i - 1),
+                                      addHours(currentDate, -i),
+                                    )
+                                  ) {
+                                    return (
+                                      memo +
+                                      sale.products.filter(
+                                        (saleProduct) =>
+                                          saleProduct._id === product._id,
+                                      ).length
+                                    );
+                                  }
+                                  return memo;
+                                }, 0),
+                              ],
+                            )}
+                          />
                         </div>
-                        <SparkLine
-                          className={css`
-                            margin-left: -6px;
-                            margin-right: -6px;
-                            width: calc(100% + 12px);
-                            display: block;
-                            border-bottom: ${currentCamp?.color} 1px solid;
-                          `}
-                          fill={currentCamp?.color}
-                          data={Array.from({ length: 24 }, (_, i) => [
-                            23 - i,
-                            sales.reduce((memo, sale) => {
-                              if (
-                                isWithinRange(
-                                  sale.timestamp,
-                                  addHours(currentDate, -i - 1),
-                                  addHours(currentDate, -i),
-                                )
-                              ) {
-                                return (
-                                  memo +
-                                  sale.products.filter(
-                                    (saleProduct) =>
-                                      saleProduct._id === product._id,
-                                  ).length
-                                );
-                              }
-                              return memo;
-                            }, 0),
-                          ])}
-                        />
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </li>
                 ))}
               </ul>

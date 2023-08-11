@@ -28,6 +28,7 @@ import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
+import { opacify } from "polished";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
@@ -148,6 +149,9 @@ export default function UI() {
         #login-buttons-logout {
           background: ${currentCamp?.color} !important;
           border-color: ${currentCamp?.color} !important;
+          color: ${
+            currentCamp && getCorrectTextColor(currentCamp.color)
+          } !important;
         }
       `}</style>
       <div
@@ -164,8 +168,11 @@ export default function UI() {
       </div>
       <div
         className={css`
-          background: rgba(255, 255, 255, 0.3);
-          border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+          background: ${currentCamp &&
+          opacify(-0.5, getCorrectTextColor(currentCamp?.color))};
+          border-bottom: 2px solid
+            ${currentCamp &&
+            opacify(-0.25, getCorrectTextColor(currentCamp?.color))};
         `}
         hidden={
           (pageSlug === "menu" ||
@@ -324,6 +331,10 @@ export default function UI() {
                   display: flex;
                   font-size: 3em;
                   justify-content: space-evenly;
+                  a {
+                    color: ${currentCamp?.color &&
+                    getCorrectTextColor(currentCamp?.color)};
+                  }
                 `}
               >
                 <li>
