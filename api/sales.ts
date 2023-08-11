@@ -241,6 +241,9 @@ async function calculateCampByCampStats() {
   const data: { [key: string]: number; hour: number }[] = [];
   const campTotals: Record<string, number> = {};
   for (let i = 0; i < longestCampHours; i++) {
+    // avoid blocking the event loop for too long at a time
+    await new Promise((y) => setImmediate(y));
+
     const datapoint: (typeof data)[number] = { hour: i };
 
     for (const { slug, start } of camps) {
