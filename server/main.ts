@@ -1,7 +1,7 @@
 import { Meteor, Subscription } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import "../api/accounts";
-import { isUserAdmin, isUserResponsible } from "../api/accounts";
+import { isUserResponsible } from "../api/accounts";
 import Camps from "../api/camps";
 import Locations from "../api/locations";
 import Products from "../api/products";
@@ -37,7 +37,9 @@ Meteor.publish("sales", function (this: Subscription, rawOptions) {
 
   return Sales.find(selector, {
     sort: { timestamp: -1 },
-    fields: isUserResponsible(this.userId) ? undefined : { "products.shopPrices": 0 },
+    fields: isUserResponsible(this.userId)
+      ? undefined
+      : { "products.shopPrices": 0 },
   });
 });
 Meteor.publish("stocks", () => Stocks.find());
