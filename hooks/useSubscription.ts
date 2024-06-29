@@ -2,10 +2,11 @@ import { useTracker } from "meteor/react-meteor-data";
 import { DependencyList, useMemo, useRef, useState } from "react";
 import SubsManager from "../SubsManager";
 
+const emptyArray: never[] = [];
 export default function useSubscription(
   pubName: string | false | undefined,
   pubArguments?: unknown,
-  deps?: DependencyList,
+  deps: DependencyList = emptyArray,
 ) {
   const [loading, setLoading] = useState(true);
 
