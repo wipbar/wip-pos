@@ -152,36 +152,37 @@ export const salesMethods = {
     )} ʜᴀx revenue
   ${productsSold.length} items sold
   ${campSales.length} discrete transactions
-  ${Math.round(
-    productsSold
-      .filter(({ tags }) => tags?.includes("beer"))
-      .reduce(
-        (totalLiters, { unitSize, sizeUnit }) =>
-          unitSize && sizeUnit === "cl"
-            ? totalLiters + Number(unitSize) / 100
-            : totalLiters,
-        0,
-      ),
-  )} liters of beer
-  ${Math.round(
-    productsSold
-      .filter(
-        ({ brandName }) => brandName === "Club Mate" || brandName === "Mio Mio",
-      )
-      .reduce(
-        (totalLiters, { unitSize, sizeUnit }) =>
-          unitSize && sizeUnit === "cl"
-            ? totalLiters + Number(unitSize) / 100
-            : totalLiters,
-        0,
-      ),
-  )} liters of mate
-  ${
-    productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
-  } cocktails
-  ${
-    productsSold.filter(({ name }) => name.includes("Tsunami")).length
-  } tsunamis`;
+   ${Math.round(
+     productsSold
+       .filter(({ tags }) => tags?.includes("beer"))
+       .reduce(
+         (totalLiters, { unitSize, sizeUnit }) =>
+           unitSize && sizeUnit === "cl"
+             ? totalLiters + Number(unitSize) / 100
+             : totalLiters,
+         0,
+       ),
+   )} liters of beer
+   ${Math.round(
+     productsSold
+       .filter(
+         ({ brandName }) =>
+           brandName === "Club Mate" || brandName === "Mio Mio",
+       )
+       .reduce(
+         (totalLiters, { unitSize, sizeUnit }) =>
+           unitSize && sizeUnit === "cl"
+             ? totalLiters + Number(unitSize) / 100
+             : totalLiters,
+         0,
+       ),
+   )} liters of mate
+   ${
+     productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
+   } cocktails
+    ${
+      productsSold.filter(({ name }) => name.includes("Tsunami")).length
+    } tsunamis`;
   },
 } as const;
 

@@ -246,6 +246,8 @@ export default function CartView({
               box-shadow: ${currentCamp?.color} 0px 0 10px 0px;
               background: ${currentCamp &&
               getCorrectTextColor(currentCamp.color)};
+              color: ${currentCamp &&
+              getCorrectTextColor(currentCamp.color, true)};
               border-radius: 0px;
               border-top-right-radius: 12px;
               border-bottom-right-radius: 12px;
@@ -401,9 +403,9 @@ export default function CartView({
                 <div
                   className={css`
                     display: grid;
-                    gap: 1em;
+                    gap: 0.5vw;
                     grid-auto-flow: column;
-                    padding: 0 1em;
+                    padding: 0 0.5vw;
                     margin-top: 1em;
                     > label {
                       cursor: pointer;
@@ -447,7 +449,7 @@ export default function CartView({
                       checked={isGiven}
                     />
                     <span>
-                      Items
+                      <span>{cart.productIds.length} items</span>
                       <br />
                       Given
                     </span>
@@ -492,8 +494,6 @@ export default function CartView({
             align-items: center;
             flex-direction: column;
             padding: 1em;
-            color: ${currentCamp &&
-            getCorrectTextColor(currentCamp.color, true)};
           `}
         >
           No items in this cart yet...

@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import Products, { ProductID, isAlcoholic } from "../api/products";
@@ -20,6 +21,7 @@ import {
   stringToColours,
   tagsToString,
 } from "../util";
+import { useDraggable } from "react-use-draggable-scroll";
 
 const fac = new FastAverageColor();
 
@@ -33,6 +35,10 @@ export default function ProductPicker({
   pickedProductIds: ProductID[];
   setPickedProductIds: (value: ProductID[]) => void;
 } & HTMLProps<HTMLDivElement>) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  // @ts-expect-error - ref value can be null
+  const { events } = useDraggable(ref);
+
   const { location } = useCurrentLocation();
   const currentCamp = useCurrentCamp();
   const [showOnlyMenuItems, setShowOnlyMenuItems] = useState(true);
@@ -110,6 +116,8 @@ export default function ProductPicker({
         ` +
         (" " + (props.className || ""))
       }
+      {...events}
+      ref={ref}
     >
       <div
         className={css`

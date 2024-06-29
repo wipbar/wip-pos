@@ -303,83 +303,90 @@ export default function UI() {
           <AccountsUIWrapper />
         </nav>
       </div>
-      <Routes>
-        <Route
-          path="/:locationSlug"
-          element={<Navigate to={`/${locationSlug}/tend`} />}
-        />
-        <Route path="/:locationSlug/tend" element={<PageTend />} />
-        <Route path="/:locationSlug/products" element={<PageProducts />} />
-        <Route path="/:locationSlug/stock" element={<PageStock />} />
-        <Route path="/:locationSlug/sales" element={<PageSales />} />
-        <Route path="/:locationSlug/menu" element={<PageMenu />} />
-        <Route path="/stats" element={<PageStats />} />
-        <Route
-          path="/"
-          element={
-            <div
-              className={css`
-                text-align: center;
-              `}
-            >
-              <br />
-              <ul
+      <div
+        className={css`
+          flex-grow: 1;
+          overflow-y: auto;
+        `}
+      >
+        <Routes>
+          <Route
+            path="/:locationSlug"
+            element={<Navigate to={`/${locationSlug}/tend`} />}
+          />
+          <Route path="/:locationSlug/tend" element={<PageTend />} />
+          <Route path="/:locationSlug/products" element={<PageProducts />} />
+          <Route path="/:locationSlug/stock" element={<PageStock />} />
+          <Route path="/:locationSlug/sales" element={<PageSales />} />
+          <Route path="/:locationSlug/menu" element={<PageMenu />} />
+          <Route path="/stats" element={<PageStats />} />
+          <Route
+            path="/"
+            element={
+              <div
                 className={css`
-                  padding: 0;
-                  margin: 0;
-                  list-style: none;
-                  display: flex;
-                  font-size: 3em;
-                  justify-content: space-evenly;
-                  a {
-                    color: ${currentCamp?.color &&
-                    getCorrectTextColor(currentCamp?.color)};
-                  }
+                  text-align: center;
                 `}
               >
-                <li>
-                  <Link to={`/stats`}>Stats</Link>
-                </li>
-                {locations?.map((location) => (
-                  <li
-                    key={location._id}
-                    className={css`
-                      margin-bottom: 16px;
-                    `}
-                  >
-                    {location.name}
-                    <br />
-                    <Link to={`/${location.slug}/menu`}>Menu</Link>
+                <br />
+                <ul
+                  className={css`
+                    padding: 0;
+                    margin: 0;
+                    list-style: none;
+                    display: flex;
+                    font-size: 3em;
+                    justify-content: space-evenly;
+                    a {
+                      color: ${currentCamp?.color &&
+                      getCorrectTextColor(currentCamp?.color)};
+                    }
+                  `}
+                >
+                  <li>
+                    <Link to={`/stats`}>Stats</Link>
                   </li>
-                ))}
-              </ul>
-            </div>
-          }
-        />
-        <Route
-          path="/signin"
-          element={
-            user ? (
-              <Navigate to="/" />
-            ) : (
-              <div>
-                <AccountsUIWrapper />
+                  {locations?.map((location) => (
+                    <li
+                      key={location._id}
+                      className={css`
+                        margin-bottom: 16px;
+                      `}
+                    >
+                      {location.name}
+                      <br />
+                      <Link to={`/${location.slug}/menu`}>Menu</Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            )
-          }
-        />
-        <Route
-          element={
-            <div
-              className={css`
-                text-align: center;
-              `}
-            >
-              not found
-            </div>
-          }
-        />
-      </Routes>
+            }
+          />
+          <Route
+            path="/signin"
+            element={
+              user ? (
+                <Navigate to="/" />
+              ) : (
+                <div>
+                  <AccountsUIWrapper />
+                </div>
+              )
+            }
+          />
+          <Route
+            element={
+              <div
+                className={css`
+                  text-align: center;
+                `}
+              >
+                not found
+              </div>
+            }
+          />
+        </Routes>
+      </div>
     </div>
   );
 }

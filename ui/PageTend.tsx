@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import type { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -13,6 +13,7 @@ import useSubscription from "../hooks/useSubscription";
 import type { Flavor } from "../util";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
+import { useDraggable } from "react-use-draggable-scroll";
 
 function MostRecentSale() {
   const currentCamp = useCurrentCamp();
@@ -83,6 +84,10 @@ export default function PageTend() {
     [carts, currentCartId],
   );
 
+  const ref = useRef<HTMLDivElement | null>(null);
+  // @ts-expect-error - ref value can be null
+  const { events } = useDraggable(ref);
+
   if (error) return error;
 
   return (
@@ -94,7 +99,7 @@ export default function PageTend() {
         height: 100%;
         max-height: 100%;
         align-items: stretch;
-        max-height: calc(100vh - 80px);
+        user-select: none;
       `}
     >
       <ProductPicker
@@ -132,6 +137,8 @@ export default function PageTend() {
           min-width: 180px;
           overflow-y: auto;
         `}
+        {...events}
+        ref={ref}
       >
         {carts.map((cart) => (
           <CartView
