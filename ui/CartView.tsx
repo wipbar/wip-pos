@@ -281,9 +281,6 @@ export default function CartView({
               margin: 0;
               list-style: none;
               padding: 0;
-              overflow-y: scroll;
-              overflow-x: hidden;
-              max-height: calc(100vh - 230px);
             `}
           >
             {cart.productIds.map((id, i) => {
@@ -449,7 +446,13 @@ export default function CartView({
                       checked={isGiven}
                     />
                     <span>
-                      <span>{cart.productIds.length} items</span>
+                      <span
+                        className={css`
+                          white-space: nowrap;
+                        `}
+                      >
+                        {cart.productIds.length} items
+                      </span>
                       <br />
                       Given
                     </span>

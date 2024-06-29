@@ -10,7 +10,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import type { Flavor } from "../util";
+import { getCorrectTextColor, type Flavor } from "../util";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
 import { useDraggable } from "react-use-draggable-scroll";
@@ -176,8 +176,10 @@ export default function PageTend() {
               padding: 0.5em;
               border-radius: 24px;
 
-              background-color: rgba(255, 255, 255, 0.9);
-              color: ${currentCamp ? currentCamp.color : "white"};
+              background: ${currentCamp &&
+              getCorrectTextColor(currentCamp.color)};
+              color: ${currentCamp &&
+              getCorrectTextColor(currentCamp.color, true)};
               border: 0;
             `}
             onClick={() => setCurrentCartId(null)}
