@@ -492,6 +492,8 @@ export default function CartView({
             align-items: center;
             flex-direction: column;
             padding: 1em;
+            color: ${currentCamp &&
+            getCorrectTextColor(currentCamp.color, true)};
           `}
         >
           No items in this cart yet...
