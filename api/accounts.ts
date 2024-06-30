@@ -199,7 +199,7 @@ export const isUserInTeam = (
 
   return Boolean(
     user?.services?.bornhack?.teams?.some(
-      ({ team, camp }: { team: string; camp: string }) =>
+      ({ team, camp }) =>
         team?.toLowerCase() === inTeam.toLowerCase() &&
         camp === currentCamp?.name,
     ),

@@ -30,6 +30,12 @@ declare module "meteor/meteor" {
       name?: string;
     }
     function loginWithBornhack(): void;
+    interface UserServices {
+      bornhack?: {
+        id: string;
+        teams: { team: string; camp: string }[];
+      };
+    }
   }
 }
 declare module "meteor/accounts-base" {
