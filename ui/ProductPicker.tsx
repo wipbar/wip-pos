@@ -11,7 +11,7 @@ import React, {
   useState,
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
-import Products, { ProductID, isAlcoholic } from "../api/products";
+import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
@@ -27,6 +27,119 @@ import {
 const fac = new FastAverageColor();
 
 const collator = new Intl.Collator("en");
+
+function ProductPickerProduct({
+  product,
+  onPickedProduct,
+  showItemDetails,
+}: {
+  product: IProduct;
+  onPickedProduct: (product: IProduct) => void;
+  showItemDetails: boolean;
+}) {
+  const handleClick = useCallback(
+    () => onPickedProduct(product),
+    [product, onPickedProduct],
+  );
+
+  return (
+    <button
+      key={product._id}
+      onClick={handleClick}
+      className={css`
+        background: linear-gradient(
+          135deg,
+          ${[...(product.tags || emptyArray)]
+            .sort()
+            .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
+            .join(", ")}
+        );
+        color: ${getCorrectTextColor(
+          `rgba(${fac.getColorFromArray4(
+            [...(product.tags || emptyArray)]
+              .sort()
+              .map((tag) => stringToColours(tag))
+              .flat(),
+          )})`,
+        )};
+        border: 2px solid black;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-radius: 5px;
+        align-items: center;
+      `}
+    >
+      <div
+        className={css`
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+        `}
+      >
+        {product.brandName ? (
+          <div>
+            <small>
+              <small>{product.brandName}</small>
+            </small>
+          </div>
+        ) : null}
+        <div>
+          <b
+            className={css`
+              font-size: 1.1em;
+            `}
+          >
+            {product.name}
+          </b>
+          {showItemDetails && (
+            <>
+              <br />
+              <small>
+                <small>
+                  <i>
+                    {product.unitSize}
+                    {product.sizeUnit}
+                  </i>{" "}
+                  {[...(product.tags || emptyArray)].sort()?.map((tag) => (
+                    <span
+                      key={tag}
+                      className={css`
+                        display: inline-block;
+                        background: ${stringToColour(tag) ||
+                        `rgba(0, 0, 0, 0.4)`};
+                        color: ${getCorrectTextColor(stringToColour(tag)) ||
+                        "white"};
+                        padding: 0 3px;
+                        border-radius: 4px;
+                        margin-left: 2px;
+                      `}
+                    >
+                      {tag.trim()}
+                    </span>
+                  ))}
+                </small>
+              </small>
+            </>
+          )}
+        </div>
+      </div>
+      <div>
+        {showItemDetails && (
+          <span>
+            <code>
+              <b>{product.salePrice}</b>
+            </code>
+            <small>ʜᴀx</small>
+          </span>
+        )}
+        {product.tap ? <small> 🚰 {product.tap}</small> : null}
+      </div>
+    </button>
+  );
+}
 
 export default function ProductPicker({
   pickedProductIds,
@@ -105,6 +218,13 @@ export default function ProductPicker({
       showOnlyBarCodeLessItems,
       showOnlyMenuItems,
     ],
+  );
+
+  const handlePickedProduct = useCallback(
+    (product: IProduct) => {
+      setPickedProductIds([...pickedProductIds, product._id]);
+    },
+    [pickedProductIds, setPickedProductIds],
   );
 
   return (
@@ -217,132 +337,41 @@ export default function ProductPicker({
           padding: 1vw;
         `}
       >
-        {[...products]
-          .filter((product) =>
-            location?.curfew ? !isAlcoholic(product) : true,
-          )
-          .filter((product) => {
-            if (!activeFilters.length) return true;
-            if (!product.tags) return true;
-
-            return activeFilters.every(
-              (filter) =>
-                product.tags?.map((tag) => tag.trim()).includes(filter.trim()),
-            );
-          })
-          .filter(({ locationIds }) =>
-            showOnlyMenuItems && location
-              ? locationIds?.includes(location._id)
-              : true,
-          )
-          .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .sort((a, b) => a.brandName.localeCompare(b.brandName))
-          .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
-          .sort((a, b) =>
-            tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
+        {products
+          .reduce((memo: IProduct[], product) => {
+            if (
+              (location?.curfew ? !isAlcoholic(product) : true) &&
+              (!activeFilters.length ||
+                !product.tags ||
+                activeFilters.every(
+                  (filter) =>
+                    product.tags
+                      ?.map((tag) => tag.trim())
+                      .includes(filter.trim()),
+                )) &&
+              (showOnlyMenuItems && location
+                ? product.locationIds?.includes(location._id)
+                : true) &&
+              (showOnlyBarCodeLessItems ? !product.barCode : true)
+            ) {
+              memo.push(product);
+            }
+            return memo;
+          }, [])
+          .sort(
+            (a, b) =>
+              a.name.localeCompare(b.name) +
+              a.brandName.localeCompare(b.brandName) +
+              (a.tap?.localeCompare(b.tap || "") || 0) +
+              tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
           )
           .map((product) => (
-            <button
+            <ProductPickerProduct
               key={product._id}
-              onClick={() =>
-                setPickedProductIds([...pickedProductIds, product._id])
-              }
-              className={css`
-                background: linear-gradient(
-                  135deg,
-                  ${[...(product.tags || emptyArray)]
-                    .sort()
-                    .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
-                    .join(", ")}
-                );
-                color: ${getCorrectTextColor(
-                  `rgba(${fac.getColorFromArray4(
-                    [...(product.tags || emptyArray)]
-                      .sort()
-                      .map((tag) => stringToColours(tag))
-                      .flat(),
-                  )})`,
-                )};
-                border: 2px solid black;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                border-radius: 5px;
-                align-items: center;
-              `}
-            >
-              <div
-                className={css`
-                  flex: 1;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  flex-direction: column;
-                `}
-              >
-                {product.brandName ? (
-                  <div>
-                    <small>
-                      <small>{product.brandName}</small>
-                    </small>
-                  </div>
-                ) : null}
-                <div>
-                  <b
-                    className={css`
-                      font-size: 1.1em;
-                    `}
-                  >
-                    {product.name}
-                  </b>
-                  {showItemDetails && (
-                    <>
-                      <br />
-                      <small>
-                        <small>
-                          <i>
-                            {product.unitSize}
-                            {product.sizeUnit}
-                          </i>{" "}
-                          {[...(product.tags || emptyArray)]
-                            .sort()
-                            ?.map((tag) => (
-                              <span
-                                key={tag}
-                                className={css`
-                                  display: inline-block;
-                                  background: ${stringToColour(tag) ||
-                                  `rgba(0, 0, 0, 0.4)`};
-                                  color: ${getCorrectTextColor(
-                                    stringToColour(tag),
-                                  ) || "white"};
-                                  padding: 0 3px;
-                                  border-radius: 4px;
-                                  margin-left: 2px;
-                                `}
-                              >
-                                {tag.trim()}
-                              </span>
-                            ))}
-                        </small>
-                      </small>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div>
-                {showItemDetails && (
-                  <span>
-                    <code>
-                      <b>{product.salePrice}</b>
-                    </code>
-                    <small>ʜᴀx</small>
-                  </span>
-                )}
-                {product.tap ? <small> 🚰 {product.tap}</small> : null}
-              </div>
-            </button>
+              product={product}
+              onPickedProduct={handlePickedProduct}
+              showItemDetails={showItemDetails}
+            />
           ))}
       </div>
     </div>
