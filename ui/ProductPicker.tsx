@@ -188,7 +188,7 @@ export default function ProductPicker({
   }, [pickedProductIds, prevPickedProductIds]);
 
   const products = useFind(() =>
-    Products.find({ removedAt: { $exists: false } }),
+    Products.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
   );
   const toggleTag = useCallback(
     (tag: string) =>
@@ -230,6 +230,49 @@ export default function ProductPicker({
       setPickedProductIds([...pickedProductIds, product._id]);
     },
     [pickedProductIds, setPickedProductIds],
+  );
+  console.log(products.length);
+
+  const sortedProducts = useMemo(
+    () =>
+      Array.from(products).sort(
+        (a, b) =>
+          a.name.localeCompare(b.name) +
+          a.brandName.localeCompare(b.brandName) * 10 +
+          (a.tap?.localeCompare(b.tap || "") || 0) * 100 +
+          tagsToString(a.tags).localeCompare(tagsToString(b.tags)) * 1000,
+      ),
+    [products],
+  );
+
+  const filteredAndSortedProducts = useMemo(
+    () =>
+      sortedProducts.reduce((memo: IProduct[], product) => {
+        if (
+          (location?.curfew ? !isAlcoholic(product) : true) &&
+          (!activeFilters.length ||
+            !product.tags ||
+            activeFilters.every(
+              (filter) =>
+                product.tags?.map((tag) => tag.trim()).includes(filter.trim()),
+            )) &&
+          (showOnlyMenuItems && location
+            ? product.locationIds?.includes(location._id)
+            : true) &&
+          (showOnlyBarCodeLessItems ? !product.barCode : true)
+        ) {
+          memo.push(product);
+        }
+
+        return memo;
+      }, []),
+    [
+      activeFilters,
+      location,
+      showOnlyBarCodeLessItems,
+      showOnlyMenuItems,
+      sortedProducts,
+    ],
   );
 
   return (
@@ -342,42 +385,14 @@ export default function ProductPicker({
           padding: 1vw;
         `}
       >
-        {products
-          .reduce((memo: IProduct[], product) => {
-            if (
-              (location?.curfew ? !isAlcoholic(product) : true) &&
-              (!activeFilters.length ||
-                !product.tags ||
-                activeFilters.every(
-                  (filter) =>
-                    product.tags
-                      ?.map((tag) => tag.trim())
-                      .includes(filter.trim()),
-                )) &&
-              (showOnlyMenuItems && location
-                ? product.locationIds?.includes(location._id)
-                : true) &&
-              (showOnlyBarCodeLessItems ? !product.barCode : true)
-            ) {
-              memo.push(product);
-            }
-            return memo;
-          }, [])
-          .sort(
-            (a, b) =>
-              a.name.localeCompare(b.name) +
-              a.brandName.localeCompare(b.brandName) * 10 +
-              (a.tap?.localeCompare(b.tap || "") || 0) * 100 +
-              tagsToString(a.tags).localeCompare(tagsToString(b.tags)) * 1000,
-          )
-          .map((product) => (
-            <ProductPickerProduct
-              key={product._id}
-              product={product}
-              onPickedProduct={handlePickedProduct}
-              showItemDetails={showItemDetails}
-            />
-          ))}
+        {filteredAndSortedProducts.map((product) => (
+          <ProductPickerProduct
+            key={product._id}
+            product={product}
+            onPickedProduct={handlePickedProduct}
+            showItemDetails={showItemDetails}
+          />
+        ))}
       </div>
     </div>
   );
