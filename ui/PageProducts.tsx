@@ -22,7 +22,12 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
-import { getCorrectTextColor, removeItem, stringToColour } from "../util";
+import {
+  emptyArray,
+  getCorrectTextColor,
+  removeItem,
+  stringToColour,
+} from "../util";
 import PageProductsItem from "./PageProductsItem";
 
 export const Modal = ({
@@ -145,15 +150,17 @@ export default function PageProducts() {
     keyof IProduct | `-${keyof IProduct}` | undefined
   >(undefined);
 
-  const toggleSortBy = useCallback((newSortBy: keyof IProduct) => {
-    setSortBy((currentSortBy) => {
-      return currentSortBy === `-${newSortBy}`
-        ? undefined
-        : currentSortBy === newSortBy
-        ? `-${newSortBy}`
-        : newSortBy;
-    });
-  }, []);
+  const toggleSortBy = useCallback(
+    (newSortBy: keyof IProduct) =>
+      setSortBy((currentSortBy) =>
+        currentSortBy === `-${newSortBy}`
+          ? undefined
+          : currentSortBy === newSortBy
+          ? `-${newSortBy}`
+          : newSortBy,
+      ),
+    [],
+  );
 
   const products = useFind(
     () =>
@@ -183,7 +190,7 @@ export default function PageProducts() {
     () => setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
     [setShowOnlyBarCodeLessItems, showOnlyBarCodeLessItems],
   );
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>(emptyArray);
 
   const toggleTag = useCallback(
     (tag: string) =>
@@ -501,7 +508,7 @@ export default function PageProducts() {
                                 }
                               : {
                                   locationIds: [
-                                    ...(product.locationIds || []),
+                                    ...(product.locationIds || emptyArray),
                                     location._id,
                                   ],
                                 },
@@ -562,7 +569,7 @@ export default function PageProducts() {
                       {product.sizeUnit}
                     </td>
                     <td style={{ whiteSpace: "nowrap" }}>
-                      {[...(product.tags || [])].sort()?.map((tag) => (
+                      {[...(product.tags || emptyArray)].sort()?.map((tag) => (
                         <span
                           key={tag}
                           className={css`

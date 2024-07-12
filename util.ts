@@ -62,7 +62,8 @@ export function removeItem<T>(items: T[], i: number) {
   return items.slice(0, i).concat(items.slice(i + 1, items.length));
 }
 
-export const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
+export const tagsToString = (tags: string[] = emptyArray) =>
+  [...tags].sort().join(",");
 
 export const onProfilerRenderCallback: React.ProfilerOnRenderCallback = (
   id,
@@ -79,3 +80,6 @@ export const onProfilerRenderCallback: React.ProfilerOnRenderCallback = (
   document.querySelector("#performance-metrics")!.textContent =
     stats + document.querySelector("#performance-metrics")!.textContent;
 };
+
+export const emptyObject = Object.freeze({});
+export const emptyArray = [];

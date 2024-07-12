@@ -13,7 +13,7 @@ import { packageTypes } from "../data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
-import { units } from "../util";
+import { emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
 
 const toOptions = (items: any[]) =>
@@ -146,7 +146,7 @@ export default function PageProductsItem({
               required
               value={value ? { value, label: value } : null}
               isClearable
-              options={toOptions(allBrandNames || [])}
+              options={toOptions(allBrandNames || emptyArray)}
               onBlur={onBlur}
               onChange={(option) =>
                 setValue("brandName", option?.value || "", {
@@ -257,16 +257,18 @@ export default function PageProductsItem({
           render={({ field: { onBlur, value } }) => (
             <CreatableSelect
               value={value ? toOptions(value) : null}
-              options={toOptions(allTags || [])}
+              options={toOptions(allTags || emptyArray)}
               isMulti
               onBlur={onBlur}
               className={css`
                 color: black;
               `}
               onChange={(newValue) =>
-                setValue("tags", newValue?.map(({ value }) => value) || [], {
-                  shouldDirty: true,
-                })
+                setValue(
+                  "tags",
+                  newValue?.map(({ value }) => value) || emptyArray,
+                  { shouldDirty: true },
+                )
               }
             />
           )}
@@ -287,7 +289,7 @@ export default function PageProductsItem({
                 margin: 0;
               `}
             >
-              {Array.from(product?.shopPrices || [])
+              {Array.from(product?.shopPrices || emptyArray)
                 .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
                 .map(({ timestamp, buyPrice }) => (
                   <li

@@ -22,7 +22,7 @@ import {
 } from "recharts";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import { getCorrectTextColor } from "../util";
+import { emptyArray, getCorrectTextColor } from "../util";
 
 const XYAxisDomain = ["dataMin", "dataMax"];
 const YAxisTickFormatter = (amount: number) => String(~~amount);
@@ -32,7 +32,6 @@ const tooltipLabelFormatter = (hour: number) =>
   `H${String((hour + 6) % 24).padStart(2, "0")}`;
 
 const offset = -6;
-const emptyArray: [] = [];
 export default function DayByDay() {
   const currentCamp = useCurrentCamp();
   const sales =
@@ -83,7 +82,7 @@ export default function DayByDay() {
               { x: i },
             ),
           )
-        : [],
+        : emptyArray,
     [currentCamp, numberOfDaysInCurrentCamp, sales],
   );
   const YAxisLabel = useMemo(

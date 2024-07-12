@@ -1,6 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import { Flavor, SizeUnit } from "../util";
+import { emptyArray, Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
 import { StockID } from "./stocks";
 
@@ -55,7 +55,8 @@ export const productsMethods = {
       sizeUnit: data.sizeUnit,
       components: data.components,
       abv: data.abv || undefined,
-      tags: data.tags?.map((tag: string) => tag.trim().toLowerCase()) || [],
+      tags:
+        data.tags?.map((tag: string) => tag.trim().toLowerCase()) || emptyArray,
       shopPrices: data.buyPrice
         ? [{ buyPrice: Number(data.buyPrice), timestamp: createdAt }]
         : undefined,
@@ -79,7 +80,7 @@ export const productsMethods = {
         ...updatedProduct,
         updatedAt,
         shopPrices: buyPrice
-          ? (oldProduct?.shopPrices || []).concat([
+          ? (oldProduct?.shopPrices || emptyArray).concat([
               { buyPrice: buyPrice, timestamp: updatedAt },
             ])
           : undefined,

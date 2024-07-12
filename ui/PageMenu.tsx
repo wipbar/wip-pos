@@ -12,7 +12,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSubscription from "../hooks/useSubscription";
-import { getCorrectTextColor } from "../util";
+import { emptyArray, getCorrectTextColor } from "../util";
 
 function SparkLine({
   data,
@@ -121,7 +121,7 @@ export default function PageMenu() {
                   !product.tags?.includes("cocktail")
                 : true,
             ),
-          ({ tags }) => [...(tags || [])].sort()?.join(",") || "other",
+          ({ tags }) => [...(tags || emptyArray)].sort()?.join(",") || "other",
         ),
       ),
     [isExpressMode, location?.curfew, products],

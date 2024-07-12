@@ -3,7 +3,7 @@ import { differenceInHours } from "date-fns";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
-import { type Flavor } from "../util";
+import { emptyArray, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
@@ -72,9 +72,9 @@ export const salesMethods = {
     try {
       for (const _id of productIds) {
         const product = Products.findOne({ _id });
-        if (!product) continue;
+        if (!product || !product.components?.length) continue;
 
-        for (const component of product.components ?? []) {
+        for (const component of product.components) {
           const stock = Stocks.findOne({ _id: component.stockId });
           if (!stock) continue;
           if (!component.unitSize) continue;
@@ -142,7 +142,7 @@ export const salesMethods = {
               $lte: currentCamp.teardown,
             },
           }).fetchAsync()
-        : undefined) || [];
+        : undefined) || emptyArray;
 
     const productsSold = campSales.map(({ products }) => products).flat();
 

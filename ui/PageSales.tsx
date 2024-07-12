@@ -18,6 +18,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useSubscription from "../hooks/useSubscription";
+import { emptyArray } from "../util";
 
 const rolloverOffset = 6;
 
@@ -34,7 +35,7 @@ const getSaleExpenses = (sale: ISale, products: IProduct[]) =>
   sale.products.reduce((m, saleProduct) => {
     const currentProduct =
       products.find(({ _id }) => _id === saleProduct._id) || saleProduct;
-    const shopPrice = (currentProduct.shopPrices || [])
+    const shopPrice = (currentProduct.shopPrices || emptyArray)
       .filter(({ timestamp }) => timestamp < sale.timestamp)
       .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))?.[0]?.buyPrice;
 

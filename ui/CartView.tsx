@@ -8,7 +8,7 @@ import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
-import { getCorrectTextColor } from "../util";
+import { emptyArray, getCorrectTextColor } from "../util";
 import CartViewOpenedAt from "./CartOpenedAt";
 import type { Cart } from "./PageTend";
 
@@ -114,9 +114,9 @@ export default function CartView({
   onSetActive,
 }: {
   cart?: Cart;
-  setPickedProductIds: (value: ProductID[]) => void;
+  setPickedProductIds: (cart: Cart | undefined, value: ProductID[]) => void;
   isActive?: boolean;
-  onSetActive?: () => void;
+  onSetActive?: (cart: Cart | undefined) => void;
 }) {
   const currentCamp = useCurrentCamp();
 
@@ -140,7 +140,7 @@ export default function CartView({
         productIds: cart.productIds,
       });
 
-      setPickedProductIds([]);
+      setPickedProductIds(cart, emptyArray);
       setConfirmOpen(false);
       dingSound.play();
     } catch (sellError) {
@@ -150,7 +150,7 @@ export default function CartView({
     navigator.vibrate?.(500);
   }, [cart, doSellProducts, locationSlug, setPickedProductIds]);
 
-  const haxTotal = sumBy(cart?.productIds || [], (id) =>
+  const haxTotal = sumBy(cart?.productIds || emptyArray, (id) =>
     Number(products.find(({ _id }) => id == _id)?.salePrice),
   );
 
@@ -164,12 +164,15 @@ export default function CartView({
 
       if (!product) return;
 
-      setPickedProductIds([...(cart?.productIds || []), product._id]);
+      setPickedProductIds(cart, [
+        ...(cart?.productIds || emptyArray),
+        product._id,
+      ]);
 
       if (showOnlyBarCodeLessItems === null) setShowOnlyBarCodeLessItems(true);
     },
     [
-      cart?.productIds,
+      cart,
       products,
       setPickedProductIds,
       setShowOnlyBarCodeLessItems,
@@ -207,6 +210,12 @@ export default function CartView({
     }
   }, [haxTotal]);
 
+  const handleCartClick = useCallback(() => {
+    if (isActive) return;
+
+    if (onSetActive) onSetActive(cart);
+  }, [isActive, cart, onSetActive]);
+
   return (
     <div
       className={css`
@@ -237,7 +246,7 @@ export default function CartView({
               transform: scale(0.9);
             `}
       `}
-      onClick={isActive ? undefined : onSetActive}
+      onClick={handleCartClick}
     >
       {cart?.openedAt ? <CartViewOpenedAt cart={cart} /> : null}
       {cart?.productIds?.length ? (
@@ -260,6 +269,7 @@ export default function CartView({
                     isActive
                       ? () =>
                           setPickedProductIds(
+                            cart,
                             removeItem(cart?.productIds, i + 1),
                           )
                       : undefined
@@ -434,7 +444,7 @@ export default function CartView({
                           "Are you sure you want to cancel this transaction?",
                         )
                       ) {
-                        setPickedProductIds([]);
+                        setPickedProductIds(cart, emptyArray);
                       }
                     }}
                   >

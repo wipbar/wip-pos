@@ -5,7 +5,7 @@ import React, { useEffect, useMemo } from "react";
 import Countdown from "react-countdown";
 import Camps from "../api/camps";
 import Products, { ProductID } from "../api/products";
-import Sales, { ISale } from "../api/sales";
+import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
 import SalesSankey from "../components/SalesSankey";
@@ -13,6 +13,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
+import { emptyArray } from "../util";
 
 const renderer = ({
   days,
@@ -104,7 +105,7 @@ function CurfewCountdown() {
     </div>
   );
 }
-const emptyArray: ISale[] = [];
+
 export default function PageStats() {
   const campsLoading = useSubscription("camps");
 

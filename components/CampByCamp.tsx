@@ -16,7 +16,7 @@ import Camps from "../api/camps";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
-import { getCorrectTextColor } from "../util";
+import { emptyArray, getCorrectTextColor } from "../util";
 
 const getAvg = (arr: number[]) =>
   arr.reduce((acc, c) => acc + c, 0) / arr.length;
@@ -57,7 +57,7 @@ function createTrend<XK extends string, YK extends string>(
 }
 
 const XYAxisDomain = ["dataMin", "dataMax"];
-
+const emptyData = { data: emptyArray };
 export default function CampByCamp() {
   const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }));
   const currentCamp = useCurrentCamp();
@@ -66,7 +66,7 @@ export default function CampByCamp() {
     "Sales.stats.CampByCamp",
   );
 
-  const { data } = methodData || { data: [] };
+  const { data } = methodData || emptyData;
 
   const updateCampByCampData = useCallback(async () => {
     if (currentCamp) {

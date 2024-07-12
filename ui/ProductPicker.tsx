@@ -10,18 +10,19 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useDraggable } from "react-use-draggable-scroll";
 import Products, { ProductID, isAlcoholic } from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
 import {
+  emptyArray,
   getCorrectTextColor,
   removeItem,
   stringToColour,
   stringToColours,
   tagsToString,
 } from "../util";
-import { useDraggable } from "react-use-draggable-scroll";
 
 const fac = new FastAverageColor();
 
@@ -58,12 +59,12 @@ export default function ProductPicker({
     () => setShowItemDetails(!showItemDetails),
     [showItemDetails],
   );
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>(emptyArray);
   const [prevPickedProductIds, setPrevPickedProductIds] =
     useState(activeFilters);
   useEffect(() => {
     if (pickedProductIds?.length == 0 && prevPickedProductIds?.length > 0) {
-      setActiveFilters([]);
+      setActiveFilters(emptyArray);
     }
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
@@ -250,14 +251,14 @@ export default function ProductPicker({
               className={css`
                 background: linear-gradient(
                   135deg,
-                  ${[...(product.tags || [])]
+                  ${[...(product.tags || emptyArray)]
                     .sort()
                     .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
                     .join(", ")}
                 );
                 color: ${getCorrectTextColor(
                   `rgba(${fac.getColorFromArray4(
-                    [...(product.tags || [])]
+                    [...(product.tags || emptyArray)]
                       .sort()
                       .map((tag) => stringToColours(tag))
                       .flat(),
@@ -304,24 +305,26 @@ export default function ProductPicker({
                             {product.unitSize}
                             {product.sizeUnit}
                           </i>{" "}
-                          {[...(product.tags || [])].sort()?.map((tag) => (
-                            <span
-                              key={tag}
-                              className={css`
-                                display: inline-block;
-                                background: ${stringToColour(tag) ||
-                                `rgba(0, 0, 0, 0.4)`};
-                                color: ${getCorrectTextColor(
-                                  stringToColour(tag),
-                                ) || "white"};
-                                padding: 0 3px;
-                                border-radius: 4px;
-                                margin-left: 2px;
-                              `}
-                            >
-                              {tag.trim()}
-                            </span>
-                          ))}
+                          {[...(product.tags || emptyArray)]
+                            .sort()
+                            ?.map((tag) => (
+                              <span
+                                key={tag}
+                                className={css`
+                                  display: inline-block;
+                                  background: ${stringToColour(tag) ||
+                                  `rgba(0, 0, 0, 0.4)`};
+                                  color: ${getCorrectTextColor(
+                                    stringToColour(tag),
+                                  ) || "white"};
+                                  padding: 0 3px;
+                                  border-radius: 4px;
+                                  margin-left: 2px;
+                                `}
+                              >
+                                {tag.trim()}
+                              </span>
+                            ))}
                         </small>
                       </small>
                     </>
