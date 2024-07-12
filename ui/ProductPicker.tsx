@@ -42,26 +42,31 @@ function ProductPickerProduct({
     [product, onPickedProduct],
   );
 
+  const sortedTags = useMemo(
+    () => Array.from(product.tags || emptyArray).sort(),
+    [product],
+  );
+
   return (
     <button
       key={product._id}
       onClick={handleClick}
       className={css`
-        background: linear-gradient(
+        background: ${sortedTags.length
+          ? `linear-gradient(
           135deg,
-          ${[...(product.tags || emptyArray)]
-            .sort()
+          ${sortedTags
             .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
-            .join(", ")}
-        );
-        color: ${getCorrectTextColor(
-          `rgba(${fac.getColorFromArray4(
-            [...(product.tags || emptyArray)]
-              .sort()
-              .map((tag) => stringToColours(tag))
-              .flat(),
-          )})`,
-        )};
+            .join(", ")} 
+        )`
+          : `rgba(255,255,255, 1)`};
+        color: ${sortedTags.length
+          ? getCorrectTextColor(
+              `rgba(${fac.getColorFromArray4(
+                sortedTags.map((tag) => stringToColours(tag)).flat(),
+              )})`,
+            )
+          : `rgba(0,0,0, 1)`};
         border: 2px solid black;
         display: flex;
         flex-direction: column;
@@ -103,7 +108,7 @@ function ProductPickerProduct({
                     {product.unitSize}
                     {product.sizeUnit}
                   </i>{" "}
-                  {[...(product.tags || emptyArray)].sort()?.map((tag) => (
+                  {sortedTags?.map((tag) => (
                     <span
                       key={tag}
                       className={css`
@@ -361,9 +366,9 @@ export default function ProductPicker({
           .sort(
             (a, b) =>
               a.name.localeCompare(b.name) +
-              a.brandName.localeCompare(b.brandName) +
-              (a.tap?.localeCompare(b.tap || "") || 0) +
-              tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
+              a.brandName.localeCompare(b.brandName) * 10 +
+              (a.tap?.localeCompare(b.tap || "") || 0) * 100 +
+              tagsToString(a.tags).localeCompare(tagsToString(b.tags)) * 1000,
           )
           .map((product) => (
             <ProductPickerProduct
