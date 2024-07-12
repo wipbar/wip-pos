@@ -3,7 +3,8 @@ import { Meteor } from "meteor/meteor";
 import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
-import React, { useEffect } from "react";
+import { opacify } from "polished";
+import React, { Profiler, useEffect } from "react";
 import {
   Link,
   Navigate,
@@ -20,7 +21,7 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import { getCorrectTextColor } from "../util";
+import { getCorrectTextColor, onProfilerRenderCallback } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
 import PageProducts from "./PageProducts";
@@ -28,7 +29,6 @@ import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
-import { opacify } from "polished";
 
 Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
@@ -314,7 +314,17 @@ export default function UI() {
             path="/:locationSlug"
             element={<Navigate to={`/${locationSlug}/tend`} />}
           />
-          <Route path="/:locationSlug/tend" element={<PageTend />} />
+          <Route
+            path="/:locationSlug/tend"
+            element={
+              <Profiler
+                id="/:locationSlug/tend"
+                onRender={onProfilerRenderCallback}
+              >
+                <PageTend />
+              </Profiler>
+            }
+          />
           <Route path="/:locationSlug/products" element={<PageProducts />} />
           <Route path="/:locationSlug/stock" element={<PageStock />} />
           <Route path="/:locationSlug/sales" element={<PageSales />} />

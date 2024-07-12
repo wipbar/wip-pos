@@ -1,8 +1,8 @@
 import { Accounts } from "meteor/accounts-base";
 import { Meteor } from "meteor/meteor";
+import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import React from "react";
 import "../api/accounts";
 import UI from "../ui";
 

@@ -63,3 +63,19 @@ export function removeItem<T>(items: T[], i: number) {
 }
 
 export const tagsToString = (tags: string[] = []) => [...tags].sort().join(",");
+
+export const onProfilerRenderCallback: React.ProfilerOnRenderCallback = (
+  id,
+  phase,
+  actualDuration,
+  baseDuration,
+) => {
+  const stats = `${id}(${phase}): ${actualDuration.toFixed(
+    2,
+  )}ms actual, ${baseDuration.toFixed(2)}ms base\n`;
+
+  console.log(stats);
+
+  document.querySelector("#performance-metrics")!.textContent =
+    stats + document.querySelector("#performance-metrics")!.textContent;
+};

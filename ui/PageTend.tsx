@@ -3,17 +3,21 @@ import { format } from "date-fns";
 import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
-import React, { useMemo, useRef, useState } from "react";
+import React, { Profiler, useMemo, useRef, useState } from "react";
+import { useDraggable } from "react-use-draggable-scroll";
 import type { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
-import { getCorrectTextColor, type Flavor } from "../util";
+import {
+  getCorrectTextColor,
+  onProfilerRenderCallback,
+  type Flavor,
+} from "../util";
 import CartView from "./CartView";
 import ProductPicker from "./ProductPicker";
-import { useDraggable } from "react-use-draggable-scroll";
 
 function MostRecentSale() {
   const currentCamp = useCurrentCamp();
@@ -102,93 +106,16 @@ export default function PageTend() {
         user-select: none;
       `}
     >
-      <ProductPicker
-        className={css`
-          flex: 3;
-          overflow-y: scroll;
-          overflow-x: hidden;
-        `}
-        pickedProductIds={currentCart?.productIds || []}
-        setPickedProductIds={(newPickedProductIds) => {
-          if (!currentCart) {
-            const newCart = {
-              id: Random.id() as CartID,
-              openedAt: new Date(),
-              productIds: newPickedProductIds,
-            } satisfies Cart;
-            setCarts((oldCarts) => [...oldCarts, newCart]);
-            setCurrentCartId(newCart.id);
-          } else {
-            setCarts((oldCarts) =>
-              oldCarts.map((oldCart) =>
-                oldCart.id !== currentCart?.id
-                  ? oldCart
-                  : { ...oldCart, productIds: newPickedProductIds },
-              ),
-            );
-          }
-        }}
-      />
-      <div
-        className={css`
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          min-width: 180px;
-          overflow-y: auto;
-        `}
-        {...events}
-        ref={ref}
-      >
-        {carts.map((cart) => (
-          <CartView
-            key={cart.id}
-            cart={cart}
-            setPickedProductIds={(newPickedProductIds) => {
-              if (newPickedProductIds.length) {
-                setCarts((oldCarts) =>
-                  oldCarts.map((oldCart) =>
-                    oldCart.id !== cart.id
-                      ? oldCart
-                      : { ...oldCart, productIds: newPickedProductIds },
-                  ),
-                );
-              } else {
-                setCarts((oldCarts) =>
-                  oldCarts.filter((oldCart) => oldCart.id !== cart.id),
-                );
-                setCurrentCartId(null);
-              }
-            }}
-            onSetActive={() => {
-              setCurrentCartId(cart.id);
-              setCarts((oldCarts) =>
-                oldCarts.filter((oldCart) => oldCart.productIds.length),
-              );
-            }}
-            isActive={currentCartId === cart.id}
-          />
-        ))}
-        {currentCartId ? (
-          <button
-            className={css`
-              margin: 0.5em 1em;
-              padding: 0.5em;
-              border-radius: 24px;
-
-              background: ${currentCamp &&
-              getCorrectTextColor(currentCamp.color)};
-              color: ${currentCamp &&
-              getCorrectTextColor(currentCamp.color, true)};
-              border: 0;
-            `}
-            onClick={() => setCurrentCartId(null)}
-          >
-            Start New Cart 🛒
-          </button>
-        ) : (
-          <CartView
-            setPickedProductIds={(newPickedProductIds) => {
+      <Profiler id="ProductPicker" onRender={onProfilerRenderCallback}>
+        <ProductPicker
+          className={css`
+            flex: 3;
+            overflow-y: scroll;
+            overflow-x: hidden;
+          `}
+          pickedProductIds={currentCart?.productIds || []}
+          setPickedProductIds={(newPickedProductIds) => {
+            if (!currentCart) {
               const newCart = {
                 id: Random.id() as CartID,
                 openedAt: new Date(),
@@ -196,12 +123,93 @@ export default function PageTend() {
               } satisfies Cart;
               setCarts((oldCarts) => [...oldCarts, newCart]);
               setCurrentCartId(newCart.id);
-            }}
-            isActive
-          />
-        )}
-        <MostRecentSale />
-      </div>
+            } else {
+              setCarts((oldCarts) =>
+                oldCarts.map((oldCart) =>
+                  oldCart.id !== currentCart?.id
+                    ? oldCart
+                    : { ...oldCart, productIds: newPickedProductIds },
+                ),
+              );
+            }
+          }}
+        />
+      </Profiler>
+      <Profiler id="CartSidebar" onRender={onProfilerRenderCallback}>
+        <div
+          className={css`
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 180px;
+            overflow-y: auto;
+          `}
+          {...events}
+          ref={ref}
+        >
+          {carts.map((cart) => (
+            <CartView
+              key={cart.id}
+              cart={cart}
+              setPickedProductIds={(newPickedProductIds) => {
+                if (newPickedProductIds.length) {
+                  setCarts((oldCarts) =>
+                    oldCarts.map((oldCart) =>
+                      oldCart.id !== cart.id
+                        ? oldCart
+                        : { ...oldCart, productIds: newPickedProductIds },
+                    ),
+                  );
+                } else {
+                  setCarts((oldCarts) =>
+                    oldCarts.filter((oldCart) => oldCart.id !== cart.id),
+                  );
+                  setCurrentCartId(null);
+                }
+              }}
+              onSetActive={() => {
+                setCurrentCartId(cart.id);
+                setCarts((oldCarts) =>
+                  oldCarts.filter((oldCart) => oldCart.productIds.length),
+                );
+              }}
+              isActive={currentCartId === cart.id}
+            />
+          ))}
+          {currentCartId ? (
+            <button
+              className={css`
+                margin: 0.5em 1em;
+                padding: 0.5em;
+                border-radius: 24px;
+
+                background: ${currentCamp &&
+                getCorrectTextColor(currentCamp.color)};
+                color: ${currentCamp &&
+                getCorrectTextColor(currentCamp.color, true)};
+                border: 0;
+              `}
+              onClick={() => setCurrentCartId(null)}
+            >
+              Start New Cart 🛒
+            </button>
+          ) : (
+            <CartView
+              setPickedProductIds={(newPickedProductIds) => {
+                const newCart = {
+                  id: Random.id() as CartID,
+                  openedAt: new Date(),
+                  productIds: newPickedProductIds,
+                } satisfies Cart;
+                setCarts((oldCarts) => [...oldCarts, newCart]);
+                setCurrentCartId(newCart.id);
+              }}
+              isActive
+            />
+          )}
+          <MostRecentSale />
+        </div>
+      </Profiler>
     </div>
   );
 }
