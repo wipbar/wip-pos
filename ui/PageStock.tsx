@@ -1,8 +1,9 @@
 import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
+import { isBefore } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
-import React, { useState } from "react";
+import React, { Fragment, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Products from "../api/products";
 import Stocks, { IStock, StockID } from "../api/stocks";
@@ -14,7 +15,6 @@ import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
 import PageStockItem from "./PageStockItem";
-import { isBefore, isWithinRange } from "date-fns";
 
 const NEW = Symbol("New");
 export default function PageStock() {
@@ -28,7 +28,11 @@ export default function PageStock() {
     () =>
       Stocks.find(
         { removedAt: { $exists: false } },
-        { sort: sortBy ? { [sortBy]: 1 } : { updatedAt: -1, createdAt: -1 } },
+        {
+          sort: sortBy
+            ? { [sortBy.split(".")[0]!]: sortBy.split(".")[1]! }
+            : { updatedAt: -1, createdAt: -1 },
+        },
       ),
     [sortBy],
   );
@@ -63,9 +67,10 @@ export default function PageStock() {
         <option value={""}>Sort By...</option>
         {stocks[0]
           ? Object.keys(stocks[0]).map((key) => (
-              <option key={key} value={key}>
-                {key}
-              </option>
+              <Fragment key={key}>
+                <option value={key + ".-1"}>-{key}</option>
+                <option value={key + ".1"}>+{key}</option>
+              </Fragment>
             ))
           : null}
       </select>
