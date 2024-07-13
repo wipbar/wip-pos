@@ -14,6 +14,7 @@ import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
 import PageStockItem from "./PageStockItem";
+import { isBefore, isWithinRange } from "date-fns";
 
 const NEW = Symbol("New");
 export default function PageStock() {
@@ -125,9 +126,17 @@ export default function PageStock() {
                   )}
                 </td>
                 <td align="right">
-                  {stock.approxCount?.toLocaleString("en-US", {
-                    maximumSignificantDigits: 3,
-                  }) ?? "❔"}
+                  {stock.levels?.some(
+                    (level) =>
+                      isBefore(
+                        level.timestamp,
+                        new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+                      ) && level.count,
+                  )
+                    ? "❓"
+                    : stock.approxCount?.toLocaleString("en-US", {
+                        maximumSignificantDigits: 3,
+                      }) ?? "❔"}
                 </td>
                 <td>{stock.barCode ? "✅" : "❌"}</td>
                 <td>
