@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
-import { isBefore } from "date-fns";
+import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import React, { Fragment, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
@@ -131,16 +131,17 @@ export default function PageStock() {
                   )}
                 </td>
                 <td align="right">
-                  {stock.levels?.some(
-                    (level) =>
-                      isBefore(
-                        level.timestamp,
-                        new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-                      ) && level.count,
+                  {!stock.levels?.some((level) =>
+                    isBefore(
+                      subDays(new Date(), 14),
+                      new Date(level.timestamp),
+                    ),
                   )
-                    ? `🚨 (${stock.approxCount?.toLocaleString("en-US", {
-                      maximumFractionDigits: 2,
-                      })})`
+                    ? `🚨 (${
+                        stock.approxCount?.toLocaleString("en-US", {
+                          maximumFractionDigits: 2,
+                        }) ?? "❔"
+                      })`
                     : stock.approxCount?.toLocaleString("en-US", {
                         maximumFractionDigits: 2,
                       }) ?? "❔"}
