@@ -152,14 +152,12 @@ export default function PageStock() {
                   <small>
                     <small>
                       Part of{" "}
-                      {
-                        products.filter(
-                          (product) =>
-                            product?.components?.some(
-                              (component) => component.stockId === stock._id,
-                            ),
-                        ).length
-                      }{" "}
+                      {products.filter(
+                        (product) =>
+                          product?.components?.some(
+                            (component) => component.stockId === stock._id,
+                          ),
+                      ).length || "0️⃣"}{" "}
                       products
                     </small>
                   </small>
