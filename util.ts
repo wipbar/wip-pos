@@ -55,7 +55,7 @@ declare abstract class As<Tag extends keyof never> {
 
 export type Flavor<T, FlavorT extends string> = T & As<FlavorT>;
 
-export const units = ["cl", "l", "pc", "ml", "g"] as const;
+export const units = ["cl", "l", "pc", "ml", "g", "kg"] as const;
 export type SizeUnit = (typeof units)[number];
 
 export function removeItem<T>(items: T[], i: number) {
