@@ -138,9 +138,11 @@ export default function PageStock() {
                         new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
                       ) && level.count,
                   )
-                    ? "❓"
+                    ? `🚨 (${stock.approxCount?.toLocaleString("en-US", {
+                      maximumFractionDigits: 2,
+                      })})`
                     : stock.approxCount?.toLocaleString("en-US", {
-                        maximumSignificantDigits: 3,
+                        maximumFractionDigits: 2,
                       }) ?? "❔"}
                 </td>
                 <td>{stock.barCode ? "✅" : "❌"}</td>
