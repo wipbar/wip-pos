@@ -118,10 +118,12 @@ export default function PageStockItem({
                       label: packageType.name,
                     }
                   }
-                  options={packageTypes.map(({ code, name }) => ({
-                    value: code,
-                    label: name,
-                  }))}
+                  options={Array.from(packageTypes)
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(({ code, name }) => ({
+                      value: code,
+                      label: name,
+                    }))}
                   onBlur={onBlur}
                   onChange={(newValue) =>
                     setValue("packageType", newValue?.value, {
