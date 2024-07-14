@@ -70,8 +70,9 @@ export const stocksMethods = {
   ) {
     assertUserInAnyTeam(this.userId);
     if (stockId) {
+      const updatedAt = new Date();
       return Stocks.update(stockId, {
-        $set: { approxCount: count },
+        $set: { approxCount: count, updatedAt },
         $push: { levels: { count, timestamp: new Date() } },
       });
     }
