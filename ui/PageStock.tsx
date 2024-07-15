@@ -184,13 +184,19 @@ export default function PageStock() {
           <tbody>
             {stocks
               .filter((stock) => {
+                const mostRecentLevel = stock.levels?.sort(
+                  (a, b) => Number(b.timestamp) - Number(a.timestamp),
+                )[0];
+
                 if (
                   onlyShowStockedItems &&
-                  !stock.levels?.some((level) =>
+                  !(
+                    mostRecentLevel &&
+                    mostRecentLevel.count &&
                     isBefore(
                       subDays(new Date(), 14),
-                      new Date(level.timestamp),
-                    ),
+                      new Date(mostRecentLevel.timestamp),
+                    )
                   )
                 )
                   return false;
@@ -206,82 +212,90 @@ export default function PageStock() {
                   return false;
                 return true;
               })
-              .map((stock) => (
-                <tr key={stock._id}>
-                  <td style={{ whiteSpace: "nowrap" }} align="right">
-                    <button onClick={() => setIsEditing(stock._id)}>
-                      <FontAwesomeIcon icon={faPencilAlt} />
-                    </button>
-                    {stock && isUserAdmin(user) && (
-                      <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Are you sure you want to delete " + stock.name,
-                            )
-                          ) {
-                            removeStock({ stockId: stock._id });
-                          }
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    )}
-                  </td>
-                  <td align="right">
-                    {!stock.levels?.some((level) =>
-                      isBefore(
-                        subDays(new Date(), 14),
-                        new Date(level.timestamp),
-                      ),
-                    )
-                      ? `🚨 (${
-                          stock.approxCount?.toLocaleString("en-US", {
-                            maximumFractionDigits: 2,
-                          }) ?? "❔"
-                        })`
-                      : stock.approxCount?.toLocaleString("en-US", {
-                          maximumFractionDigits: 2,
-                        }) ?? "❔"}
-                  </td>
-                  <td>{stock.barCode ? "✅" : "❌"}</td>
-                  <td>
-                    {stock.name}{" "}
-                    <small>
-                      <small>
-                        Part of{" "}
-                        {products.filter(
-                          (product) =>
-                            product?.components?.some(
-                              (component) => component.stockId === stock._id,
-                            ),
-                        ).length || "0️⃣"}{" "}
-                        products -{" "}
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
+              .map((stock) => {
+                const mostRecentLevel = stock.levels?.sort(
+                  (a, b) => Number(b.timestamp) - Number(a.timestamp),
+                )[0];
 
-                            setIsCreatingProductFromStock(stock._id);
+                return (
+                  <tr key={stock._id}>
+                    <td style={{ whiteSpace: "nowrap" }} align="right">
+                      <button onClick={() => setIsEditing(stock._id)}>
+                        <FontAwesomeIcon icon={faPencilAlt} />
+                      </button>
+                      {stock && isUserAdmin(user) && (
+                        <button
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete " + stock.name,
+                              )
+                            ) {
+                              removeStock({ stockId: stock._id });
+                            }
                           }}
                         >
-                          Create Product From Stock
+                          <FontAwesomeIcon icon={faTrash} />
                         </button>
+                      )}
+                    </td>
+                    <td align="right">
+                      {!(
+                        mostRecentLevel &&
+                        mostRecentLevel.count &&
+                        isBefore(
+                          subDays(new Date(), 14),
+                          new Date(mostRecentLevel.timestamp),
+                        )
+                      )
+                        ? `🚨 (${
+                            stock.approxCount?.toLocaleString("en-US", {
+                              maximumFractionDigits: 2,
+                            }) ?? "❔"
+                          })`
+                        : stock.approxCount?.toLocaleString("en-US", {
+                            maximumFractionDigits: 2,
+                          }) ?? "❔"}
+                    </td>
+                    <td>{stock.barCode ? "✅" : "❌"}</td>
+                    <td>
+                      {stock.name}{" "}
+                      <small>
+                        <small>
+                          Part of{" "}
+                          {products.filter(
+                            (product) =>
+                              product?.components?.some(
+                                (component) => component.stockId === stock._id,
+                              ),
+                          ).length || "0️⃣"}{" "}
+                          products -{" "}
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+
+                              setIsCreatingProductFromStock(stock._id);
+                            }}
+                          >
+                            Create Product From Stock
+                          </button>
+                        </small>
                       </small>
-                    </small>
-                  </td>
-                  <td>
-                    {stock.unitSize}
-                    {stock.sizeUnit}
-                  </td>
-                  <td>
-                    {
-                      packageTypes.find(
-                        ({ code }) => code === stock.packageType,
-                      )?.name
-                    }
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td>
+                      {stock.unitSize}
+                      {stock.sizeUnit}
+                    </td>
+                    <td>
+                      {
+                        packageTypes.find(
+                          ({ code }) => code === stock.packageType,
+                        )?.name
+                      }
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>
