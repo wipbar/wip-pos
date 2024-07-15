@@ -7,7 +7,12 @@ import { emptyArray, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
-import Products, { type IProduct, type ProductID } from "./products";
+import Products, {
+  isAlcoholic,
+  isMate,
+  type IProduct,
+  type ProductID,
+} from "./products";
 import Stocks from "./stocks";
 
 export type SaleID = Flavor<string, "SaleID">;
@@ -123,6 +128,16 @@ export const salesMethods = {
     return statsCampByCamp;
   },
 
+  async "Sales.stats.SalesSankey"(
+    this: Meteor.MethodThisType,
+    { campSlug }: { campSlug: ICamp["slug"] },
+  ) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    return statsSalesSankey?.data[campSlug];
+  },
+
   async "Sales.stats.GoodbyeWorld"(
     this: Meteor.MethodThisType,
     { campSlug }: { campSlug: ICamp["slug"] },
@@ -189,14 +204,19 @@ export const salesMethods = {
 let statsCampByCamp: Awaited<
   ReturnType<typeof calculateCampByCampStats>
 > | null = null;
+let statsSalesSankey: Awaited<
+  ReturnType<typeof calculateSalesSankeyData>
+> | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
     statsCampByCamp = await calculateCampByCampStats();
+    statsSalesSankey = await calculateSalesSankeyData();
 
     setInterval(
       async () => {
         statsCampByCamp = await calculateCampByCampStats();
+        statsSalesSankey = await calculateSalesSankeyData();
       },
       (3600 * 1000) / 6,
     );
@@ -269,6 +289,151 @@ async function calculateCampByCampStats() {
 
   console.log(
     `Sales.stats.CampByCamp: ${(now3.getTime() - now.getTime()) / 1000}s,(${
+      (now2.getTime() - now.getTime()) / 1000
+    }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
+  );
+
+  return { data };
+}
+
+async function calculateSalesSankeyData() {
+  const now = new Date();
+
+  const camps = await Camps.find({}, { sort: { end: -1 } }).fetchAsync();
+
+  const allSales = await Sales.find().fetchAsync();
+
+  const allProducts = await Products.find().fetchAsync();
+
+  const now2 = new Date();
+
+  const data: Record<
+    ICamp["slug"],
+    {
+      links: { value: number; source: number; target: number }[];
+      nodes: { color: string; name: string }[];
+    }
+  > = {};
+  for (const currentCamp of camps) {
+    const campSales = await Sales.find({
+      timestamp: {
+        $gte: currentCamp.buildup,
+        $lte: currentCamp.teardown,
+      },
+    }).fetchAsync();
+
+    const sales = campSales?.length ? campSales : allSales;
+
+    const productsSold = sales.reduce<IProduct[]>((memo, sale) => {
+      for (const saleProduct of sale.products) {
+        const product = allProducts.find(({ _id }) => _id === saleProduct._id);
+        if (product) memo.push(product);
+      }
+      return memo;
+    }, []);
+
+    const salesNode =
+      currentCamp && campSales?.length
+        ? `Sales (${currentCamp.name})`
+        : "Sales (all time)";
+
+    const nodes = [
+      { color: "", name: salesNode },
+      { color: "#FFED00", name: "Alcoholic" },
+      { color: "#FFED00", name: "Beer" },
+      { color: "#FFED00", name: "Tap" },
+      { color: "#FFED00", name: "Non-Tap" },
+      { color: "#D2691E", name: "Non-Beer" },
+      { color: "#D2691E", name: "Cocktail" },
+      { color: "#D2691E", name: "Non-Cocktail" },
+      { color: "#193781", name: "Non-Alcoholic" },
+      { color: "#193781", name: "Mate" },
+      { color: "#16503f", name: "Non-Mate" },
+    ];
+
+    const getNode = (name: string) =>
+      nodes.findIndex((node) => node.name === name);
+
+    const links = [
+      {
+        source: getNode(salesNode),
+        target: getNode("Alcoholic"),
+        value: productsSold.filter((product) => isAlcoholic(product)).length,
+      },
+      {
+        source: getNode("Alcoholic"),
+        target: getNode("Beer"),
+        value: productsSold.filter(({ tags }) => tags?.includes("beer")).length,
+      },
+      {
+        source: getNode("Beer"),
+        target: getNode("Tap"),
+        value: productsSold.filter(
+          ({ tags }) => tags?.includes("beer") && tags?.includes("tap"),
+        ).length,
+      },
+      {
+        source: getNode("Beer"),
+        target: getNode("Non-Tap"),
+        value: productsSold.filter(
+          ({ tags }) => tags?.includes("beer") && !tags?.includes("tap"),
+        ).length,
+      },
+      {
+        source: getNode("Alcoholic"),
+        target: getNode("Non-Beer"),
+        value: productsSold.filter(
+          ({ tags }) =>
+            tags?.includes("cocktail") ||
+            tags?.includes("spirit") ||
+            tags?.includes("cider"),
+        ).length,
+      },
+      {
+        source: getNode("Non-Beer"),
+        target: getNode("Cocktail"),
+        value: productsSold.filter(({ tags }) => tags?.includes("cocktail"))
+          .length,
+      },
+      {
+        source: getNode("Non-Beer"),
+        target: getNode("Non-Cocktail"),
+        value: productsSold.filter(
+          ({ tags }) =>
+            !tags?.includes("cocktail") &&
+            (tags?.includes("spirit") || tags?.includes("cider")),
+        ).length,
+      },
+      {
+        source: getNode(salesNode),
+        target: getNode("Non-Alcoholic"),
+        value: productsSold.filter((product) => !isAlcoholic(product)).length,
+      },
+      {
+        source: getNode("Non-Alcoholic"),
+        target: getNode("Mate"),
+        value: productsSold.filter(
+          (product) => !isAlcoholic(product) && isMate(product),
+        ).length,
+      },
+      {
+        source: getNode("Non-Alcoholic"),
+        target: getNode("Non-Mate"),
+        value: productsSold.filter(
+          (product) => !isAlcoholic(product) && !isMate(product),
+        ).length,
+      },
+    ]
+      .map((link) => ({ ...link, value: link.value }))
+      .filter(({ value }) => value >= 1);
+
+    data[currentCamp.slug] = { links, nodes };
+  }
+
+  const now3 = new Date();
+
+  console.log(
+    `Sales.stats.SalesSankey: ${(now3.getTime() - now.getTime()) / 1000}s,(${
       (now2.getTime() - now.getTime()) / 1000
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );

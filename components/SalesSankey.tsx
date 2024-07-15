@@ -1,5 +1,4 @@
-import { useFind } from "meteor/react-meteor-data";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Layer,
   Rectangle,
@@ -9,8 +8,8 @@ import {
 } from "recharts";
 import type { SankeyLink, SankeyNode } from "recharts/types/util/types";
 import type { ICamp } from "../api/camps";
-import Products, { isAlcoholic, isMate, type IProduct } from "../api/products";
-import Sales from "../api/sales";
+import { useInterval } from "../hooks/useCurrentDate";
+import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 
 function Node({
@@ -125,148 +124,29 @@ function Link({
 }
 
 export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
-  const campSales = useFind(
-    () =>
-      currentCamp
-        ? Sales.find({
-            timestamp: {
-              $gte: currentCamp.buildup,
-              $lte: currentCamp.teardown,
-            },
-          })
-        : undefined,
-    [currentCamp],
-  );
-  const allSales = useFind(() => Sales.find());
-  const sales = useMemo(
-    () => (campSales?.length ? campSales : allSales),
-    [campSales, allSales],
-  );
-  const salesNode = useMemo(
-    () =>
-      currentCamp && campSales?.length
-        ? `Sales (${currentCamp.name})`
-        : "Sales (all time)",
-    [currentCamp, campSales],
-  );
-  const nodes = useMemo(
-    () => [
-      { color: "", name: salesNode },
-      { color: "#FFED00", name: "Alcoholic" },
-      { color: "#FFED00", name: "Beer" },
-      { color: "#FFED00", name: "Tap" },
-      { color: "#FFED00", name: "Non-Tap" },
-      { color: "#D2691E", name: "Non-Beer" },
-      { color: "#D2691E", name: "Cocktail" },
-      { color: "#D2691E", name: "Non-Cocktail" },
-      { color: "#193781", name: "Non-Alcoholic" },
-      { color: "#193781", name: "Mate" },
-      { color: "#16503f", name: "Non-Mate" },
-    ],
-    [salesNode],
-  );
-  const getNode = useCallback(
-    (name: string) => nodes.findIndex((node) => node.name === name),
-    [nodes],
-  );
+  const [getData, { data: methodData }] = useMethod("Sales.stats.SalesSankey");
 
-  const products = useFind(() => Products.find());
+  const updateData = useCallback(async () => {
+    if (currentCamp) await getData({ campSlug: currentCamp.slug });
+  }, [currentCamp, getData]);
 
-  const data = useMemo(() => {
-    const productsSold = sales.reduce<IProduct[]>((memo, sale) => {
-      for (const saleProduct of sale.products) {
-        const product = products.find(({ _id }) => _id === saleProduct._id);
-        if (product) memo.push(product);
-      }
-      return memo;
-    }, []);
-    const links = [
-      {
-        source: getNode(salesNode),
-        target: getNode("Alcoholic"),
-        value: productsSold.filter((product) => isAlcoholic(product)).length,
-      },
-      {
-        source: getNode("Alcoholic"),
-        target: getNode("Beer"),
-        value: productsSold.filter(({ tags }) => tags?.includes("beer")).length,
-      },
-      {
-        source: getNode("Beer"),
-        target: getNode("Tap"),
-        value: productsSold.filter(
-          ({ tags }) => tags?.includes("beer") && tags?.includes("tap"),
-        ).length,
-      },
-      {
-        source: getNode("Beer"),
-        target: getNode("Non-Tap"),
-        value: productsSold.filter(
-          ({ tags }) => tags?.includes("beer") && !tags?.includes("tap"),
-        ).length,
-      },
-      {
-        source: getNode("Alcoholic"),
-        target: getNode("Non-Beer"),
-        value: productsSold.filter(
-          ({ tags }) =>
-            tags?.includes("cocktail") ||
-            tags?.includes("spirit") ||
-            tags?.includes("cider"),
-        ).length,
-      },
-      {
-        source: getNode("Non-Beer"),
-        target: getNode("Cocktail"),
-        value: productsSold.filter(({ tags }) => tags?.includes("cocktail"))
-          .length,
-      },
-      {
-        source: getNode("Non-Beer"),
-        target: getNode("Non-Cocktail"),
-        value: productsSold.filter(
-          ({ tags }) =>
-            !tags?.includes("cocktail") &&
-            (tags?.includes("spirit") || tags?.includes("cider")),
-        ).length,
-      },
-      {
-        source: getNode(salesNode),
-        target: getNode("Non-Alcoholic"),
-        value: productsSold.filter((product) => !isAlcoholic(product)).length,
-      },
-      {
-        source: getNode("Non-Alcoholic"),
-        target: getNode("Mate"),
-        value: productsSold.filter(
-          (product) => !isAlcoholic(product) && isMate(product),
-        ).length,
-      },
-      {
-        source: getNode("Non-Alcoholic"),
-        target: getNode("Non-Mate"),
-        value: productsSold.filter(
-          (product) => !isAlcoholic(product) && !isMate(product),
-        ).length,
-      },
-    ]
-      .map((link) => ({ ...link, value: link.value }))
-      .filter(({ value }) => value >= 1);
-
-    return {
-      links,
-      nodes,
-    };
-  }, [sales, getNode, salesNode, nodes, products]);
+  useEffect(() => {
+    updateData();
+  }, [updateData]);
+  useInterval(() => updateData(), 10000);
 
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <Sankey
-        height={320}
-        data={data}
-        link={<Link camp={currentCamp} />}
-        node={<Node camp={currentCamp} />}
-      />
+      {methodData ? (
+        <Sankey
+          height={320}
+          data={methodData}
+          link={<Link camp={currentCamp} />}
+          node={<Node camp={currentCamp} />}
+        />
+      ) : (
+        <>{null}</>
+      )}
     </ResponsiveContainer>
   );
 }
