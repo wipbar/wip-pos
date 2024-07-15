@@ -64,7 +64,10 @@ export default function PageStockItem({
     control,
     formState: { isDirty, isSubmitting },
     setValue,
-  } = useForm<Partial<IStock>>();
+  } = useForm<
+    Partial<IStock> &
+      Pick<IStock, "name" | "packageType" | "sizeUnit" | "unitSize">
+  >();
 
   const handleBarCode = useCallback(
     (resultBarCode: string) => {
@@ -126,9 +129,11 @@ export default function PageStockItem({
                     }))}
                   onBlur={onBlur}
                   onChange={(newValue) =>
-                    setValue("packageType", newValue?.value, {
-                      shouldDirty: true,
-                    })
+                    setValue(
+                      "packageType",
+                      newValue?.value as IStock["packageType"],
+                      { shouldDirty: true },
+                    )
                   }
                 />
               );
@@ -163,7 +168,11 @@ export default function PageStockItem({
                   options={units.map((code) => ({ value: code, label: code }))}
                   onBlur={onBlur}
                   onChange={(newValue) =>
-                    setValue("sizeUnit", newValue?.value, { shouldDirty: true })
+                    setValue(
+                      "sizeUnit",
+                      newValue?.value as IStock["sizeUnit"],
+                      { shouldDirty: true },
+                    )
                   }
                 />
               )}

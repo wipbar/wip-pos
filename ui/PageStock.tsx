@@ -14,6 +14,7 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
+import PageProductsItem from "./PageProductsItem";
 import PageStockItem from "./PageStockItem";
 
 const NEW = Symbol("New");
@@ -36,6 +37,11 @@ export default function PageStock() {
       ),
     [sortBy],
   );
+  const [isCreatingProductFromStock, setIsCreatingProductFromStock] =
+    useState<null | StockID>(null);
+  const stockToCreateProductFrom = stocks.find(
+    ({ _id }) => _id === isCreatingProductFromStock,
+  );
 
   const products = useFind(() =>
     Products.find({ removedAt: { $exists: false } }),
@@ -53,6 +59,30 @@ export default function PageStock() {
           <PageStockItem
             onCancel={() => setIsEditing(null)}
             stock={stocks.find(({ _id }) => _id === isEditing)}
+          />
+        </Modal>
+      ) : isCreatingProductFromStock && stockToCreateProductFrom ? (
+        <Modal onDismiss={() => setIsCreatingProductFromStock(null)}>
+          <PageProductsItem
+            onCancel={() => setIsCreatingProductFromStock(null)}
+            defaultValues={{
+              name: stockToCreateProductFrom!.name,
+              components: [
+                {
+                  stockId: stockToCreateProductFrom._id,
+                  unitSize: stockToCreateProductFrom.unitSize,
+                  sizeUnit: stockToCreateProductFrom.sizeUnit,
+                },
+              ],
+              tags:
+                stockToCreateProductFrom.packageType === "CNG"
+                  ? ["can"]
+                  : stockToCreateProductFrom.packageType === "BO"
+                  ? ["bottle"]
+                  : undefined,
+              unitSize: stockToCreateProductFrom.unitSize,
+              sizeUnit: stockToCreateProductFrom.sizeUnit,
+            }}
           />
         </Modal>
       ) : null}
@@ -158,7 +188,16 @@ export default function PageStock() {
                             (component) => component.stockId === stock._id,
                           ),
                       ).length || "0️⃣"}{" "}
-                      products
+                      products -{" "}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+
+                          setIsCreatingProductFromStock(stock._id);
+                        }}
+                      >
+                        Create Product From Stock
+                      </button>
                     </small>
                   </small>
                 </td>

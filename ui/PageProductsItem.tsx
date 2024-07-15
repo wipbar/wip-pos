@@ -1,6 +1,6 @@
 import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
-import React, { ReactNode, useCallback, useState } from "react";
+import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";
@@ -61,9 +61,11 @@ const Label = ({
 export default function PageProductsItem({
   onCancel,
   product,
+  defaultValues,
 }: {
   onCancel: () => void;
   product?: IProduct;
+  defaultValues?: Partial<IProduct>;
 }) {
   const currentUser = useCurrentUser();
   const locations = useFind(() => Locations.find());
@@ -72,20 +74,28 @@ export default function PageProductsItem({
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
   const products = useFind(() => Products.find());
-  const allTags = [
-    ...products.reduce((memo, product) => {
-      product.tags?.forEach((tag) => memo.add(tag.trim()));
+  const allTags = useMemo(
+    () =>
+      Array.from(
+        products.reduce((memo, product) => {
+          product.tags?.forEach((tag) => memo.add(tag.trim()));
 
-      return memo;
-    }, new Set<string>()),
-  ].filter(Boolean);
-  const allBrandNames = [
-    ...products.reduce((memo, product) => {
-      if (product.brandName) memo.add(product.brandName);
+          return memo;
+        }, new Set<string>()),
+      ).filter(Boolean),
+    [products],
+  );
+  const allBrandNames = useMemo(
+    () =>
+      Array.from(
+        products.reduce((memo, product) => {
+          if (product.brandName) memo.add(product.brandName);
 
-      return memo;
-    }, new Set<string>()),
-  ].filter(Boolean);
+          return memo;
+        }, new Set<string>()),
+      ).filter(Boolean),
+    [products],
+  );
 
   const {
     handleSubmit,
@@ -94,9 +104,9 @@ export default function PageProductsItem({
     reset,
     formState: { errors, isDirty, isSubmitting },
     setValue,
-  } = useForm<Partial<IProduct> & { buyPrice: number }>({
-    defaultValues: { components: product?.components },
-  });
+  } = useForm<
+    Partial<IProduct> & { name: string; brandName: string; buyPrice: number }
+  >({ defaultValues: { components: product?.components, ...defaultValues } });
 
   const handleBarCode = useCallback(
     (resultBarCode: string) => {
