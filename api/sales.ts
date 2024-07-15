@@ -1,9 +1,9 @@
 import convert from "convert";
-import { differenceInHours } from "date-fns";
+import { differenceInHours, isWithinRange } from "date-fns";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
-import { emptyArray, type Flavor } from "../util";
+import { type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
@@ -149,15 +149,9 @@ export const salesMethods = {
 
     if (!currentCamp) throw new Meteor.Error("Camp not found");
 
-    const campSales =
-      (currentCamp
-        ? await Sales.find({
-            timestamp: {
-              $gte: currentCamp.buildup,
-              $lte: currentCamp.teardown,
-            },
-          }).fetchAsync()
-        : undefined) || emptyArray;
+    const campSales = await Sales.find({
+      timestamp: { $gte: currentCamp.buildup, $lte: currentCamp.teardown },
+    }).fetchAsync();
 
     const productsSold = campSales.map(({ products }) => products).flat();
 
@@ -315,12 +309,9 @@ async function calculateSalesSankeyData() {
     }
   > = {};
   for (const currentCamp of camps) {
-    const campSales = await Sales.find({
-      timestamp: {
-        $gte: currentCamp.buildup,
-        $lte: currentCamp.teardown,
-      },
-    }).fetchAsync();
+    const campSales = allSales.filter((sale) =>
+      isWithinRange(sale.timestamp, currentCamp.buildup, currentCamp.teardown),
+    );
 
     const sales = campSales?.length ? campSales : allSales;
 
