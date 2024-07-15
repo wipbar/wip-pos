@@ -53,7 +53,9 @@ function ProductPickerProduct({
       onClick={handleClick}
       className={css`
         background: ${sortedTags.length
-          ? `linear-gradient(
+          ? sortedTags.length === 1 && sortedTags[0]
+            ? lighten(0.25, stringToColour(sortedTags[0], 0.9))
+            : `linear-gradient(
           135deg,
           ${sortedTags
             .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
