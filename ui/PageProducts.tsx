@@ -10,12 +10,14 @@ import {
   faSortUp,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify, transparentize } from "polished";
 import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { isUserAdmin, isUserResponsible } from "../api/accounts";
 import type { ILocation } from "../api/locations";
 import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
+import Stocks from "../api/stocks";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -176,12 +178,17 @@ export default function PageProducts() {
       ),
     [sortBy],
   );
+  const stocks = useFind(() => Stocks.find({ removedAt: { $exists: false } }));
 
   const currentUser = useCurrentUser();
   const currentCamp = useCurrentCamp();
   const [showOnlyBarCodeLessItems, setShowOnlyBarCodeLessItems] = useSession<
     boolean | null
   >("showOnlyBarCodeLessItems", null);
+  const [showOnlyStockedProducts, setShowOnlyStockedProducts] = useSession<
+    boolean | null
+  >("showOnlyStockedProducts", null);
+
   const toggleOnlyMenuItems = useCallback(
     () => setShowOnlyMenuItems(!showOnlyMenuItems),
     [setShowOnlyMenuItems, showOnlyMenuItems],
@@ -297,6 +304,14 @@ export default function PageProducts() {
               checked={showOnlyBarCodeLessItems || false}
             />
             show only items without barcodes
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              onChange={(e) => setShowOnlyStockedProducts(e.target.checked)}
+              checked={Boolean(showOnlyStockedProducts)}
+            />
+            show only products with all components in stock
           </label>
         </div>
         <div
@@ -476,6 +491,33 @@ export default function PageProducts() {
               .filter(({ barCode }) =>
                 showOnlyBarCodeLessItems ? !barCode : true,
               )
+              .filter(({ components }) => {
+                if (showOnlyStockedProducts) {
+                  if (!components?.length) return false;
+
+                  return components?.every((component) => {
+                    const stock = stocks.find(
+                      (stock) => component.stockId === stock._id,
+                    );
+                    if (!stock || !stock.levels?.length) return false;
+                    if (
+                      !stock.levels?.some((level) =>
+                        isBefore(
+                          subDays(new Date(), 14),
+                          new Date(level.timestamp),
+                        ),
+                      )
+                    ) {
+                      return false;
+                    }
+
+                    console.log(stock);
+                    return (stock?.approxCount ?? 0) > 0;
+                  });
+                }
+
+                return true;
+              })
               .map((product) => {
                 const isOnMenu =
                   location && product.locationIds?.includes(location?._id);
