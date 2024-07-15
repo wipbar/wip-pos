@@ -301,7 +301,7 @@ export default function PageProducts() {
             <input
               type="checkbox"
               onChange={toggleShowOnlyBarCodeLessItems}
-              checked={showOnlyBarCodeLessItems || false}
+              checked={Boolean(showOnlyBarCodeLessItems)}
             />
             show only items without barcodes
           </label>
