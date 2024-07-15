@@ -24,6 +24,9 @@ export default function PageStock() {
   const [removeStock] = useMethod("Stock.removeStock");
   const [isEditing, setIsEditing] = useState<null | StockID | typeof NEW>(null);
   const [sortBy, setSortBy] = useState<keyof IStock | undefined>(undefined);
+  const [onlyShowStockedItems, setOnlyShowStockedItems] = useState(false);
+  const [onlyShowStockWithoutProducts, setOnlyShowStockWithoutProducts] =
+    useState(false);
 
   const stocks = useFind(
     () =>
@@ -49,7 +52,6 @@ export default function PageStock() {
 
   return (
     <div>
-      <button onClick={() => setIsEditing(NEW)}>Create Stock</button>
       {isEditing === NEW ? (
         <Modal onDismiss={() => setIsEditing(null)}>
           <PageStockItem onCancel={() => setIsEditing(null)} />
@@ -86,24 +88,66 @@ export default function PageStock() {
           />
         </Modal>
       ) : null}
-      <select
-        onChange={(event) =>
-          setSortBy(
-            (event.target.value as keyof IStock | undefined) || undefined,
-          )
-        }
-        value={sortBy}
+      <div
+        className={css`
+          display: grid;
+          grid-gap: 0.5vw 1vw;
+          padding: 1vw;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          text-align: center;
+          > label {
+            display: flex;
+            align-items: center;
+            background-color: ${(camp &&
+              getCorrectTextColor(camp?.color, true)) ||
+            "initial"};
+            border: 2px solid black;
+            color: ${(camp && getCorrectTextColor(camp?.color)) || "initial"};
+            padding: 0 6px;
+            border-radius: 3px;
+            font-size: 1em;
+            > input {
+              margin-right: 4px;
+            }
+          }
+        `}
       >
-        <option value={""}>Sort By...</option>
-        {stocks[0]
-          ? Object.keys(stocks[0]).map((key) => (
-              <Fragment key={key}>
-                <option value={key + ".-1"}>-{key}</option>
-                <option value={key + ".1"}>+{key}</option>
-              </Fragment>
-            ))
-          : null}
-      </select>
+        <button onClick={() => setIsEditing(NEW)}>Create Stock</button>
+        <select
+          onChange={(event) =>
+            setSortBy(
+              (event.target.value as keyof IStock | undefined) || undefined,
+            )
+          }
+          value={sortBy}
+        >
+          <option value={""}>Sort By...</option>
+          {stocks[0]
+            ? Object.keys(stocks[0]).map((key) => (
+                <Fragment key={key}>
+                  <option value={key + ".-1"}>-{key}</option>
+                  <option value={key + ".1"}>+{key}</option>
+                </Fragment>
+              ))
+            : null}
+        </select>
+        <label>
+          <input
+            type="checkbox"
+            onChange={(e) => setOnlyShowStockedItems(e.target.checked)}
+            checked={onlyShowStockedItems}
+          />
+          show only stock that is in stock
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            onChange={(e) => setOnlyShowStockWithoutProducts(e.target.checked)}
+            checked={onlyShowStockWithoutProducts}
+          />
+          show only stock without products
+        </label>
+      </div>
       <hr />
       <div
         className={css`
@@ -138,81 +182,106 @@ export default function PageStock() {
             </tr>
           </thead>
           <tbody>
-            {stocks.map((stock) => (
-              <tr key={stock._id}>
-                <td style={{ whiteSpace: "nowrap" }} align="right">
-                  <button onClick={() => setIsEditing(stock._id)}>
-                    <FontAwesomeIcon icon={faPencilAlt} />
-                  </button>
-                  {stock && isUserAdmin(user) && (
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete " + stock.name,
-                          )
-                        ) {
-                          removeStock({ stockId: stock._id });
-                        }
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  )}
-                </td>
-                <td align="right">
-                  {!stock.levels?.some((level) =>
+            {stocks
+              .filter((stock) => {
+                if (
+                  onlyShowStockedItems &&
+                  !stock.levels?.some((level) =>
                     isBefore(
                       subDays(new Date(), 14),
                       new Date(level.timestamp),
                     ),
                   )
-                    ? `🚨 (${
-                        stock.approxCount?.toLocaleString("en-US", {
-                          maximumFractionDigits: 2,
-                        }) ?? "❔"
-                      })`
-                    : stock.approxCount?.toLocaleString("en-US", {
-                        maximumFractionDigits: 2,
-                      }) ?? "❔"}
-                </td>
-                <td>{stock.barCode ? "✅" : "❌"}</td>
-                <td>
-                  {stock.name}{" "}
-                  <small>
-                    <small>
-                      Part of{" "}
-                      {products.filter(
-                        (product) =>
-                          product?.components?.some(
-                            (component) => component.stockId === stock._id,
-                          ),
-                      ).length || "0️⃣"}{" "}
-                      products -{" "}
+                )
+                  return false;
+                if (
+                  onlyShowStockWithoutProducts &&
+                  products.some(
+                    (product) =>
+                      product?.components?.some(
+                        (component) => component.stockId === stock._id,
+                      ),
+                  )
+                )
+                  return false;
+                return true;
+              })
+              .map((stock) => (
+                <tr key={stock._id}>
+                  <td style={{ whiteSpace: "nowrap" }} align="right">
+                    <button onClick={() => setIsEditing(stock._id)}>
+                      <FontAwesomeIcon icon={faPencilAlt} />
+                    </button>
+                    {stock && isUserAdmin(user) && (
                       <button
-                        onClick={(e) => {
-                          e.preventDefault();
-
-                          setIsCreatingProductFromStock(stock._id);
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete " + stock.name,
+                            )
+                          ) {
+                            removeStock({ stockId: stock._id });
+                          }
                         }}
                       >
-                        Create Product From Stock
+                        <FontAwesomeIcon icon={faTrash} />
                       </button>
+                    )}
+                  </td>
+                  <td align="right">
+                    {!stock.levels?.some((level) =>
+                      isBefore(
+                        subDays(new Date(), 14),
+                        new Date(level.timestamp),
+                      ),
+                    )
+                      ? `🚨 (${
+                          stock.approxCount?.toLocaleString("en-US", {
+                            maximumFractionDigits: 2,
+                          }) ?? "❔"
+                        })`
+                      : stock.approxCount?.toLocaleString("en-US", {
+                          maximumFractionDigits: 2,
+                        }) ?? "❔"}
+                  </td>
+                  <td>{stock.barCode ? "✅" : "❌"}</td>
+                  <td>
+                    {stock.name}{" "}
+                    <small>
+                      <small>
+                        Part of{" "}
+                        {products.filter(
+                          (product) =>
+                            product?.components?.some(
+                              (component) => component.stockId === stock._id,
+                            ),
+                        ).length || "0️⃣"}{" "}
+                        products -{" "}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+
+                            setIsCreatingProductFromStock(stock._id);
+                          }}
+                        >
+                          Create Product From Stock
+                        </button>
+                      </small>
                     </small>
-                  </small>
-                </td>
-                <td>
-                  {stock.unitSize}
-                  {stock.sizeUnit}
-                </td>
-                <td>
-                  {
-                    packageTypes.find(({ code }) => code === stock.packageType)
-                      ?.name
-                  }
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td>
+                    {stock.unitSize}
+                    {stock.sizeUnit}
+                  </td>
+                  <td>
+                    {
+                      packageTypes.find(
+                        ({ code }) => code === stock.packageType,
+                      )?.name
+                    }
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
