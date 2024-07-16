@@ -121,7 +121,13 @@ export default function PageMenu() {
                   !product.tags?.includes("cocktail")
                 : true,
             ),
-          ({ tags }) => [...(tags || emptyArray)].sort()?.join(",") || "other",
+          ({ tags }) =>
+            [...(tags || emptyArray)].sort()?.join(",") ||
+            //?.replace("beer,can", "beer")
+            //?.replace("beer,bottle", "beer")
+            //?.replace("beer,tap", "tap")
+            //?.replace("bottle,soda", "soda")
+            "other",
         ),
       ),
     [isExpressMode, location?.curfew, products],
@@ -195,11 +201,12 @@ export default function PageMenu() {
     <div
       className={css`
         padding: 12px;
-        column-width: 272px;
+        column-width: 280px;
         column-fill: balance;
         column-gap: 12px;
         max-width: 100%;
         break-inside: avoid;
+        min-height: 100%;
       `}
     >
       {productsGroupedByTags
@@ -445,6 +452,12 @@ export default function PageMenu() {
                                       (typeof product.abv === "string" &&
                                         product.abv)
                                         ? `${product.abv}%`
+                                        : null,
+                                      typeof product.sizeUnit === "string" &&
+                                      typeof product.unitSize === "number" &&
+                                      product.sizeUnit &&
+                                      product.unitSize
+                                        ? `${product.unitSize}${product.sizeUnit}`
                                         : null,
                                     ]
                                       .filter(Boolean)
