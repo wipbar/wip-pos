@@ -323,7 +323,7 @@ async function calculateSalesSankeyData() {
       return memo;
     }, []);
 
-    const salesNode =
+    const salesNode: `Sales (${string})` =
       currentCamp && campSales?.length
         ? `Sales (${currentCamp.name})`
         : "Sales (all time)";
@@ -340,9 +340,9 @@ async function calculateSalesSankeyData() {
       { color: "#193781", name: "Non-Alcoholic" },
       { color: "#193781", name: "Mate" },
       { color: "#16503f", name: "Non-Mate" },
-    ];
+    ] as const;
 
-    const getNode = (name: string) =>
+    const getNode = (name: (typeof nodes)[number]["name"]) =>
       nodes.findIndex((node) => node.name === name);
 
     const links = [
@@ -414,11 +414,9 @@ async function calculateSalesSankeyData() {
           (product) => !isAlcoholic(product) && !isMate(product),
         ).length,
       },
-    ]
-      .map((link) => ({ ...link, value: link.value }))
-      .filter(({ value }) => value >= 1);
+    ];
 
-    data[currentCamp.slug] = { links, nodes };
+    data[currentCamp.slug] = { links, nodes: Array.from(nodes) };
   }
 
   const now3 = new Date();

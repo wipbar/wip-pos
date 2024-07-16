@@ -27,7 +27,7 @@ export interface IProduct {
     sizeUnit: SizeUnit;
   }[];
   locationIds?: string[];
-  tap?: string;
+  tap?: string | null;
   barCode?: string;
 }
 

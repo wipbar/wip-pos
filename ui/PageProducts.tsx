@@ -430,13 +430,6 @@ export default function PageProducts() {
                 Price
               </SortHeader>
               <SortHeader
-                field="unitSize"
-                sortBy={sortBy}
-                toggleSortBy={toggleSortBy}
-              >
-                Size
-              </SortHeader>
-              <SortHeader
                 field="tags"
                 sortBy={sortBy}
                 toggleSortBy={toggleSortBy}
@@ -586,6 +579,9 @@ export default function PageProducts() {
                       <small>{product.brandName}</small>
                       <br />
                       <b>{product.name}</b>
+                      <br />
+                      {product.unitSize}
+                      {product.sizeUnit}
                     </td>
                     <td
                       align="center"
@@ -605,10 +601,6 @@ export default function PageProducts() {
                         <small>?</small>
                       )}
                       ʜᴀx
-                    </td>
-                    <td align="center">
-                      {product.unitSize}
-                      {product.sizeUnit}
                     </td>
                     <td style={{ whiteSpace: "nowrap" }}>
                       {[...(product.tags || emptyArray)].sort()?.map((tag) => (

@@ -129,11 +129,11 @@ export default function PageProductsItem({
     <form
       onSubmit={handleSubmit(async (data) => {
         if (!product) {
-          await addProduct({ data: { ...data, tap: data.tap || undefined } });
+          await addProduct({ data: { ...data, tap: data.tap || null } });
         } else if (product) {
           await editProduct({
             productId: product._id,
-            data: { ...data, tap: data.tap || undefined },
+            data: { ...data, tap: data.tap || null },
           });
         }
         onCancel?.();
