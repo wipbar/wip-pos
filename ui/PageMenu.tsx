@@ -202,9 +202,6 @@ export default function PageMenu() {
     <div
       className={css`
         font-size: 1em;
-        @media (min-width: 1500px) {
-          font-size: 2em;
-        }
         padding: 0.5em;
         column-width: 12em;
         column-fill: balance;
