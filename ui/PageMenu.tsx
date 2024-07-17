@@ -546,6 +546,10 @@ export default function PageMenu() {
       >
         <pre>Rendered: {new Date().toLocaleString()}</pre>
       </center>
+      <p>
+        Why do they call it oven when you of in the cold food of out hot eat the
+        food?
+      </p>
     </div>
   );
 }

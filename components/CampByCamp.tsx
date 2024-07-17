@@ -172,15 +172,12 @@ export default function CampByCamp() {
               position: "insideBottomRight",
               offset: 8,
               style: {
-                fill:
-                  currentCamp?.color && getCorrectTextColor(currentCamp?.color),
+                fill: "#ffffff",
               },
             }}
-            fill={currentCamp?.color && getCorrectTextColor(currentCamp?.color)}
-            r={4}
-            stroke={
-              currentCamp?.color && getCorrectTextColor(currentCamp?.color)
-            }
+            fill={"#ffffff"}
+            r={4}   
+            stroke={"#ffffff"}
           />
           {camps.map((camp) => (
             <Line
@@ -203,7 +200,7 @@ export default function CampByCamp() {
               key={currentCamp.slug + "-trend"}
               dataKey={currentCamp.slug + "-trend"}
               fill={currentCamp.color}
-              stroke={getCorrectTextColor(currentCamp?.color)}
+              stroke={"#ffffff"}
               strokeWidth={2}
               strokeDasharray="6 3"
               dot={false}
