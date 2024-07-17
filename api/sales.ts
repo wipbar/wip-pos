@@ -210,7 +210,7 @@ if (Meteor.isServer) {
     setInterval(async () => {
       statsCampByCamp = await calculateCampByCampStats();
       statsSalesSankey = await calculateSalesSankeyData();
-    }, 100_000);
+    }, 150_000);
   });
 }
 

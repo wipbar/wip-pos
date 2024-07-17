@@ -201,7 +201,7 @@ export default function PageMenu() {
   return (
     <div
       className={css`
-        font-size: 1em;
+        font-size: 0.8em;
         padding: 0.5em;
         column-width: 12em;
         column-fill: balance;

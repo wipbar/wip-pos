@@ -1,9 +1,7 @@
 import { css } from "@emotion/css";
-import { addDays, isAfter, setHours, startOfHour } from "date-fns";
 import { useFind, useTracker } from "meteor/react-meteor-data";
+import { Session } from "meteor/session";
 import React, { useEffect, useMemo } from "react";
-import Countdown from "react-countdown";
-import Camps from "../api/camps";
 import Products, { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
@@ -11,102 +9,9 @@ import DayByDay from "../components/DayByDay";
 import RemainingStock from "../components/RemainingStock";
 import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import useCurrentDate from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
 import { emptyArray } from "../util";
-import { Session } from "meteor/session";
-
-const renderer = ({
-  days,
-  hours,
-  minutes,
-  seconds,
-}: {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}) => {
-  return (
-    <span
-      className={css`
-        font-size: 5em;
-        white-space: nowrap;
-        display: inline-block;
-        transform-origin: 50% 50%;
-        ${hours == 0 && minutes <= 4
-          ? `animation: blink-animation 1s steps(5, start) infinite, flash-animation 500ms steps(5, start) infinite, shake 300ms infinite;`
-          : hours == 0 && minutes <= 14
-          ? `animation: blink-animation 1s steps(5, start) infinite, flash-animation 500ms steps(5, start) infinite;`
-          : hours == 0
-          ? `animation: blink-animation 1s steps(5, start) infinite;`
-          : ""}
-      `}
-    >
-      {days > 2 ? (
-        <>{Math.round(days + hours / 24)} DAYS TILL</>
-      ) : (
-        <>
-          {String(days * 24 + hours).padStart(2, "0")}:
-          {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-        </>
-      )}
-    </span>
-  );
-};
-
-function CurfewCountdown() {
-  const currentDate = useCurrentDate(50);
-  const currentCamp = useCurrentCamp();
-  const [newestCamp] = useFind(() => Camps.find({}, { sort: { end: -1 } }));
-  const camp = currentCamp || newestCamp;
-  const next2am = useMemo(
-    () =>
-      isAfter(startOfHour(setHours(currentDate, 6)), currentDate)
-        ? startOfHour(setHours(currentDate, 2))
-        : startOfHour(setHours(addDays(currentDate, 1), 2)),
-    [currentDate],
-  );
-  const countDownTo = useMemo(
-    () =>
-      (camp && isAfter(camp.buildup, currentDate) && camp.buildup) ||
-      (camp && isAfter(camp.start, currentDate) && camp.start) ||
-      next2am,
-    [camp, currentDate, next2am],
-  );
-
-  if (!camp) return null;
-
-  return (
-    <div
-      className={css`
-        text-align: center;
-      `}
-    >
-      <big>
-        <Countdown date={countDownTo} renderer={renderer} daysInHours />
-        <br />
-        <span
-          className={css`
-            font-size: 3.5em;
-            white-space: nowrap;
-          `}
-        >
-          {next2am !== countDownTo ? (
-            <>
-              {camp.name.toUpperCase()}
-              <br />
-              {countDownTo === camp.buildup ? " BUILDUP" : " START"}
-            </>
-          ) : (
-            <>TILL CURFEW</>
-          )}
-        </span>
-      </big>
-    </div>
-  );
-}
 
 export default function PageStats() {
   const campsLoading = useSubscription("camps");
@@ -215,8 +120,6 @@ export default function PageStats() {
           flex: 1;
         `}
       >
-        <CurfewCountdown />
-        <hr />
         {currentCamp && campSales?.length ? (
           <big>Most sold @ {currentCamp.name}:</big>
         ) : (
@@ -264,7 +167,10 @@ export default function PageStats() {
             <i>Nothing has been sold yet :(</i>
           )}
         </ul>
-        {Number(GALAXY_APP_VERSION_ID) !== 69 ? null : <RemainingStock />}
+        {!GALAXY_APP_VERSION_ID ||
+        Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
+          <RemainingStock />
+        )}
       </div>
     </div>
   );
