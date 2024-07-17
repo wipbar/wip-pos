@@ -25,6 +25,7 @@ import { getCorrectTextColor, onProfilerRenderCallback } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
 import PageProducts from "./PageProducts";
+import PageQR from "./PageQR";
 import PageSales from "./PageSales";
 import PageStats from "./PageStats";
 import PageStock from "./PageStock";
@@ -175,10 +176,12 @@ export default function UI() {
             opacify(-0.25, getCorrectTextColor(currentCamp?.color))};
         `}
         hidden={
-          (pageSlug === "menu" ||
+          ((pageSlug === "menu" ||
             pageSlug === "stats" ||
             locationSlug === "stats") &&
-          !user
+            !user) ||
+          locationSlug === "qr" ||
+          pageSlug === "qr"
         }
       >
         <nav
@@ -330,6 +333,7 @@ export default function UI() {
           <Route path="/:locationSlug/sales" element={<PageSales />} />
           <Route path="/:locationSlug/menu" element={<PageMenu />} />
           <Route path="/stats" element={<PageStats />} />
+          <Route path="/qr" element={<PageQR />} />
           <Route
             path="/"
             element={
