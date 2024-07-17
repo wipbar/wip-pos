@@ -207,13 +207,10 @@ if (Meteor.isServer) {
     statsCampByCamp = await calculateCampByCampStats();
     statsSalesSankey = await calculateSalesSankeyData();
 
-    setInterval(
-      async () => {
-        statsCampByCamp = await calculateCampByCampStats();
-        statsSalesSankey = await calculateSalesSankeyData();
-      },
-      (3600 * 1000) / 6,
-    );
+    setInterval(async () => {
+      statsCampByCamp = await calculateCampByCampStats();
+      statsSalesSankey = await calculateSalesSankeyData();
+    }, 30_000);
   });
 }
 
