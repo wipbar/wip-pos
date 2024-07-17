@@ -414,7 +414,9 @@ async function calculateSalesSankeyData() {
           (product) => !isAlcoholic(product) && !isMate(product),
         ).length,
       },
-    ];
+    ]
+      .map((link) => ({ ...link, value: link.value }))
+      .filter(({ value }) => value >= 1);
 
     data[currentCamp.slug] = { links, nodes: Array.from(nodes) };
   }
