@@ -5,6 +5,7 @@ import Sales from "../api/sales";
 import Stocks from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { emptyArray } from "../util";
+import convert from "convert";
 
 export default function RemainingStock() {
   const currentCamp = useCurrentCamp();
@@ -51,7 +52,14 @@ export default function RemainingStock() {
         }
         return (
           <div key={stock._id}>
-            {stock.name}: {remainingStock}
+            {stock.name}:{" "}
+            {stock.sizeUnit === "l" ||
+            stock.sizeUnit === "cl" ||
+            stock.sizeUnit === "ml"
+              ? `${convert(remainingStock * stock.unitSize, stock.sizeUnit)
+                  .to("l")
+                  .toLocaleString("en-DK", { maximumFractionDigits: 2 })}l`
+              : `${remainingStock * stock.unitSize}${stock.sizeUnit}`}
           </div>
         );
       })}

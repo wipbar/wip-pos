@@ -139,7 +139,7 @@ export default function PageMenu() {
     return (
       <div
         className={css`
-          zoom: 3;
+          font-size: 3em;
           flex: 1;
           background: ${Number(currentDate.getSeconds()) % 2
             ? currentCamp && getCorrectTextColor(currentCamp.color)
@@ -201,11 +201,14 @@ export default function PageMenu() {
   return (
     <div
       className={css`
-        zoom: 3;
-        padding: 12px;
-        column-width: 280px;
+        font-size: 1em;
+        @media (min-width: 1500px) {
+          font-size: 2em;
+        }
+        padding: 0.5em;
+        column-width: 12em;
         column-fill: balance;
-        column-gap: 12px;
+        column-gap: 0.5em;
         max-width: 100%;
         break-inside: avoid;
         min-height: 100%;
@@ -246,8 +249,8 @@ export default function PageMenu() {
                 )};
 
                 break-inside: avoid;
-                padding: 6px;
-                margin-bottom: 12px;
+                padding: 0.25em;
+                margin-bottom: 0.5em;
               `}
             >
               <h3
@@ -315,8 +318,8 @@ export default function PageMenu() {
                   )};
 
                   break-inside: avoid;
-                  padding: 6px;
-                  margin-bottom: 12px;
+                  padding: 0.25em;
+                  margin-bottom: 0.5em;
                 `}
               >
                 <ul
@@ -326,7 +329,7 @@ export default function PageMenu() {
                     list-style: none;
                     display: flex;
                     flex-direction: column;
-                    gap: 4px;
+                    gap: 0.25em;
                   `}
                 >
                   {productsByBrandName.map(([brandName, products]) => (
@@ -352,7 +355,7 @@ export default function PageMenu() {
                         key={brandName}
                         className={css`
                           margin: 0;
-                          padding: 4px 6px 0px;
+                          padding: 0.25em 0.5em 0px;
                           display: flex;
                           flex-direction: column;
                           background: ${currentCamp &&
@@ -394,7 +397,7 @@ export default function PageMenu() {
                           className={css`
                             display: flex;
                             flex-direction: column;
-                            gap: 2px;
+                            gap: 0.125em;
                           `}
                         >
                           {products.map((product) => (
@@ -491,9 +494,9 @@ export default function PageMenu() {
                               </div>
                               <SparkLine
                                 className={css`
-                                  margin-left: -6px;
-                                  margin-right: -6px;
-                                  width: calc(100% + 12px);
+                                  margin-left: -0.5em;
+                                  margin-right: -0.5em;
+                                  width: calc(100% + 1em);
                                   display: block;
                                   border-bottom: ${currentCamp?.color} 1px solid;
                                 `}
@@ -536,8 +539,8 @@ export default function PageMenu() {
         })}
       <center
         className={css`
-          margin-top: -8px;
-          margin-bottom: 16px;
+          margin-top: -0.5em;
+          margin-bottom: 1em;
           font-size: 0.6em;
         `}
       >
