@@ -4,6 +4,7 @@ import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Products, { type IProduct, type ProductID } from "../api/products";
+import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMethod from "../hooks/useMethod";
@@ -20,6 +21,11 @@ function CartViewProductsItem({
   onRemoveClick?: () => any;
 }) {
   const currentCamp = useCurrentCamp();
+
+  const stocks = useFind(() =>
+    Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
+  );
+
   if (!product) null;
   return (
     <li
@@ -78,6 +84,25 @@ function CartViewProductsItem({
               {" "}
               ({product.unitSize}
               {product.sizeUnit})
+            </small>
+          ) : null}
+          {product.components && product.components?.length > 1 ? (
+            <small>
+              <small>
+                <br />
+                <ul>
+                  {product.components.map(({ stockId, sizeUnit, unitSize }) => {
+                    return (
+                      <li key={stockId}>
+                        {unitSize}
+                        {sizeUnit} x{" "}
+                        {stocks.find(({ _id }) => _id === stockId)?.name ||
+                          null}{" "}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </small>
             </small>
           ) : null}
         </div>

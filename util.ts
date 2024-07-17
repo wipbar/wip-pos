@@ -71,6 +71,8 @@ export const onProfilerRenderCallback: React.ProfilerOnRenderCallback = (
   actualDuration,
   baseDuration,
 ) => {
+  return;
+
   const stats = `${id}(${phase}): ${actualDuration.toFixed(
     2,
   )}ms actual, ${baseDuration.toFixed(2)}ms base\n`;

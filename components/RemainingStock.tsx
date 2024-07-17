@@ -2,11 +2,22 @@ import convert from "convert";
 import { subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import React from "react";
+import {
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import { emptyArray } from "../util";
+import { emptyArray, getCorrectTextColor } from "../util";
 
+const XYAxisDomain = ["dataMin", "dataMax"];
 export default function RemainingStock() {
   const currentCamp = useCurrentCamp();
 
@@ -33,9 +44,79 @@ export default function RemainingStock() {
     [currentCamp],
   );
 
+  const data = stocks.reduce(
+    (memo: { timestamp: Date; amount: number }[], stock) => {
+      const salesOfStock = sales.reduce(
+        (memo: { timestamp: Date; amount: number }[], sale) => {
+          const amountSold = sale.products.reduce(
+            (productMemo, product) =>
+              productMemo +
+              (product.components
+                ?.filter((c) => c.stockId === stock._id)
+                .reduce(
+                  (compMemo, component) =>
+                    compMemo +
+                    convert(component.unitSize, component.sizeUnit).to(
+                      stock.sizeUnit,
+                    ),
+                  0,
+                ) || 0),
+            0,
+          );
+          if (amountSold) {
+            memo.push({
+              timestamp: sale.timestamp,
+              amount: amountSold,
+            });
+          }
+
+          return memo;
+        },
+        [],
+      );
+      return memo.concat(salesOfStock);
+    },
+    [],
+  );
+
+  console.log({ data });
+
   return (
     <>
       stocks:{" "}
+      <div>
+        <ResponsiveContainer width="100%" height={350}>
+          <ComposedChart
+            data={data}
+            margin={{ top: 24, right: 8, left: 16, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="timestamp" interval={23} />
+            <YAxis
+              domain={XYAxisDomain}
+              tickFormatter={(amount: number) => String(~~amount)}
+            />
+            <Tooltip
+              contentStyle={{
+                background: currentCamp?.color,
+                color:
+                  currentCamp?.color && getCorrectTextColor(currentCamp?.color),
+              }}
+            />
+            <Legend />
+            {stocks.map((stock) => (
+              <Line
+                type="monotone"
+                key={stock._id}
+                dataKey={stock._id}
+                name={stock.name}
+                dot={false}
+                connectNulls
+              />
+            ))}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
       {stocks.map((stock) => {
         const mostRecentLevel = stock.levels?.sort(
           (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
@@ -71,11 +152,13 @@ export default function RemainingStock() {
         if (remainingStock > 0) {
           //          return null
         }
+        /*
         console.log({
           name: stock.name,
           amountAtMostRecentLevel,
           amountSoldSinceMostRecentLevel,
         });
+        */
         return (
           <div key={stock._id}>
             {stock.name}:{" "}
