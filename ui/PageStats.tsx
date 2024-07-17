@@ -1,6 +1,6 @@
 import { css } from "@emotion/css";
 import { addDays, isAfter, setHours, startOfHour } from "date-fns";
-import { useFind } from "meteor/react-meteor-data";
+import { useFind, useTracker } from "meteor/react-meteor-data";
 import React, { useEffect, useMemo } from "react";
 import Countdown from "react-countdown";
 import Camps from "../api/camps";
@@ -8,12 +8,14 @@ import Products, { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
+import RemainingStock from "../components/RemainingStock";
 import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
 import { emptyArray } from "../util";
+import { Session } from "meteor/session";
 
 const renderer = ({
   days,
@@ -135,6 +137,10 @@ export default function PageStats() {
           : undefined,
       [currentCamp],
     ) || emptyArray;
+
+  const GALAXY_APP_VERSION_ID = useTracker(
+    () => Session.get("GALAXY_APP_VERSION_ID") as string | undefined,
+  );
 
   const sales = useMemo(
     () => (currentCamp ? campSales : allSales),
@@ -258,6 +264,7 @@ export default function PageStats() {
             <i>Nothing has been sold yet :(</i>
           )}
         </ul>
+        {Number(GALAXY_APP_VERSION_ID) !== 69 ? null : <RemainingStock />}
       </div>
     </div>
   );
