@@ -139,6 +139,7 @@ export default function PageMenu() {
     return (
       <div
         className={css`
+          zoom: 1.5;
           flex: 1;
           background: ${Number(currentDate.getSeconds()) % 2
             ? currentCamp && getCorrectTextColor(currentCamp.color)
@@ -200,6 +201,7 @@ export default function PageMenu() {
   return (
     <div
       className={css`
+        zoom: 1.5;
         padding: 12px;
         column-width: 280px;
         column-fill: balance;
