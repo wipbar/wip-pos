@@ -204,13 +204,17 @@ let statsSalesSankey: Awaited<
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
-    statsCampByCamp = await calculateCampByCampStats();
-    statsSalesSankey = await calculateSalesSankeyData();
+    [statsCampByCamp, statsSalesSankey] = await Promise.all([
+      calculateCampByCampStats(),
+      calculateSalesSankeyData(),
+    ]);
 
     setInterval(async () => {
-      statsCampByCamp = await calculateCampByCampStats();
-      statsSalesSankey = await calculateSalesSankeyData();
-    }, 150_000);
+      [statsCampByCamp, statsSalesSankey] = await Promise.all([
+        calculateCampByCampStats(),
+        calculateSalesSankeyData(),
+      ]);
+    }, 240_000);
   });
 }
 
@@ -219,15 +223,16 @@ const offset = -6;
 async function calculateCampByCampStats() {
   const now = new Date();
 
-  const camps = (await Camps.find(
-    {},
-    { sort: { start: 1 }, fields: { slug: 1, start: 1, end: 1 } },
-  ).fetchAsync()) as Pick<ICamp, "slug" | "start" | "end">[];
-
-  const sales = (await Sales.find(
-    {},
-    { fields: { timestamp: 1, amount: 1 } },
-  ).fetchAsync()) as Pick<ISale, "_id" | "amount" | "timestamp">[];
+  const [camps, sales] = await Promise.all([
+    Camps.find(
+      {},
+      { sort: { start: 1 }, fields: { slug: 1, start: 1, end: 1 } },
+    ).fetchAsync() as Promise<Pick<ICamp, "slug" | "start" | "end">[]>,
+    Sales.find(
+      {},
+      { fields: { timestamp: 1, amount: 1 } },
+    ).fetchAsync() as Promise<Pick<ISale, "_id" | "amount" | "timestamp">[]>,
+  ]);
 
   const now2 = new Date();
 
@@ -290,11 +295,11 @@ async function calculateCampByCampStats() {
 async function calculateSalesSankeyData() {
   const now = new Date();
 
-  const camps = await Camps.find({}, { sort: { end: -1 } }).fetchAsync();
-
-  const allSales = await Sales.find().fetchAsync();
-
-  const allProducts = await Products.find().fetchAsync();
+  const [camps, allSales, allProducts] = await Promise.all([
+    Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
+    Sales.find().fetchAsync(),
+    Products.find().fetchAsync(),
+  ]);
 
   const now2 = new Date();
 
