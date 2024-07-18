@@ -6,13 +6,14 @@ import { darken, lighten, transparentize } from "polished";
 import React, { Fragment, SVGProps, useMemo, useState } from "react";
 import Products, { isAlcoholic } from "../api/products";
 import Sales from "../api/sales";
+import Styles, { type IStyle } from "../api/styles";
 import { useKeyDownListener } from "../components/BarcodeScanner";
 import ProductTrend from "../components/ProductTrend";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSubscription from "../hooks/useSubscription";
-import { emptyArray, getCorrectTextColor } from "../util";
+import { emptyArray, emptyObject, getCorrectTextColor } from "../util";
 
 function SparkLine({
   data,
@@ -93,6 +94,11 @@ export default function PageMenu() {
     () => Sales.find({ timestamp: { $gte: from } }),
     [from],
   );
+
+  const style =
+    useFind(() => Styles.find({ page: "menu" }))?.[0]?.style ||
+    (emptyObject as IStyle["style"]);
+
   useSubscription("sales", { from }, [from]);
   const products = useFind(
     () =>
@@ -210,6 +216,7 @@ export default function PageMenu() {
         break-inside: avoid;
         min-height: 100%;
       `}
+      style={style}
     >
       {productsGroupedByTags
         .sort((a, b) => a[0].localeCompare(b[0]))
@@ -250,13 +257,15 @@ export default function PageMenu() {
                 margin-bottom: 0.5em;
               `}
             >
-              <h3
+              <h1
                 className={css`
                   margin: 0;
+                  font-size: 2.25em;
+                  text-align: center;
                 `}
               >
                 {tags}
-              </h3>
+              </h1>
               <SparkLine
                 className={css`
                   display: block;

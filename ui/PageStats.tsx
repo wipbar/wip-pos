@@ -4,6 +4,7 @@ import { Session } from "meteor/session";
 import React, { useEffect, useMemo } from "react";
 import Products, { ProductID } from "../api/products";
 import Sales from "../api/sales";
+import Styles, { type IStyle } from "../api/styles";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
 import RemainingStock from "../components/RemainingStock";
@@ -11,7 +12,7 @@ import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
-import { emptyArray } from "../util";
+import { emptyArray, emptyObject } from "../util";
 
 export default function PageStats() {
   const campsLoading = useSubscription("camps");
@@ -75,6 +76,10 @@ export default function PageStats() {
     }
   }, [currentCamp, getGoodbyeWorld]);
 
+  const style =
+    useFind(() => Styles.find({ page: "menu" }))?.[0]?.style ||
+    (emptyObject as IStyle["style"]);
+
   return (
     <div
       className={css`
@@ -86,6 +91,7 @@ export default function PageStats() {
         max-width: 100%;
         flex-wrap: wrap;
       `}
+      style={style}
     >
       <div
         className={css`

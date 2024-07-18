@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import convert from "convert";
 import { useFind } from "meteor/react-meteor-data";
 import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -319,57 +320,74 @@ export default function PageProductsItem({
       ) : null}
       <fieldset>
         <legend>Components From Stock</legend>
-        {fields.map((field, index) => (
-          <fieldset key={field.id}>
-            <legend
-              className={css`
-                flex: 1;
-              `}
-            >
-              {stocks.find(({ _id }) => _id === field.stockId)?.name}
-            </legend>
-            <div
-              className={css`
-                display: flex;
-              `}
-            >
-              <input
-                required
-                {...register(`components.${index}.unitSize`, {
-                  required: true,
-                  valueAsNumber: true,
-                })}
-                step="any"
-                type="number"
-              />
-              <Controller
-                name={`components.${index}.sizeUnit`}
-                control={control}
-                render={({ field: { onBlur, value } }) => (
-                  <ReactSelect
-                    required
-                    value={value && { value: value, label: value }}
-                    options={units.map((code) => ({
-                      value: code,
-                      label: code,
-                    }))}
-                    onBlur={onBlur}
-                    onChange={(newValue) => {
-                      const newSizeUnit = newValue?.value;
-                      if (newSizeUnit)
-                        setValue(`components.${index}.sizeUnit`, newSizeUnit, {
-                          shouldDirty: true,
-                        });
-                    }}
-                  />
-                )}
-              />
-              <button type="button" onClick={() => remove(index)}>
-                <small>Remove</small>
-              </button>
-            </div>
-          </fieldset>
-        ))}
+        {fields.map((field, index) => {
+          const stock = stocks.find(({ _id }) => _id === field.stockId);
+          if (!stock) return "???";
+          return (
+            <fieldset key={field.id}>
+              <legend
+                className={css`
+                  flex: 1;
+                `}
+              >
+                {stock.name}
+              </legend>
+              <div
+                className={css`
+                  display: flex;
+                `}
+              >
+                <input
+                  required
+                  {...register(`components.${index}.unitSize`, {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
+                  step="any"
+                  type="number"
+                />
+                <Controller
+                  name={`components.${index}.sizeUnit`}
+                  control={control}
+                  render={({ field: { onBlur, value } }) => (
+                    <ReactSelect
+                      required
+                      value={value && { value: value, label: value }}
+                      options={units.map((code) => ({
+                        value: code,
+                        label: code,
+                      }))}
+                      onBlur={onBlur}
+                      onChange={(newValue) => {
+                        const newSizeUnit = newValue?.value;
+                        if (newSizeUnit)
+                          setValue(
+                            `components.${index}.sizeUnit`,
+                            newSizeUnit,
+                            {
+                              shouldDirty: true,
+                            },
+                          );
+                      }}
+                    />
+                  )}
+                />
+                <button type="button" onClick={() => remove(index)}>
+                  <small>Remove</small>
+                </button>
+              </div>
+              {stock.approxCount ? (
+                <>
+                  (~{(
+                    (stock.approxCount * stock.unitSize) /
+                    convert(field.unitSize, field.sizeUnit).to(stock.sizeUnit)
+                  ).toLocaleString("en-DK", { maximumFractionDigits: 2 })}{" "}
+                  servings left)
+                </>
+              ) : null}
+            </fieldset>
+          );
+        })}
         <ReactSelect
           value={null}
           placeholder={
