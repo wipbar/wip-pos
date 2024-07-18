@@ -448,7 +448,7 @@ export default function PageMenu() {
                                 <span>
                                   <div
                                     className={css`
-                                      font-weight: 500;
+                                      font-weight: bold;
                                     `}
                                   >
                                     {product.name}
