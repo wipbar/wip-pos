@@ -158,7 +158,9 @@ export default function ProductPicker({
 } & HTMLProps<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement | null>(null);
   // @ts-expect-error - ref value can be null
-  const { events } = useDraggable(ref);
+  const { events } = useDraggable(ref, {
+    safeDisplacement: 32, // specify the drag sensitivity
+  });
 
   const { location } = useCurrentLocation();
   const currentCamp = useCurrentCamp();
