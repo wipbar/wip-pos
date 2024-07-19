@@ -331,7 +331,17 @@ export default function UI() {
           <Route path="/:locationSlug/products" element={<PageProducts />} />
           <Route path="/:locationSlug/stock" element={<PageStock />} />
           <Route path="/:locationSlug/sales" element={<PageSales />} />
-          <Route path="/:locationSlug/menu" element={<PageMenu />} />
+          <Route
+            path="/:locationSlug/menu"
+            element={
+              <Profiler
+                id="/:locationSlug/tend"
+                onRender={onProfilerRenderCallback}
+              >
+                <PageMenu />
+              </Profiler>
+            }
+          />
           <Route path="/stats" element={<PageStats />} />
           <Route path="/qr" element={<PageQR />} />
           <Route
