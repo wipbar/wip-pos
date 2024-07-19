@@ -22,7 +22,7 @@ function SparkLine({
   fill,
   ...props
 }: {
-  data: [number, number][];
+  data: (readonly [number, number])[];
 } & SVGProps<SVGSVGElement>) {
   const viewBoxWidth = 1000;
   const viewBoxHeight = 10;
@@ -74,7 +74,7 @@ function SparkLine({
 const sparklineDays = 24;
 export default function PageMenu() {
   const currentCamp = useCurrentCamp();
-  const currentDate = useCurrentDate(1000);
+  const currentDate = useCurrentDate(10000);
   const from = useMemo(
     () => subHours(currentDate, sparklineDays),
     [currentDate],
@@ -145,28 +145,92 @@ export default function PageMenu() {
         .sort((a, b) => a[0].localeCompare(b[0]))
         .sort((a, b) => b[1].length - a[1].length)
         .map(([tags, products]) => {
+          const productsByBrandName = Object.entries(
+            groupBy(products, ({ brandName }) => brandName),
+          )
+            .sort(([, a], [, b]) => b.length - a.length)
+            .map(
+              ([brand, products]) =>
+                [
+                  brand,
+                  products
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
+                    .map(
+                      (product) =>
+                        [
+                          product,
+                          Array.from(
+                            { length: sparklineDays },
+                            (_, i) =>
+                              [
+                                sparklineDays - 1 - i,
+                                sales.reduce((memo, sale) => {
+                                  if (
+                                    isWithinRange(
+                                      sale.timestamp,
+                                      addHours(currentDate, -i - 1),
+                                      addHours(currentDate, -i),
+                                    )
+                                  ) {
+                                    return (
+                                      memo +
+                                      sale.products.filter(
+                                        (saleProduct) =>
+                                          saleProduct._id === product._id,
+                                      ).length
+                                    );
+                                  }
+                                  return memo;
+                                }, 0),
+                              ] as const,
+                          ),
+                        ] as const,
+                    ),
+                ] as const,
+            )
+            .sort(
+              ([, aProducts], [, bProducts]) =>
+                aProducts[0]?.[0].tap?.localeCompare(
+                  bProducts[0]?.[0].tap || "",
+                ) || 0,
+            );
+
           return [
             tags,
-            Object.entries(groupBy(products, ({ brandName }) => brandName))
-              .sort(([, a], [, b]) => b.length - a.length)
-              .map(
-                ([brand, products]) =>
-                  [
-                    brand,
-                    products
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0),
-                  ] as const,
-              )
-              .sort(
-                ([, aProducts], [, bProducts]) =>
-                  aProducts?.[0]?.tap?.localeCompare(
-                    bProducts?.[0]?.tap || "",
-                  ) || 0,
-              ),
+            productsByBrandName,
+            Array.from(
+              { length: sparklineDays },
+              (_, i) =>
+                [
+                  sparklineDays - 1 - i,
+                  sales.reduce((memo, sale) => {
+                    if (
+                      isWithinRange(
+                        sale.timestamp,
+                        addHours(currentDate, -i - 1),
+                        addHours(currentDate, -i),
+                      )
+                    ) {
+                      return (
+                        memo +
+                        sale.products.filter((saleProduct) =>
+                          productsByBrandName
+                            .map(([, products]) => products)
+                            .flat()
+                            .some(
+                              ([product]) => saleProduct._id === product._id,
+                            ),
+                        ).length
+                      );
+                    }
+                    return memo;
+                  }, 0),
+                ] as const,
+            ),
           ] as const;
         }),
-    [productsGroupedByTags],
+    [currentDate, productsGroupedByTags, sales],
   );
 
   if (error) return error;
@@ -251,7 +315,7 @@ export default function PageMenu() {
       `}
       style={style}
     >
-      {oij.map(([tags, productsByBrandName]) => (
+      {oij.map(([tags, productsByBrandName, tagsSpark]) => (
         <div
           key={tags}
           className={css`
@@ -295,29 +359,7 @@ export default function PageMenu() {
                   : darken(4 / 5, currentCamp?.color),
               )
             }
-            data={Array.from({ length: sparklineDays }, (_, i) => [
-              sparklineDays - 1 - i,
-              sales.reduce((memo, sale) => {
-                if (
-                  isWithinRange(
-                    sale.timestamp,
-                    addHours(currentDate, -i - 1),
-                    addHours(currentDate, -i),
-                  )
-                ) {
-                  return (
-                    memo +
-                    sale.products.filter((saleProduct) =>
-                      productsByBrandName
-                        .map(([, products]) => products)
-                        .flat()
-                        .some((product) => saleProduct._id === product._id),
-                    ).length
-                  );
-                }
-                return memo;
-              }, 0),
-            ])}
+            data={tagsSpark}
           />
           <div
             className={css`
@@ -413,7 +455,7 @@ export default function PageMenu() {
                         gap: 0.125em;
                       `}
                     >
-                      {products.map((product) => (
+                      {products.map(([product, productSpark]) => (
                         <div
                           key={product._id}
                           className={css`
@@ -423,7 +465,7 @@ export default function PageMenu() {
                               ? `
                           box-shadow: 0 0 20px black, 0 0 40px black;
                           color: black;
-                          background: rgba(255, 0, 0, 0.75);
+                          background: rgba(255, 0, 0, 1);
                           padding: 0 4px;
                           animation-name: wobble;
                           animation-iteration-count: infinite;
@@ -514,30 +556,7 @@ export default function PageMenu() {
                               border-bottom: ${currentCamp?.color} 1px solid;
                             `}
                             fill={currentCamp?.color}
-                            data={Array.from(
-                              { length: sparklineDays },
-                              (_, i) => [
-                                sparklineDays - 1 - i,
-                                sales.reduce((memo, sale) => {
-                                  if (
-                                    isWithinRange(
-                                      sale.timestamp,
-                                      addHours(currentDate, -i - 1),
-                                      addHours(currentDate, -i),
-                                    )
-                                  ) {
-                                    return (
-                                      memo +
-                                      sale.products.filter(
-                                        (saleProduct) =>
-                                          saleProduct._id === product._id,
-                                      ).length
-                                    );
-                                  }
-                                  return memo;
-                                }, 0),
-                              ],
-                            )}
+                            data={productSpark}
                           />
                         </div>
                       ))}
