@@ -1,9 +1,10 @@
 import convert from "convert";
-import { differenceInHours, isWithinRange } from "date-fns";
+import { addHours, differenceInHours, isWithinRange, subHours } from "date-fns";
+import { groupBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
-import { type Flavor } from "../util";
+import { emptyArray, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
@@ -138,6 +139,16 @@ export const salesMethods = {
     return statsSalesSankey?.data[campSlug];
   },
 
+  async "Products.menu.Menu"(
+    this: Meteor.MethodThisType,
+    { locationSlug }: { locationSlug: ILocation["slug"] },
+  ) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    return locationMenuData?.[locationSlug];
+  },
+
   async "Sales.stats.GoodbyeWorld"(
     this: Meteor.MethodThisType,
     { campSlug }: { campSlug: ICamp["slug"] },
@@ -201,19 +212,25 @@ let statsCampByCamp: Awaited<
 let statsSalesSankey: Awaited<
   ReturnType<typeof calculateSalesSankeyData>
 > | null = null;
+let locationMenuData: Awaited<ReturnType<typeof calculateMenuData>> | null =
+  null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
-    [statsCampByCamp, statsSalesSankey] = await Promise.all([
+    [statsCampByCamp, statsSalesSankey, locationMenuData] = await Promise.all([
       calculateCampByCampStats(),
       calculateSalesSankeyData(),
+      calculateMenuData(),
     ]);
 
     setInterval(async () => {
-      [statsCampByCamp, statsSalesSankey] = await Promise.all([
-        calculateCampByCampStats(),
-        calculateSalesSankeyData(),
-      ]);
+      [statsCampByCamp, statsSalesSankey, locationMenuData] = await Promise.all(
+        [
+          calculateCampByCampStats(),
+          calculateSalesSankeyData(),
+          calculateMenuData(),
+        ],
+      );
     }, 240_000);
   });
 }
@@ -432,6 +449,146 @@ async function calculateSalesSankeyData() {
   );
 
   return { data };
+}
+
+const sparklineDays = 24;
+async function calculateMenuDataForLocation(location: ILocation) {
+  const currentDate = new Date();
+  const from = subHours(currentDate, sparklineDays);
+  const sales = await Sales.find({ timestamp: { $gte: from } }).fetchAsync();
+  const products = await Products.find(
+    {
+      removedAt: { $exists: false },
+      // @ts-expect-error
+      locationIds: { $elemMatch: { $eq: location._id } },
+    },
+    { sort: { brandName: 1, name: 1 } },
+  ).fetchAsync();
+
+  const productsGroupedByTags = Object.entries(
+    groupBy(
+      products.filter((product) =>
+        location.curfew ? !isAlcoholic(product) : true,
+      ),
+      ({ tags }) =>
+        [...(tags || emptyArray)].sort()?.join(",") ||
+        //?.replace("beer,can", "beer")
+        //?.replace("beer,bottle", "beer")
+        //?.replace("beer,tap", "tap")
+        //?.replace("bottle,soda", "soda")
+        "other",
+    ),
+  );
+
+  return productsGroupedByTags
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([tags, products]) => {
+      const productsByBrandName = Object.entries(
+        groupBy(products, ({ brandName }) => brandName),
+      )
+        .sort(([, a], [, b]) => b.length - a.length)
+        .map(
+          ([brand, products]) =>
+            [
+              brand,
+              products
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
+                .map(
+                  (product) =>
+                    [
+                      product,
+                      Array.from(
+                        { length: sparklineDays },
+                        (_, i) =>
+                          [
+                            sparklineDays - 1 - i,
+                            sales.reduce((memo, sale) => {
+                              if (
+                                isWithinRange(
+                                  sale.timestamp,
+                                  addHours(currentDate, -i - 1),
+                                  addHours(currentDate, -i),
+                                )
+                              ) {
+                                return (
+                                  memo +
+                                  sale.products.filter(
+                                    (saleProduct) =>
+                                      saleProduct._id === product._id,
+                                  ).length
+                                );
+                              }
+                              return memo;
+                            }, 0),
+                          ] as const,
+                      ),
+                    ] as const,
+                ),
+            ] as const,
+        )
+        .sort(
+          ([, aProducts], [, bProducts]) =>
+            aProducts[0]?.[0].tap?.localeCompare(bProducts[0]?.[0].tap || "") ||
+            0,
+        );
+
+      return [
+        tags,
+        productsByBrandName,
+        Array.from(
+          { length: sparklineDays },
+          (_, i) =>
+            [
+              sparklineDays - 1 - i,
+              sales.reduce((memo, sale) => {
+                if (
+                  isWithinRange(
+                    sale.timestamp,
+                    addHours(currentDate, -i - 1),
+                    addHours(currentDate, -i),
+                  )
+                ) {
+                  return (
+                    memo +
+                    sale.products.filter((saleProduct) =>
+                      productsByBrandName
+                        .map(([, products]) => products)
+                        .flat()
+                        .some(([product]) => saleProduct._id === product._id),
+                    ).length
+                  );
+                }
+                return memo;
+              }, 0),
+            ] as const,
+        ),
+      ] as const;
+    });
+}
+async function calculateMenuData() {
+  const now = new Date();
+  const locations = await Locations.find({}).fetchAsync();
+  const menuDataByLocation: Record<
+    ILocation["slug"],
+    Awaited<ReturnType<typeof calculateMenuDataForLocation>>
+  > = {};
+  const now2 = new Date();
+  for (const location of locations) {
+    menuDataByLocation[location.slug] = await calculateMenuDataForLocation(
+      location,
+    );
+  }
+
+  const now3 = new Date();
+
+  console.log(
+    `Products.menu.Menu: ${(now3.getTime() - now.getTime()) / 1000}s,(${
+      (now2.getTime() - now.getTime()) / 1000
+    }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
+  );
+  return menuDataByLocation;
 }
 
 Meteor.methods(salesMethods);

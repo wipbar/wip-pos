@@ -1,19 +1,21 @@
 import { css } from "@emotion/css";
-import { addHours, isWithinRange, subHours } from "date-fns";
-import { groupBy, sample } from "lodash";
+import { sample } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import { darken, lighten, transparentize } from "polished";
-import React, { Fragment, SVGProps, useMemo, useState } from "react";
-import Products, { isAlcoholic } from "../api/products";
-import Sales from "../api/sales";
+import React, {
+  Fragment,
+  SVGProps,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import Styles, { type IStyle } from "../api/styles";
-import { useKeyDownListener } from "../components/BarcodeScanner";
 import flow from "../flow";
 import useCurrentCamp from "../hooks/useCurrentCamp";
-import useCurrentDate from "../hooks/useCurrentDate";
+import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
-import useSubscription from "../hooks/useSubscription";
-import { emptyArray, emptyObject, getCorrectTextColor } from "../util";
+import useMethod from "../hooks/useMethod";
+import { emptyObject, getCorrectTextColor } from "../util";
 
 function SparkLine({
   data,
@@ -71,167 +73,25 @@ function SparkLine({
   );
 }
 
-const sparklineDays = 24;
 export default function PageMenu() {
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(10000);
-  const from = useMemo(
-    () => subHours(currentDate, sparklineDays),
-    [currentDate],
-  );
   const { location, error } = useCurrentLocation();
-  const [isExpressMode, setIsExpressMode] = useState(false);
-
-  useKeyDownListener((event) => {
-    if (event.key === "x") {
-      event.preventDefault();
-
-      setIsExpressMode((state) => !state);
-    }
-  });
-
-  const sales = useFind(
-    () => Sales.find({ timestamp: { $gte: from } }),
-    [from],
-  );
 
   const style =
     useFind(() => Styles.find({ page: "menu" }))?.[0]?.style ||
     (emptyObject as IStyle["style"]);
 
-  useSubscription("sales", { from }, [from]);
-  const products = useFind(
-    () =>
-      Products.find(
-        {
-          removedAt: { $exists: false },
-          // @ts-expect-error
-          locationIds: { $elemMatch: { $eq: location?._id } },
-        },
-        { sort: { brandName: 1, name: 1 } },
-      ),
-    [location],
-  );
+  const [getData, { data: oij }] = useMethod("Products.menu.Menu");
 
-  const productsGroupedByTags = useMemo(
-    () =>
-      Object.entries(
-        groupBy(
-          products
-            .filter((product) =>
-              location?.curfew ? !isAlcoholic(product) : true,
-            )
-            .filter((product) =>
-              isExpressMode
-                ? !product.tags?.includes("tap") &&
-                  !product.tags?.includes("cocktail")
-                : true,
-            ),
-          ({ tags }) =>
-            [...(tags || emptyArray)].sort()?.join(",") ||
-            //?.replace("beer,can", "beer")
-            //?.replace("beer,bottle", "beer")
-            //?.replace("beer,tap", "tap")
-            //?.replace("bottle,soda", "soda")
-            "other",
-        ),
-      ),
-    [isExpressMode, location?.curfew, products],
-  );
+  const updateData = useCallback(async () => {
+    if (currentCamp) await getData({ locationSlug: location!.slug });
+  }, [currentCamp, getData, location]);
 
-  const oij = useMemo(
-    () =>
-      productsGroupedByTags
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .sort((a, b) => b[1].length - a[1].length)
-        .map(([tags, products]) => {
-          const productsByBrandName = Object.entries(
-            groupBy(products, ({ brandName }) => brandName),
-          )
-            .sort(([, a], [, b]) => b.length - a.length)
-            .map(
-              ([brand, products]) =>
-                [
-                  brand,
-                  products
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
-                    .map(
-                      (product) =>
-                        [
-                          product,
-                          Array.from(
-                            { length: sparklineDays },
-                            (_, i) =>
-                              [
-                                sparklineDays - 1 - i,
-                                sales.reduce((memo, sale) => {
-                                  if (
-                                    isWithinRange(
-                                      sale.timestamp,
-                                      addHours(currentDate, -i - 1),
-                                      addHours(currentDate, -i),
-                                    )
-                                  ) {
-                                    return (
-                                      memo +
-                                      sale.products.filter(
-                                        (saleProduct) =>
-                                          saleProduct._id === product._id,
-                                      ).length
-                                    );
-                                  }
-                                  return memo;
-                                }, 0),
-                              ] as const,
-                          ),
-                        ] as const,
-                    ),
-                ] as const,
-            )
-            .sort(
-              ([, aProducts], [, bProducts]) =>
-                aProducts[0]?.[0].tap?.localeCompare(
-                  bProducts[0]?.[0].tap || "",
-                ) || 0,
-            );
-
-          return [
-            tags,
-            productsByBrandName,
-            Array.from(
-              { length: sparklineDays },
-              (_, i) =>
-                [
-                  sparklineDays - 1 - i,
-                  sales.reduce((memo, sale) => {
-                    if (
-                      isWithinRange(
-                        sale.timestamp,
-                        addHours(currentDate, -i - 1),
-                        addHours(currentDate, -i),
-                      )
-                    ) {
-                      return (
-                        memo +
-                        sale.products.filter((saleProduct) =>
-                          productsByBrandName
-                            .map(([, products]) => products)
-                            .flat()
-                            .some(
-                              ([product]) => saleProduct._id === product._id,
-                            ),
-                        ).length
-                      );
-                    }
-                    return memo;
-                  }, 0),
-                ] as const,
-            ),
-          ] as const;
-        }),
-    [currentDate, productsGroupedByTags, sales],
-  );
+  useEffect(() => {
+    updateData();
+  }, [updateData]);
+  useInterval(() => updateData(), 10000);
 
   if (error) return error;
 
@@ -272,7 +132,7 @@ export default function PageMenu() {
     );
   }
 
-  if (!productsGroupedByTags.length) {
+  if (!oij?.length) {
     return (
       // eslint-disable-next-line react/no-unknown-property
       <marquee scrollAmount="20">
