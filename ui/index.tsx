@@ -35,6 +35,7 @@ Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
 
 Meteor.subscribe("camps");
 Meteor.subscribe("locations");
+Meteor.subscribe("styles");
 Meteor.subscribe("stocks");
 Meteor.subscribe("products");
 

@@ -7,6 +7,7 @@ import Locations from "../api/locations";
 import Products from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import Stocks from "../api/stocks";
+import Styles from "../api/styles";
 import "./metrics";
 import "./sales";
 
@@ -42,5 +43,6 @@ Meteor.publish("sales", function (this: Subscription, rawOptions) {
       : { "products.shopPrices": 0 },
   });
 });
+Meteor.publish("styles", () => Styles.find());
 Meteor.publish("stocks", () => Stocks.find());
 Meteor.publish("locations", () => Locations.find());
