@@ -1,6 +1,6 @@
 import { css } from "@emotion/css";
 import { addHours, isWithinRange, subHours } from "date-fns";
-import { groupBy } from "lodash";
+import { groupBy, sample } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import { darken, lighten, transparentize } from "polished";
 import React, { Fragment, SVGProps, useMemo, useState } from "react";
@@ -9,6 +9,7 @@ import Sales from "../api/sales";
 import Styles, { type IStyle } from "../api/styles";
 import { useKeyDownListener } from "../components/BarcodeScanner";
 import ProductTrend from "../components/ProductTrend";
+import flow from "../flow";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -556,8 +557,10 @@ export default function PageMenu() {
         <pre>Rendered: {new Date().toLocaleString()}</pre>
       </center>
       <p>
-        Why do they call it oven when you of in the cold food of out hot eat the
-        food?
+        {sample([
+          ...flow,
+          "Why do they call it oven when you of in the cold food of out hot eat the food?",
+        ])}
       </p>
     </div>
   );
