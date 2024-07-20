@@ -175,23 +175,26 @@ export default function PageStats() {
                       <small>
                         (
                         {(
-                          (1 -
-                            getStockLevelAtTime(
-                              sales,
-                              stocks.find(
-                                (stock) =>
-                                  stock._id == product.components![0]!.stockId,
-                              )!,
-                              new Date(),
-                            )! /
-                              getMaxStockLevelEver(
+                          Math.min(
+                            1,
+                            1 -
+                              getStockLevelAtTime(
+                                sales,
                                 stocks.find(
                                   (stock) =>
                                     stock._id ==
                                     product.components![0]!.stockId,
                                 )!,
-                              )) *
-                          100
+                                new Date(),
+                              )! /
+                                getMaxStockLevelEver(
+                                  stocks.find(
+                                    (stock) =>
+                                      stock._id ==
+                                      product.components![0]!.stockId,
+                                  )!,
+                                ),
+                          ) * 100
                         ).toLocaleString("en-DK", {
                           maximumFractionDigits: 1,
                         })}
