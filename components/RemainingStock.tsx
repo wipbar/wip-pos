@@ -1,28 +1,90 @@
 import convert from "convert";
-import { subDays } from "date-fns";
+import { differenceInHours, isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import {
   CartesianGrid,
   ComposedChart,
-  Legend,
   Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import Sales from "../api/sales";
+import Sales, { ISale } from "../api/sales";
 import Stocks, { IStock } from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { emptyArray, getCorrectTextColor } from "../util";
+
+export const getMaxStockLevelEver = (stock: IStock) => {
+  const levels = stock.levels?.map((level) => level.count) || [];
+  return Math.max(...levels);
+};
+
+export const getStockLevelAtTime = (
+  sales: ISale[],
+  stock: IStock,
+  timestamp: Date,
+) => {
+  if (isBefore(new Date(), timestamp)) return null;
+  const precedingLevel = stock.levels
+    ?.filter(
+      (level) =>
+        level.timestamp <= timestamp &&
+        isBefore(subDays(new Date(), 14), new Date(level.timestamp)),
+    )
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];
+
+  if (!precedingLevel) {
+    return null;
+  }
+
+  const amountSoldSinceMostRecentLevel = sales.reduce(
+    (memo, sale) =>
+      sale.timestamp > precedingLevel.timestamp && sale.timestamp <= timestamp
+        ? memo +
+          sale.products.reduce(
+            (productMemo, product) =>
+              productMemo +
+              (product.components
+                ?.filter((c) => c.stockId === stock._id)
+                .reduce((compMemo, component) => {
+                  try {
+                    return (
+                      compMemo +
+                      convert(component.unitSize, component.sizeUnit).to(
+                        stock.sizeUnit,
+                      ) /
+                        stock.unitSize
+                    );
+                  } catch (e) {
+                    /*
+                      console.error(e);
+                      console.log({
+                        component,
+                        stock,
+                      });
+                      */
+                  }
+                  return compMemo;
+                }, 0) || 0),
+            0,
+          )
+        : memo,
+    0,
+  );
+
+  const amountAtMostRecentLevel = precedingLevel.count;
+  const remainingStock =
+    amountAtMostRecentLevel - amountSoldSinceMostRecentLevel;
+
+  return remainingStock;
+};
 
 const HOUR_IN_MS = 3600 * 1000;
 const offset = -6;
 const XYAxisDomain = ["dataMin", "dataMax"];
 export default function RemainingStock() {
-  return null;
-  /*
   const currentCamp = useCurrentCamp();
 
   const sales =
@@ -48,141 +110,98 @@ export default function RemainingStock() {
     [currentCamp],
   );
 
-  function getStockLevelAtTime(stock: IStock, timestamp: Date) {
-    const precedingLevel = stock.levels
-      ?.filter((level) => level.timestamp <= timestamp)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];
+  const data = useMemo(() => {
+    if (!currentCamp) return;
 
-    if (!precedingLevel) return null;
+    const campHours = differenceInHours(currentCamp.end, currentCamp.start);
 
-    const amountSoldSinceMostRecentLevel = sales.reduce(
-      (memo, sale) =>
-        sale.timestamp > timestamp
-          ? memo +
-            sale.products.reduce(
-              (productMemo, product) =>
-                productMemo +
-                (product.components
-                  ?.filter((c) => c.stockId === stock._id)
-                  .reduce((compMemo, component) => {
-                    try {
-                      return (
-                        compMemo +
-                        convert(component.unitSize, component.sizeUnit).to(
-                          stock.sizeUnit,
-                        )
-                      );
-                    } catch (e) {
-                      console.error(e);
-                      console.log({
-                        component,
-                        stock,
-                      });
-                    }
-                    return compMemo;
-                  }, 0) || 0),
-              0,
-            )
-          : memo,
-      0,
-    );
+    const data: { [key: IStock["_id"]]: number; hour: number }[] = [];
+    for (let i = 0; i < campHours; i++) {
+      const hourData: (typeof data)[number] = { hour: i };
 
-    const amountAtMostRecentLevel = precedingLevel.count * stock.unitSize;
-    const remainingStock =
-      amountAtMostRecentLevel - amountSoldSinceMostRecentLevel;
+      const hourEnd =
+        Number(currentCamp.start) + (i + offset) * HOUR_IN_MS + HOUR_IN_MS;
 
-    return remainingStock;
-  }
+      for (const stock of stocks) {
+        const maxLevel = getMaxStockLevelEver(stock);
+        const level = getStockLevelAtTime(sales, stock, new Date(hourEnd));
 
-  const data = useMemo(async () => {
-    const now = new Date();
-
-    const [camps, sales] = await Promise.all([
-      Camps.find(
-        {},
-        { sort: { start: 1 }, fields: { slug: 1, start: 1, end: 1 } },
-      ).fetchAsync() as Promise<Pick<ICamp, "slug" | "start" | "end">[]>,
-      Sales.find(
-        {},
-        { fields: { timestamp: 1, amount: 1 } },
-      ).fetchAsync() as Promise<Pick<ISale, "_id" | "amount" | "timestamp">[]>,
-    ]);
-
-    const now2 = new Date();
-
-    const longestCamp = camps.reduce<Pick<
-      ICamp,
-      "slug" | "start" | "end"
-    > | null>((memo, camp) => {
-      if (!memo) return camp;
-
-      if (
-        Number(camp.end) - Number(camp.start) >
-        Number(memo.end) - Number(memo.start)
-      ) {
-        memo = camp;
-      }
-      return memo;
-    }, null);
-
-    const longestCampHours = longestCamp
-      ? differenceInHours(longestCamp.end, longestCamp.start)
-      : 0;
-
-    const data: { [key: string]: number; hour: number }[] = [];
-    const campTotals: Record<string, number> = {};
-    for (let i = 0; i < longestCampHours; i++) {
-      // avoid blocking the event loop for too long at a time
-      await new Promise((y) => setImmediate(y));
-
-      const datapoint: (typeof data)[number] = { hour: i };
-
-      for (const { slug, start } of camps) {
-        const hourStart = Number(start) + (i + offset) * HOUR_IN_MS;
-        const hourEnd = hourStart + HOUR_IN_MS;
-
-        let count = 0;
-        for (const { timestamp, amount } of sales) {
-          const ts = Number(timestamp);
-
-          if (ts >= hourStart && ts < hourEnd) count += amount;
-        }
-
-        if (count) {
-          campTotals[slug] = datapoint[slug] = (campTotals[slug] || 0) + count;
+        if (typeof level === "number") {
+          hourData[stock._id] = Math.max(level / maxLevel, 0);
         }
       }
 
-      data.push(datapoint);
+      data.push(hourData);
     }
-  }, []);
+
+    return data;
+  }, [currentCamp, sales, stocks]);
 
   console.log({ data });
 
   return (
     <>
-      stocks:{" "}
-      <div>
-        <ResponsiveContainer width="100%" height={350}>
-          <ComposedChart
-            data={data}
-            margin={{ top: 24, right: 8, left: 16, bottom: 0 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="timestamp" interval={23} />
-            <YAxis
-              domain={XYAxisDomain}
-              tickFormatter={(amount: number) => String(~~amount)}
-            />
-            <Tooltip
-              contentStyle={{
-                background: currentCamp?.color,
-                color:
-                  currentCamp?.color && getCorrectTextColor(currentCamp?.color),
-              }}
-            />
-            <Legend />
-            {stocks.map((stock) => (
+      <ResponsiveContainer width="100%" height={350}>
+        <ComposedChart
+          data={data}
+          margin={{ top: 24, right: 8, left: 16, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="hour"
+            interval={23}
+            tickFormatter={(hour) => "D" + String(Math.ceil((hour + 6) / 24))}
+          />
+          <YAxis
+            domain={XYAxisDomain}
+            tickFormatter={(amount: number) =>
+              (amount * 100).toLocaleString("en-DK", {
+                maximumFractionDigits: 0,
+              }) + "%"
+            }
+          />
+          <Tooltip
+            contentStyle={{
+              background: currentCamp?.color,
+              color:
+                currentCamp?.color && getCorrectTextColor(currentCamp?.color),
+            }}
+            formatter={(amount: number) =>
+              (amount * 100).toLocaleString("en-DK", {
+                maximumFractionDigits: 0,
+              }) + "%"
+            }
+          />
+          {/* <Legend /> */}
+          {stocks
+            .filter((stock) => {
+              const level = getStockLevelAtTime(
+                sales,
+                stock,
+                new Date(
+                  Number(currentCamp?.start) +
+                    (6 + offset) * HOUR_IN_MS +
+                    HOUR_IN_MS,
+                ),
+              );
+
+              return (
+                level &&
+                (stock.sizeUnit === "l" ||
+                stock.sizeUnit === "cl" ||
+                stock.sizeUnit === "ml"
+                  ? convert(level * stock.unitSize, stock.sizeUnit).to("l")
+                  : stock.sizeUnit === "kg" || stock.sizeUnit === "g"
+                  ? convert(level * stock.unitSize, stock.sizeUnit).to("kg")
+                  : level * stock.unitSize) > 0
+              );
+            })
+            .sort(
+              (a, b) =>
+                getStockLevelAtTime(sales, b, new Date())! -
+                getStockLevelAtTime(sales, a, new Date())!,
+            )
+            .map((stock) => (
               <Line
                 type="monotone"
                 key={stock._id}
@@ -192,35 +211,38 @@ export default function RemainingStock() {
                 connectNulls
               />
             ))}
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-      {stocks
-        .map((stock) => {
-          const remainingStock = getStockLevelAtTime(stock, new Date());
+        </ComposedChart>
+      </ResponsiveContainer>
+      {null &&
+        stocks
+          .map((stock) => {
+            const remainingStock = getStockLevelAtTime(
+              sales,
+              stock,
+              new Date(),
+            );
 
-          if (remainingStock === null) return null;
+            if (remainingStock === null) return null;
 
-          return [stock, remainingStock] as const;
-        })
-        .filter((s): s is [IStock, number] => Boolean(s))
-        .map(([stock, remainingStock]) => (
-          <div key={stock._id}>
-            {stock.name}:{" "}
-            {stock.sizeUnit === "l" ||
-            stock.sizeUnit === "cl" ||
-            stock.sizeUnit === "ml"
-              ? `${convert(remainingStock, stock.sizeUnit)
-                  .to("l")
-                  .toLocaleString("en-DK", { maximumFractionDigits: 1 })}l`
-              : stock.sizeUnit === "kg" || stock.sizeUnit === "g"
-              ? `${convert(remainingStock, stock.sizeUnit)
-                  .to("kg")
-                  .toLocaleString("en-DK", { maximumFractionDigits: 1 })}l`
-              : `${remainingStock * stock.unitSize}${stock.sizeUnit}`}
-          </div>
-        ))}
+            return [stock, remainingStock] as const;
+          })
+          .filter((s): s is [IStock, number] => Boolean(s))
+          .map(([stock, remainingStock]) => (
+            <div key={stock._id}>
+              {stock.name}:{" "}
+              {stock.sizeUnit === "l" ||
+              stock.sizeUnit === "cl" ||
+              stock.sizeUnit === "ml"
+                ? `${convert(remainingStock, stock.sizeUnit)
+                    .to("l")
+                    .toLocaleString("en-DK", { maximumFractionDigits: 1 })}l`
+                : stock.sizeUnit === "kg" || stock.sizeUnit === "g"
+                ? `${convert(remainingStock, stock.sizeUnit)
+                    .to("kg")
+                    .toLocaleString("en-DK", { maximumFractionDigits: 1 })}l`
+                : `${remainingStock * stock.unitSize}${stock.sizeUnit}`}
+            </div>
+          ))}
     </>
   );
-  */
 }

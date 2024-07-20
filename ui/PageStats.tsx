@@ -7,12 +7,16 @@ import Sales from "../api/sales";
 import Styles, { type IStyle } from "../api/styles";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
-import RemainingStock from "../components/RemainingStock";
+import RemainingStock, {
+  getMaxStockLevelEver,
+  getStockLevelAtTime,
+} from "../components/RemainingStock";
 import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
 import { emptyArray, emptyObject } from "../util";
+import Stocks from "../api/stocks";
 
 export default function PageStats() {
   const campsLoading = useSubscription("camps");
@@ -29,7 +33,6 @@ export default function PageStats() {
     [campsLoading, currentCamp],
   );
 
-  const allSales = useFind(() => Sales.find());
   const campSales =
     useFind(
       () =>
@@ -44,13 +47,15 @@ export default function PageStats() {
       [currentCamp],
     ) || emptyArray;
 
+  const stocks = useFind(() => Stocks.find());
+
   const GALAXY_APP_VERSION_ID = useTracker(
     () => Session.get("GALAXY_APP_VERSION_ID") as string | undefined,
   );
 
   const sales = useMemo(
-    () => (currentCamp ? campSales : allSales),
-    [currentCamp, campSales, allSales],
+    () => (currentCamp ? campSales : []),
+    [currentCamp, campSales],
   );
 
   const products = useFind(() =>
@@ -119,6 +124,10 @@ export default function PageStats() {
           <CampByCamp />
           {campSales?.length ? <DayByDay /> : null}
         </div>
+        {!GALAXY_APP_VERSION_ID ||
+        Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
+          <RemainingStock />
+        )}
       </div>
       <div
         className={css`
@@ -162,9 +171,33 @@ export default function PageStats() {
                   <div>
                     {product.brandName ? <>{product.brandName} - </> : null}
                     {product.name}{" "}
-                    <small>
-                      ({product.unitSize} {product.sizeUnit})
-                    </small>
+                    {product?.components?.[0] ? (
+                      <small>
+                        (
+                        {(
+                          (1 -
+                            getStockLevelAtTime(
+                              sales,
+                              stocks.find(
+                                (stock) =>
+                                  stock._id == product.components![0]!.stockId,
+                              )!,
+                              new Date(),
+                            )! /
+                              getMaxStockLevelEver(
+                                stocks.find(
+                                  (stock) =>
+                                    stock._id ==
+                                    product.components![0]!.stockId,
+                                )!,
+                              )) *
+                          100
+                        ).toLocaleString("en-DK", {
+                          maximumFractionDigits: 1,
+                        })}
+                        % sold)
+                      </small>
+                    ) : null}
                   </div>
                 </li>
               );
@@ -173,10 +206,6 @@ export default function PageStats() {
             <i>Nothing has been sold yet :(</i>
           )}
         </ul>
-        {!GALAXY_APP_VERSION_ID ||
-        Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
-          <RemainingStock />
-        )}
       </div>
     </div>
   );
