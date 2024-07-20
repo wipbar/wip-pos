@@ -224,14 +224,15 @@ if (Meteor.isServer) {
     ]);
 
     setInterval(async () => {
-      [statsCampByCamp, statsSalesSankey, locationMenuData] = await Promise.all(
-        [
-          calculateCampByCampStats(),
-          calculateSalesSankeyData(),
-          calculateMenuData(),
-        ],
-      );
+      [statsCampByCamp, statsSalesSankey] = await Promise.all([
+        calculateCampByCampStats(),
+        calculateSalesSankeyData(),
+      ]);
     }, 240_000);
+
+    setInterval(async () => {
+      [locationMenuData] = await Promise.all([calculateMenuData()]);
+    }, 20_000);
   });
 }
 
