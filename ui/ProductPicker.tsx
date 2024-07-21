@@ -12,7 +12,8 @@ import React, {
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
-import Sales from "../api/sales";
+import Sales, { ISale } from "../api/sales";
+import Stocks, { IStock } from "../api/stocks";
 import {
   getRemainingServings,
   getRemainingServingsEver,
@@ -28,34 +29,55 @@ import {
   stringToColours,
   tagsToString,
 } from "../util";
-import Stocks from "../api/stocks";
 
 const fac = new FastAverageColor();
 
 const collator = new Intl.Collator("en");
 
+function ProductPickerProductStock({
+  product,
+  sales,
+  stocks,
+}: {
+  product: IProduct;
+  sales: ISale[];
+  stocks: IStock[];
+}) {
+  return product?.components?.[0] && sales.length && stocks.length ? (
+    <small
+      className={css`
+        white-space: nowrap;
+      `}
+    >
+      (~
+      {(
+        Math.min(
+          1,
+          1 -
+            getRemainingServings(sales, stocks, product, new Date())! /
+              getRemainingServingsEver(stocks, product),
+        ) * 100
+      ).toLocaleString("en-DK", {
+        maximumFractionDigits: 1,
+      })}
+      % sold)
+    </small>
+  ) : null;
+}
+
 function ProductPickerProduct({
   product,
   onPickedProduct,
   showItemDetails,
+  stocks,
+  sales,
 }: {
   product: IProduct;
   onPickedProduct: (product: IProduct) => void;
   showItemDetails: boolean;
+  stocks: IStock[];
+  sales: ISale[];
 }) {
-  const currentCamp = useCurrentCamp();
-  const stocks = useFind(() => Stocks.find());
-  const sales =
-    useFind(
-      () =>
-        currentCamp
-          ? Sales.find({
-              timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-            })
-          : undefined,
-      [currentCamp],
-    ) || emptyArray;
-
   const handleClick = useCallback(
     () => onPickedProduct(product),
     [product, onPickedProduct],
@@ -146,27 +168,11 @@ function ProductPickerProduct({
                       {tag.trim()}
                     </span>
                   ))}
-                  {product?.components?.[0] && sales.length && stocks.length ? (
-                    <small className={css`white-space: nowrap;`}>
-                      (~
-                      {(
-                        Math.min(
-                          1,
-                          1 -
-                            getRemainingServings(
-                              sales,
-                              stocks,
-                              product,
-                              new Date(),
-                            )! /
-                              getRemainingServingsEver(stocks, product),
-                        ) * 100
-                      ).toLocaleString("en-DK", {
-                        maximumFractionDigits: 1,
-                      })}
-                      % sold)
-                    </small>
-                  ) : null}
+                  <ProductPickerProductStock
+                    product={product}
+                    stocks={stocks}
+                    sales={sales}
+                  />
                 </small>
               </small>
             </>
@@ -234,6 +240,18 @@ export default function ProductPicker({
   const products = useFind(() =>
     Products.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
   );
+
+  const stocks = useFind(() => Stocks.find());
+  const sales =
+    useFind(
+      () =>
+        currentCamp
+          ? Sales.find({
+              timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+            })
+          : undefined,
+      [currentCamp],
+    ) || emptyArray;
   const toggleTag = useCallback(
     (tag: string) =>
       setActiveFilters(
@@ -435,6 +453,8 @@ export default function ProductPicker({
             product={product}
             onPickedProduct={handlePickedProduct}
             showItemDetails={showItemDetails}
+            stocks={stocks}
+            sales={sales}
           />
         ))}
       </div>
