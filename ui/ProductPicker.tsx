@@ -12,6 +12,11 @@ import React, {
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
+import Sales from "../api/sales";
+import {
+  getRemainingServings,
+  getRemainingServingsEver,
+} from "../components/RemainingStock";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useSession from "../hooks/useSession";
@@ -23,6 +28,7 @@ import {
   stringToColours,
   tagsToString,
 } from "../util";
+import Stocks from "../api/stocks";
 
 const fac = new FastAverageColor();
 
@@ -37,6 +43,19 @@ function ProductPickerProduct({
   onPickedProduct: (product: IProduct) => void;
   showItemDetails: boolean;
 }) {
+  const currentCamp = useCurrentCamp();
+  const stocks = useFind(() => Stocks.find());
+  const sales =
+    useFind(
+      () =>
+        currentCamp
+          ? Sales.find({
+              timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
+            })
+          : undefined,
+      [currentCamp],
+    ) || emptyArray;
+
   const handleClick = useCallback(
     () => onPickedProduct(product),
     [product, onPickedProduct],
@@ -127,6 +146,27 @@ function ProductPickerProduct({
                       {tag.trim()}
                     </span>
                   ))}
+                  {product?.components?.[0] && sales.length && stocks.length ? (
+                    <small className={css`white-space: nowrap;`}>
+                      (~
+                      {(
+                        Math.min(
+                          1,
+                          1 -
+                            getRemainingServings(
+                              sales,
+                              stocks,
+                              product,
+                              new Date(),
+                            )! /
+                              getRemainingServingsEver(stocks, product),
+                        ) * 100
+                      ).toLocaleString("en-DK", {
+                        maximumFractionDigits: 1,
+                      })}
+                      % sold)
+                    </small>
+                  ) : null}
                 </small>
               </small>
             </>

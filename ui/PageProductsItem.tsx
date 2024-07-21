@@ -393,6 +393,9 @@ export default function PageProductsItem({
                   })}
                   step="any"
                   type="number"
+                  className={css`
+                    flex: 1;
+                  `}
                 />
                 <Controller
                   name={`components.${index}.sizeUnit`}
