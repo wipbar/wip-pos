@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { IProduct } from "../api/products";
+import Products, { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import Stocks, { IStock } from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -154,6 +154,7 @@ export default function RemainingStock() {
         }),
       [currentCamp],
     ) || emptyArray;
+  const products = useFind(() => Products.find()) || emptyArray;
   const stocks = useFind(
     () =>
       Stocks.find({
@@ -174,19 +175,24 @@ export default function RemainingStock() {
 
     const campHours = differenceInHours(currentCamp.end, currentCamp.start);
 
-    const data: { [key: IStock["_id"]]: number; hour: number }[] = [];
+    const data: { [key: IProduct["_id"]]: number; hour: number }[] = [];
     for (let i = 0; i < campHours; i++) {
       const hourData: (typeof data)[number] = { hour: i };
 
       const hourEnd =
         Number(currentCamp.start) + (i + offset) * HOUR_IN_MS + HOUR_IN_MS;
 
-      for (const stock of stocks) {
-        const maxLevel = getMaxStockLevelEver(stock);
-        const level = getStockLevelAtTime(sales, stock, new Date(hourEnd));
+      for (const product of products) {
+        const maxLevel = getRemainingServingsEver(stocks, product);
+        const level = getRemainingServings(
+          sales,
+          stocks,
+          product,
+          new Date(hourEnd),
+        );
 
         if (typeof level === "number") {
-          hourData[stock._id] = Math.max(level / maxLevel, 0);
+          hourData[product._id] = Math.max(level / maxLevel, 0);
         }
       }
 
@@ -194,7 +200,7 @@ export default function RemainingStock() {
     }
 
     return data;
-  }, [currentCamp, sales, stocks]);
+  }, [currentCamp, sales, products, stocks]);
 
   console.log({ data });
 
@@ -232,11 +238,12 @@ export default function RemainingStock() {
             }
           />
           {/* <Legend /> */}
-          {stocks
-            .filter((stock) => {
-              const level = getStockLevelAtTime(
+          {products
+            .filter((product) => {
+              const level = getRemainingServings(
                 sales,
-                stock,
+                stocks,
+                product,
                 new Date(
                   Number(currentCamp?.start) +
                     (6 + offset) * HOUR_IN_MS +
@@ -244,28 +251,19 @@ export default function RemainingStock() {
                 ),
               );
 
-              return (
-                level &&
-                (stock.sizeUnit === "l" ||
-                stock.sizeUnit === "cl" ||
-                stock.sizeUnit === "ml"
-                  ? convert(level * stock.unitSize, stock.sizeUnit).to("l")
-                  : stock.sizeUnit === "kg" || stock.sizeUnit === "g"
-                  ? convert(level * stock.unitSize, stock.sizeUnit).to("kg")
-                  : level * stock.unitSize) > 0
-              );
+              return level;
             })
             .sort(
               (a, b) =>
-                getStockLevelAtTime(sales, b, new Date())! -
-                getStockLevelAtTime(sales, a, new Date())!,
+                getRemainingServings(sales, stocks, b, new Date())! -
+                getRemainingServings(sales, stocks, a, new Date())!,
             )
-            .map((stock) => (
+            .map((product) => (
               <Line
                 type="monotone"
-                key={stock._id}
-                dataKey={stock._id}
-                name={stock.name}
+                key={product._id}
+                dataKey={product._id}
+                name={product.name}
                 dot={false}
                 connectNulls
               />

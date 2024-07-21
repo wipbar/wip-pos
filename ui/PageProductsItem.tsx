@@ -103,6 +103,7 @@ export default function PageProductsItem({
     register,
     control,
     reset,
+    watch,
     formState: { errors, isDirty, isSubmitting },
     setValue,
   } = useForm<
@@ -117,7 +118,7 @@ export default function PageProductsItem({
     [setValue],
   );
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, update, remove } = useFieldArray({
     control,
     name: "components",
   });
@@ -328,10 +329,56 @@ export default function PageProductsItem({
               <legend
                 className={css`
                   flex: 1;
+                  width: 100%;
                 `}
               >
-                {stock.name}({stock.unitSize}
-                {stock.sizeUnit})
+                <ReactSelect
+                  value={{
+                    label: `${stock.name} (${stock.unitSize}${
+                      stock.sizeUnit
+                    }, ${packageTypes.find(
+                      ({ code }) => stock.packageType === code,
+                    )?.name})`,
+                    value: stock._id,
+                    barCode: stock.barCode,
+                  }}
+                  filterOption={createFilter({
+                    stringify: (option) =>
+                      `${option.label} ${option.value} ${
+                        option.data?.barCode || ""
+                      }`,
+                  })}
+                  options={stocks
+                    .filter(
+                      ({ _id }) =>
+                        !fields.length ||
+                        fields.some(({ stockId }) => stockId !== _id),
+                    )
+                    .map((stock) => ({
+                      label: `${stock.name} (${stock.unitSize}${
+                        stock.sizeUnit
+                      }, ${packageTypes.find(
+                        ({ code }) => stock.packageType === code,
+                      )?.name})`,
+                      value: stock._id,
+                      barCode: stock.barCode,
+                    }))}
+                  onChange={(newValue) => {
+                    const stock = stocks.find(
+                      ({ _id }) => _id === newValue?.value,
+                    );
+                    if (stock) {
+                      update(index, {
+                        stockId: stock._id,
+                        unitSize: field.unitSize,
+                        sizeUnit: field.sizeUnit,
+                      });
+                    }
+                  }}
+                  className={css`
+                    width: 100%;
+                  `}
+                />
               </legend>
               <div
                 className={css`
@@ -380,7 +427,10 @@ export default function PageProductsItem({
                   (~
                   {(
                     (stock.approxCount * stock.unitSize) /
-                    convert(field.unitSize, field.sizeUnit).to(stock.sizeUnit)
+                    convert(
+                      watch(`components.${index}.unitSize`),
+                      field.sizeUnit,
+                    ).to(stock.sizeUnit)
                   ).toLocaleString("en-DK", { maximumFractionDigits: 2 })}{" "}
                   servings left)
                 </>
@@ -415,8 +465,8 @@ export default function PageProductsItem({
             if (stock) {
               append({
                 stockId: stock._id,
-                unitSize: stock.unitSize,
-                sizeUnit: stock.sizeUnit,
+                unitSize: Number(watch("unitSize")) || stock.unitSize,
+                sizeUnit: watch("sizeUnit") || stock.sizeUnit,
               });
             }
           }}
