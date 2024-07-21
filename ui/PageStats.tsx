@@ -4,19 +4,19 @@ import { Session } from "meteor/session";
 import React, { useEffect, useMemo } from "react";
 import Products, { ProductID } from "../api/products";
 import Sales from "../api/sales";
+import Stocks from "../api/stocks";
 import Styles, { type IStyle } from "../api/styles";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
 import RemainingStock, {
-  getMaxStockLevelEver,
-  getStockLevelAtTime,
+  getRemainingServings,
+  getRemainingServingsEver,
 } from "../components/RemainingStock";
 import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
 import { emptyArray, emptyObject } from "../util";
-import Stocks from "../api/stocks";
 
 export default function PageStats() {
   const campsLoading = useSubscription("camps");
@@ -178,22 +178,13 @@ export default function PageStats() {
                           Math.min(
                             1,
                             1 -
-                              getStockLevelAtTime(
+                              getRemainingServings(
                                 sales,
-                                stocks.find(
-                                  (stock) =>
-                                    stock._id ==
-                                    product.components![0]!.stockId,
-                                )!,
+                                stocks,
+                                product,
                                 new Date(),
                               )! /
-                                getMaxStockLevelEver(
-                                  stocks.find(
-                                    (stock) =>
-                                      stock._id ==
-                                      product.components![0]!.stockId,
-                                  )!,
-                                ),
+                                getRemainingServingsEver(stocks, product),
                           ) * 100
                         ).toLocaleString("en-DK", {
                           maximumFractionDigits: 1,

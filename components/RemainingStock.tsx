@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { IProduct } from "../api/products";
 import Sales, { ISale } from "../api/sales";
 import Stocks, { IStock } from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -26,7 +27,7 @@ export const getStockLevelAtTime = (
   stock: IStock,
   timestamp: Date,
 ) => {
-  if (isBefore(new Date(), timestamp)) return null;
+  if (isBefore(new Date(), timestamp)) return NaN;
   const precedingLevel = stock.levels
     ?.filter(
       (level) =>
@@ -36,7 +37,7 @@ export const getStockLevelAtTime = (
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];
 
   if (!precedingLevel) {
-    return null;
+    return NaN;
   }
 
   const amountSoldSinceMostRecentLevel = sales.reduce(
@@ -80,6 +81,64 @@ export const getStockLevelAtTime = (
 
   return remainingStock;
 };
+
+export function getRemainingServings(
+  sales: ISale[],
+  stocks: IStock[],
+  product: IProduct,
+  timestamp: Date,
+) {
+  let minServings;
+  for (const component of product.components || []) {
+    const stock = stocks.find((stock) => stock._id === component.stockId);
+    if (!stock) continue;
+    try {
+      const componentServings =
+        convert(
+          getStockLevelAtTime(sales, stock, timestamp)!,
+          stock.sizeUnit,
+        ).to(component.sizeUnit) / component.unitSize;
+
+      if (minServings === undefined || componentServings < minServings) {
+        minServings = componentServings;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  if (minServings === undefined) {
+    return NaN;
+  }
+
+  return minServings;
+}
+export function getRemainingServingsEver(stocks: IStock[], product: IProduct) {
+  let minServings;
+  for (const component of product.components || []) {
+    const stock = stocks.find((stock) => stock._id === component.stockId);
+    if (!stock) continue;
+
+    try {
+      const componentServings =
+        convert(getMaxStockLevelEver(stock), stock.sizeUnit).to(
+          component.sizeUnit,
+        ) / component.unitSize;
+
+      if (minServings === undefined || componentServings < minServings) {
+        minServings = componentServings;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  if (minServings === undefined) {
+    return NaN;
+  }
+
+  return Math.max(0, minServings);
+}
 
 const HOUR_IN_MS = 3600 * 1000;
 const offset = -6;
@@ -222,7 +281,7 @@ export default function RemainingStock() {
               new Date(),
             );
 
-            if (remainingStock === null) return null;
+            if (Number.isNaN(remainingStock)) return null;
 
             return [stock, remainingStock] as const;
           })

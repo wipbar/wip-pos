@@ -437,11 +437,30 @@ export default function PageMenu() {
       >
         <pre>Rendered: {new Date().toLocaleString()}</pre>
       </center>
-      <p>
-        {sample([
+      <p
+        className={css`
+          font-weight: 600;
+          text-align: center;
+          font-size: 1.25em;
+          color: ${currentCamp &&
+          getCorrectTextColor(
+            getCorrectTextColor(currentCamp?.color) === "white"
+              ? lighten(4 / 5, currentCamp?.color)
+              : darken(4 / 5, currentCamp?.color),
+          )};
+        `}
+      >
+        {`"${sample([
           ...flow,
           "Why do they call it oven when you of in the cold food of out hot eat the food?",
-        ])}
+        ])}"`}
+        <p
+          className={css`
+            font-size: 0.5em;
+          `}
+        >
+          - Drac
+        </p>
       </p>
     </div>
   );

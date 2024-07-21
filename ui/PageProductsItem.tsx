@@ -330,7 +330,8 @@ export default function PageProductsItem({
                   flex: 1;
                 `}
               >
-                {stock.name}
+                {stock.name}({stock.unitSize}
+                {stock.sizeUnit})
               </legend>
               <div
                 className={css`
@@ -364,9 +365,7 @@ export default function PageProductsItem({
                           setValue(
                             `components.${index}.sizeUnit`,
                             newSizeUnit,
-                            {
-                              shouldDirty: true,
-                            },
+                            { shouldDirty: true },
                           );
                       }}
                     />
@@ -378,7 +377,8 @@ export default function PageProductsItem({
               </div>
               {stock.approxCount ? (
                 <>
-                  (~{(
+                  (~
+                  {(
                     (stock.approxCount * stock.unitSize) /
                     convert(field.unitSize, field.sizeUnit).to(stock.sizeUnit)
                   ).toLocaleString("en-DK", { maximumFractionDigits: 2 })}{" "}
