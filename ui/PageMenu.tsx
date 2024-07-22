@@ -10,12 +10,21 @@ import React, {
   useMemo,
 } from "react";
 import Styles, { type IStyle } from "../api/styles";
-import flow from "../flow";
+import { blackulaFlow, draculaFlow, tranculaFlow } from "../flow";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import { emptyObject, getCorrectTextColor } from "../util";
+
+const flows = [
+  ...draculaFlow,
+  ...blackulaFlow,
+  ...blackulaFlow,
+  ...tranculaFlow,
+  ...tranculaFlow,
+  ...tranculaFlow,
+];
 
 function SparkLine({
   data,
@@ -450,10 +459,7 @@ export default function PageMenu() {
           )};
         `}
       >
-        {`"${sample([
-          ...flow,
-          "Why do they call it oven when you of in the cold food of out hot eat the food?",
-        ])}"`}
+        {`"${sample(flows)}"`}
         <p
           className={css`
             font-size: 0.5em;

@@ -12,14 +12,10 @@ import React, {
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
-import Sales, { ISale } from "../api/sales";
-import Stocks, { IStock } from "../api/stocks";
-import {
-  getRemainingServings,
-  getRemainingServingsEver,
-} from "../components/RemainingStock";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import {
   emptyArray,
@@ -34,32 +30,25 @@ const fac = new FastAverageColor();
 
 const collator = new Intl.Collator("en");
 
-function ProductPickerProductStock({
-  product,
-  sales,
-  stocks,
-}: {
-  product: IProduct;
-  sales: ISale[];
-  stocks: IStock[];
-}) {
-  return product?.components?.[0] && sales.length && stocks.length ? (
+function ProductPickerProductStock({ product }: { product: IProduct }) {
+  const [call, result] = useMethod("Products.getRemainingPercent");
+  console.log({ result });
+  useEffect(() => {
+    call({ productId: product._id });
+  }, [call, product._id]);
+  useInterval(() => call({ productId: product._id }), 30000);
+
+  return typeof result.data === "number" ? (
     <small
       className={css`
         white-space: nowrap;
       `}
     >
       (~
-      {(
-        Math.min(
-          1,
-          1 -
-            getRemainingServings(sales, stocks, product, new Date())! /
-              getRemainingServingsEver(stocks, product),
-        ) * 100
-      ).toLocaleString("en-DK", {
-        maximumFractionDigits: 1,
-      })}
+      {((1 - Math.max(0, Math.min(1, result.data))) * 100).toLocaleString(
+        "en-DK",
+        { maximumFractionDigits: 1 },
+      )}
       % sold)
     </small>
   ) : null;
@@ -69,14 +58,10 @@ function ProductPickerProduct({
   product,
   onPickedProduct,
   showItemDetails,
-  stocks,
-  sales,
 }: {
   product: IProduct;
   onPickedProduct: (product: IProduct) => void;
   showItemDetails: boolean;
-  stocks: IStock[];
-  sales: ISale[];
 }) {
   const handleClick = useCallback(
     () => onPickedProduct(product),
@@ -167,12 +152,8 @@ function ProductPickerProduct({
                     >
                       {tag.trim()}
                     </span>
-                  ))}
-                  <ProductPickerProductStock
-                    product={product}
-                    stocks={stocks}
-                    sales={sales}
-                  />
+                  ))}{" "}
+                  <ProductPickerProductStock product={product} />
                 </small>
               </small>
             </>
@@ -241,17 +222,6 @@ export default function ProductPicker({
     Products.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
   );
 
-  const stocks = useFind(() => Stocks.find());
-  const sales =
-    useFind(
-      () =>
-        currentCamp
-          ? Sales.find({
-              timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-            })
-          : undefined,
-      [currentCamp],
-    ) || emptyArray;
   const toggleTag = useCallback(
     (tag: string) =>
       setActiveFilters(
@@ -453,8 +423,6 @@ export default function ProductPicker({
             product={product}
             onPickedProduct={handlePickedProduct}
             showItemDetails={showItemDetails}
-            stocks={stocks}
-            sales={sales}
           />
         ))}
       </div>
