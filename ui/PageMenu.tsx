@@ -32,9 +32,7 @@ function SparkLine({
   stroke = "transparent",
   fill,
   ...props
-}: {
-  data: (readonly [number, number])[];
-} & SVGProps<SVGSVGElement>) {
+}: { data: (readonly [number, number])[] } & SVGProps<SVGSVGElement>) {
   const viewBoxWidth = 1000;
   const viewBoxHeight = 10;
 

@@ -504,7 +504,6 @@ export default function PageProducts() {
                       return false;
                     }
 
-                    console.log(stock);
                     return (stock?.approxCount ?? 0) > 0;
                   });
                 }

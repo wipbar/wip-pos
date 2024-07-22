@@ -204,6 +204,9 @@ export default function PageTend() {
               setPickedProductIds={onCartSetPickedProductIds}
               onSetActive={onCartSetActive}
               isActive={currentCartId === cart.id}
+              onSelling={() => {
+                setCurrentCartId(null);
+              }}
             />
           ))}
           {currentCartId ? (
