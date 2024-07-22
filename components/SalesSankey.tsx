@@ -133,7 +133,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
   useEffect(() => {
     updateData();
   }, [updateData]);
-  useInterval(() => updateData(), 10000);
+  useInterval(() => updateData(), 30000);
 
   return (
     <ResponsiveContainer width="100%" height={350}>

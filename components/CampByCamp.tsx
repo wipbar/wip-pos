@@ -77,7 +77,7 @@ export default function CampByCamp() {
   useEffect(() => {
     updateCampByCampData();
   }, [updateCampByCampData]);
-  useInterval(() => updateCampByCampData(), 10000);
+  useInterval(() => updateCampByCampData(), 30000);
 
   let prev = 0;
   const weights = data.map(

@@ -1,14 +1,5 @@
-import {
-  addHours,
-  differenceInHours,
-  endOfHour,
-  isFuture,
-  isWithinRange,
-  min,
-} from "date-fns";
-import { sumBy } from "lodash";
-import { useFind } from "meteor/react-meteor-data";
-import React, { useMemo } from "react";
+import { differenceInHours, min } from "date-fns";
+import React, { useCallback, useEffect, useMemo } from "react";
 import {
   CartesianGrid,
   ComposedChart,
@@ -20,8 +11,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import { useInterval } from "../hooks/useCurrentDate";
+import useMethod from "../hooks/useMethod";
 import { emptyArray, getCorrectTextColor } from "../util";
 
 const XYAxisDomain = ["dataMin", "dataMax"];
@@ -31,19 +23,23 @@ const XAxisTickFormatter = (hour: number) =>
 const tooltipLabelFormatter = (hour: number) =>
   `H${String((hour + 6) % 24).padStart(2, "0")}`;
 
-const offset = -6;
 export default function DayByDay() {
   const currentCamp = useCurrentCamp();
-  const sales =
-    useFind(
-      () =>
-        currentCamp
-          ? Sales.find({
-              timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-            })
-          : undefined,
-      [currentCamp],
-    ) || emptyArray;
+
+  const [getDayByDayData, result] = useMethod("Sales.stats.DayByDay");
+  const data = result?.data || emptyArray;
+
+  const updateDayByDayData = useCallback(async () => {
+    if (currentCamp) {
+      await getDayByDayData({ campSlug: currentCamp.slug });
+    }
+  }, [currentCamp, getDayByDayData]);
+
+  useEffect(() => {
+    updateDayByDayData();
+  }, [updateDayByDayData]);
+  useInterval(() => updateDayByDayData(), 30000);
+
   const numberOfDaysInCurrentCamp = currentCamp
     ? Math.ceil(
         differenceInHours(min(new Date(), currentCamp.end), currentCamp.start) /
@@ -51,40 +47,6 @@ export default function DayByDay() {
       )
     : 0;
 
-  const data = useMemo(
-    () =>
-      currentCamp
-        ? Array.from({ length: 24 }, (_, i) =>
-            Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
-              x: number;
-              [key: string]: number | null;
-            }>(
-              (memo, _, j) => {
-                const hour: number = j * 24 + i;
-
-                if (isFuture(addHours(currentCamp.start, hour + offset)))
-                  return memo;
-
-                return {
-                  ...memo,
-                  [j]: sumBy(
-                    sales.filter((sale) =>
-                      isWithinRange(
-                        sale.timestamp,
-                        addHours(currentCamp.start, j * 24 + offset),
-                        endOfHour(addHours(currentCamp.start, hour + offset)),
-                      ),
-                    ),
-                    "amount",
-                  ),
-                };
-              },
-              { x: i },
-            ),
-          )
-        : emptyArray,
-    [currentCamp, numberOfDaysInCurrentCamp, sales],
-  );
   const YAxisLabel = useMemo(
     () => ({
       value: "Revenue (ʜᴀx)",

@@ -1,6 +1,14 @@
 import convert from "convert";
-import { addHours, differenceInHours, isWithinRange, subHours } from "date-fns";
-import { groupBy } from "lodash";
+import {
+  addHours,
+  differenceInHours,
+  endOfHour,
+  isFuture,
+  isWithinRange,
+  min,
+  subHours,
+} from "date-fns";
+import { groupBy, sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
@@ -139,6 +147,16 @@ export const salesMethods = {
     return statsSalesSankey?.data[campSlug];
   },
 
+  async "Sales.stats.DayByDay"(
+    this: Meteor.MethodThisType,
+    { campSlug }: { campSlug: ICamp["slug"] },
+  ) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    return statsDayByDay?.data[campSlug];
+  },
+
   async "Products.menu.Menu"(
     this: Meteor.MethodThisType,
     { locationSlug }: { locationSlug: ILocation["slug"] },
@@ -214,19 +232,24 @@ let statsSalesSankey: Awaited<
 > | null = null;
 let locationMenuData: Awaited<ReturnType<typeof calculateMenuData>> | null =
   null;
+let statsDayByDay: Awaited<ReturnType<typeof calculateDayByDayStats>> | null =
+  null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
-    [statsCampByCamp, statsSalesSankey, locationMenuData] = await Promise.all([
-      calculateCampByCampStats(),
-      calculateSalesSankeyData(),
-      calculateMenuData(),
-    ]);
-
-    setInterval(async () => {
-      [statsCampByCamp, statsSalesSankey] = await Promise.all([
+    [statsCampByCamp, statsSalesSankey, statsDayByDay, locationMenuData] =
+      await Promise.all([
         calculateCampByCampStats(),
         calculateSalesSankeyData(),
+        calculateDayByDayStats(),
+        calculateMenuData(),
+      ]);
+
+    setInterval(async () => {
+      [statsCampByCamp, statsSalesSankey, statsDayByDay] = await Promise.all([
+        calculateCampByCampStats(),
+        calculateSalesSankeyData(),
+        calculateDayByDayStats(),
       ]);
     }, 240_000);
 
@@ -303,6 +326,75 @@ async function calculateCampByCampStats() {
 
   console.log(
     `Sales.stats.CampByCamp: ${(now3.getTime() - now.getTime()) / 1000}s,(${
+      (now2.getTime() - now.getTime()) / 1000
+    }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
+  );
+
+  return { data };
+}
+async function calculateDayByDayStats() {
+  const now = new Date();
+
+  const [camps, sales] = await Promise.all([
+    Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
+    Sales.find().fetchAsync(),
+  ]);
+
+  const now2 = new Date();
+
+  const data: Record<
+    ICamp["slug"],
+    {
+      x: number;
+      [key: string]: number | null;
+    }[]
+  > = {};
+  for (const currentCamp of camps) {
+    const numberOfDaysInCurrentCamp = currentCamp
+      ? Math.ceil(
+          differenceInHours(
+            min(new Date(), currentCamp.end),
+            currentCamp.start,
+          ) / 24,
+        )
+      : 0;
+
+    data[currentCamp.slug] = currentCamp
+      ? Array.from({ length: 24 }, (_, i) =>
+          Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
+            x: number;
+            [key: string]: number | null;
+          }>(
+            (memo, _, j) => {
+              const hour: number = j * 24 + i;
+
+              if (isFuture(addHours(currentCamp.start, hour + offset)))
+                return memo;
+
+              return {
+                ...memo,
+                [j]: sumBy(
+                  sales.filter((sale) =>
+                    isWithinRange(
+                      sale.timestamp,
+                      addHours(currentCamp.start, j * 24 + offset),
+                      endOfHour(addHours(currentCamp.start, hour + offset)),
+                    ),
+                  ),
+                  "amount",
+                ),
+              };
+            },
+            { x: i },
+          ),
+        )
+      : emptyArray;
+  }
+
+  const now3 = new Date();
+
+  console.log(
+    `Sales.stats.DayByDay: ${(now3.getTime() - now.getTime()) / 1000}s,(${
       (now2.getTime() - now.getTime()) / 1000
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );
