@@ -33,7 +33,7 @@ const collator = new Intl.Collator("en");
 
 function ProductPickerProductStock({ product }: { product: IProduct }) {
   const [call, result] = useMethod("Products.getRemainingPercent");
-
+  console.log({ result });
   useEffect(() => {
     call({ productId: product._id });
   }, [call, product._id]);
@@ -271,6 +271,7 @@ export default function ProductPicker({
     },
     [pickedProductIds, setPickedProductIds],
   );
+  console.log(products.length);
 
   const sortedProducts = useMemo(
     () =>

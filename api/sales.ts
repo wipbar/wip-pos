@@ -56,7 +56,6 @@ export const salesMethods = {
       productIds: ProductID[];
     },
   ) {
-    await new Promise((y) => setTimeout(y, 1000));
     if (this.isSimulation) return;
     if (!locationSlug || !productIds) throw new Meteor.Error("misisng");
     const { userId } = this;
@@ -68,9 +67,7 @@ export const salesMethods = {
       throw new Meteor.Error("Wait that's illegal");
 
     const existingSale = Sales.findOne({ cartId });
-    if (existingSale) {
-      throw new Meteor.Error("CART_ALREADY_SOLD", "Cart already sold");
-    }
+    if (existingSale) throw new Meteor.Error("Cart already sold");
 
     const insertResult = Sales.insert({
       userId: userId!,

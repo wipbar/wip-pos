@@ -1,6 +1,5 @@
 import { css } from "@emotion/css";
 import { sumBy } from "lodash";
-import { Meteor } from "meteor/meteor";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -130,9 +129,7 @@ function removeItem<T>(items: T[], i: number): T[] {
 }
 
 const crankSound = new Audio("/cashregistercrank.mp3");
-crankSound.volume = 0.75;
 const dingSound = new Audio("/cashregisterding.mp3");
-dingSound.volume = 0.75;
 const ohnoSound = new Audio("/cashregisterohno.mp3");
 
 export default function CartView({
@@ -140,13 +137,11 @@ export default function CartView({
   setPickedProductIds,
   isActive,
   onSetActive,
-  onSelling,
 }: {
   cart?: Cart;
   setPickedProductIds: (cart: Cart | undefined, value: ProductID[]) => void;
   isActive?: boolean;
   onSetActive?: (cart: Cart | undefined) => void;
-  onSelling?: () => void;
 }) {
   const currentCamp = useCurrentCamp();
 
@@ -164,28 +159,19 @@ export default function CartView({
 
     crankSound.play();
     try {
-      onSelling?.();
       await doSellProducts({
         locationSlug,
         cartId: cart.id,
         productIds: cart.productIds,
       });
+
+      setPickedProductIds(cart, emptyArray);
+      setConfirmOpen(false);
+      dingSound.play();
     } catch (sellError) {
-      if (!(sellError instanceof Meteor.Error)) {
-        throw sellError;
-      }
-      console.dir(sellError);
-      if (sellError.error !== "CART_ALREADY_SOLD") {
-        console.error(sellError);
-        ohnoSound.play();
-        return;
-      }
+      console.error(sellError);
+      ohnoSound.play();
     }
-
-    setPickedProductIds(cart, emptyArray);
-    setConfirmOpen(false);
-    dingSound.play();
-
     navigator.vibrate?.(500);
   }, [cart, doSellProducts, locationSlug, setPickedProductIds]);
 
@@ -328,7 +314,7 @@ export default function CartView({
               padding-bottom: 1em;
             `}
           >
-            {isActive && !sellingLoading ? (
+            {isActive ? (
               <BarcodeScannerComponent onResult={handleBarCode} />
             ) : null}
             <big>
@@ -342,39 +328,7 @@ export default function CartView({
               </big>
             </big>
 
-            {sellingLoading ? (
-              <div
-                className={css`
-                  display: grid;
-                  gap: 0.5vw;
-                  grid-auto-flow: column;
-                  padding: 0 0.5vw;
-                  margin-top: 1em;
-                  width: 100%;
-                  > label {
-                    cursor: pointer;
-                    background-color: ${currentCamp?.color || "black"};
-                    color: ${currentCamp
-                      ? getCorrectTextColor(currentCamp.color)
-                      : "white"};
-
-                    padding: 0.5em;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    grid-gap: 0.5em;
-
-                    user-select: none;
-                    width: 100%;
-                    line-height: 2;
-                  }
-                `}
-              >
-                <label>
-                  <span>Selling...</span>
-                </label>
-              </div>
-            ) : isActive ? (
+            {isActive ? (
               <>
                 <div
                   className={css`
@@ -553,7 +507,7 @@ export default function CartView({
           ) : null}
         </div>
       )}
-      {confirmOpen && !sellingLoading ? (
+      {confirmOpen ? (
         <div
           className={css`
             background: rgba(0, 0, 0, 0.6);
