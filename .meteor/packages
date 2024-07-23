@@ -35,3 +35,4 @@ session@1.2.1
 hot-module-replacement@0.5.3
 deps
 typescript@4.9.5
+zodern:types

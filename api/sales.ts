@@ -247,6 +247,7 @@ if (Meteor.isServer) {
         calculateMenuData(),
       ]);
 
+    
     setInterval(async () => {
       [statsCampByCamp, statsSalesSankey, statsDayByDay] = await Promise.all([
         calculateCampByCampStats(),
