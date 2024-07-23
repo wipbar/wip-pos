@@ -67,7 +67,9 @@ export const salesMethods = {
       throw new Meteor.Error("Wait that's illegal");
 
     const existingSale = Sales.findOne({ cartId });
-    if (existingSale) throw new Meteor.Error("Cart already sold");
+    if (existingSale) {
+      throw new Meteor.Error("CART_ALREADY_SOLD", "Cart already sold");
+    }
 
     const insertResult = Sales.insert({
       userId: userId!,

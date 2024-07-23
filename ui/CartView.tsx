@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import { sumBy } from "lodash";
+import { Meteor } from "meteor/meteor";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -129,7 +130,9 @@ function removeItem<T>(items: T[], i: number): T[] {
 }
 
 const crankSound = new Audio("/cashregistercrank.mp3");
+crankSound.volume = 0.75;
 const dingSound = new Audio("/cashregisterding.mp3");
+dingSound.volume = 0.75;
 const ohnoSound = new Audio("/cashregisterohno.mp3");
 
 export default function CartView({
@@ -164,14 +167,20 @@ export default function CartView({
         cartId: cart.id,
         productIds: cart.productIds,
       });
-
-      setPickedProductIds(cart, emptyArray);
-      setConfirmOpen(false);
-      dingSound.play();
     } catch (sellError) {
       console.error(sellError);
-      ohnoSound.play();
+      if (!(sellError instanceof Meteor.Error)) {
+        throw sellError;
+      }
+      if (sellError.error !== "CART_ALREADY_SOLD") {
+        ohnoSound.play();
+        return;
+      }
     }
+    setPickedProductIds(cart, emptyArray);
+    setConfirmOpen(false);
+    dingSound.play();
+
     navigator.vibrate?.(500);
   }, [cart, doSellProducts, locationSlug, setPickedProductIds]);
 
