@@ -555,7 +555,6 @@ async function calculateMenuDataForLocation(location: ILocation) {
   const products = await Products.find(
     {
       removedAt: { $exists: false },
-      // @ts-expect-error
       locationIds: { $elemMatch: { $eq: location._id } },
     },
     { sort: { brandName: 1, name: 1 } },
