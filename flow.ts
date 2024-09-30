@@ -368,4 +368,5 @@ export const tranculaFlow = [
   "turned that pre-opp into a post-opp",
   "GOT MY TESTOSTERONE REPLACED JUST LIKE MESSI",
   "I'm uncommon",
+  "I’M HITTIN STRAIGHTS LIKE A VIOLENT PRIDE PARADE, WE SMOKIN’ THEM ROYAL FLUSH FATTIES"
 ];
