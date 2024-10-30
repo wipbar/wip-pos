@@ -370,4 +370,6 @@ export const tranculaFlow = [
   "I'm uncommon",
   "I’M HITTIN STRAIGHTS LIKE A VIOLENT PRIDE PARADE, WE SMOKIN’ THEM ROYAL FLUSH FATTIES"
   "She was givin' me grief so i slurped the prog right back out of her ass",
+  "Took the puppygirl out back and, well, you know",
+  "Am I therian? Yeah, I'm tearian' up that ass",
 ];
