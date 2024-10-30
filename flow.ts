@@ -372,4 +372,5 @@ export const tranculaFlow = [
   "She was givin' me grief so i slurped the prog right back out of her ass",
   "Took the puppygirl out back and, well, you know",
   "Am I therian? Yeah, I'm tearian' up that ass",
+  "I eat breakfast for breakfast!"
 ];
