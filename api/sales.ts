@@ -362,37 +362,35 @@ async function calculateDayByDayStats() {
       differenceInHours(min(now2, currentCamp.end), currentCamp.start) / 24,
     );
 
-    data[currentCamp.slug] = Array.from({ length: 24 }, (_, hourIndex) =>
-      Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
-        x: number;
-        [key: string]: number | null;
-      }>(
-        (memo, _, dayIndex) => {
-          const hour: number = dayIndex * 24 + hourIndex;
+    data[currentCamp.slug] = Array.from({ length: 24 });
+    for (let hourIndex = 0; hourIndex < 24; hourIndex++) {
+      data[currentCamp.slug]![hourIndex] = { x: hourIndex };
 
-          if (isFuture(addHours(currentCamp.start, hour + offset))) return memo;
+      for (let dayIndex = 0; dayIndex < numberOfDaysInCurrentCamp; dayIndex++) {
+        const hour = dayIndex * 24 + hourIndex;
 
-          const startOfCampHour = addHours(
-            currentCamp.start,
-            dayIndex * 24 + offset,
-          );
-          const endOfCampHour = endOfHour(
-            addHours(currentCamp.start, hour + offset),
-          );
+        if (isFuture(addHours(currentCamp.start, hour + offset))) continue;
 
-          return {
-            ...memo,
-            [dayIndex]: sumBy(
-              sales.filter((sale) =>
-                isWithinRange(sale.timestamp, startOfCampHour, endOfCampHour),
-              ),
-              "amount",
+        const startOfCampHour = addHours(
+          currentCamp.start,
+          dayIndex * 24 + offset,
+        );
+        const endOfCampHour = endOfHour(
+          addHours(currentCamp.start, hour + offset),
+        );
+
+        // @ts-expect-error - Anders Hejlsberg if you see this i promise it has x
+        data[currentCamp.slug]![hourIndex] = {
+          ...data[currentCamp.slug]![hourIndex],
+          [dayIndex]: sumBy(
+            sales.filter((sale) =>
+              isWithinRange(sale.timestamp, startOfCampHour, endOfCampHour),
             ),
-          };
-        },
-        { x: hourIndex },
-      ),
-    );
+            "amount",
+          ),
+        };
+      }
+    }
   }
 
   const now3 = new Date();
