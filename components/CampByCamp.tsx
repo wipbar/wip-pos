@@ -124,7 +124,7 @@ export default function CampByCamp() {
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={currentCamp ? 350 : 700}>
         <ComposedChart
           data={data.map((d) =>
             d.hour === trendData[0].hour
@@ -133,7 +133,7 @@ export default function CampByCamp() {
               ? { ...d, ...trendData[1] }
               : d,
           )}
-          margin={{ top: 24, right: 8, left: 16, bottom: 0 }}
+          margin={{ top: 24, right: 8, left: currentCamp ? 16 : 64, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
