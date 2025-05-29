@@ -256,32 +256,23 @@ let statsMostSold: Awaited<ReturnType<typeof calculateMostSold>> | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
-    [
-      statsCampByCamp,
-      statsSalesSankey,
-      statsDayByDay,
-      locationMenuData,
-      statsMostSold,
-    ] = await Promise.all([
-      calculateCampByCampStats(),
-      calculateSalesSankeyData(),
-      calculateDayByDayStats(),
-      calculateMenuData(),
-      calculateMostSold(),
+    await Promise.all([
+      calculateCampByCampStats().then((data) => (statsCampByCamp = data)),
+      calculateSalesSankeyData().then((data) => (statsSalesSankey = data)),
+      calculateDayByDayStats().then((data) => (statsDayByDay = data)),
+      calculateMenuData().then((data) => (locationMenuData = data)),
+      calculateMostSold().then((data) => (statsMostSold = data)),
     ]);
 
     setInterval(async () => {
-      [statsCampByCamp, statsSalesSankey, statsDayByDay, statsMostSold] =
-        await Promise.all([
-          calculateCampByCampStats(),
-          calculateSalesSankeyData(),
-          calculateDayByDayStats(),
-          calculateMostSold(),
-        ]);
+      calculateCampByCampStats().then((data) => (statsCampByCamp = data));
+      calculateSalesSankeyData().then((data) => (statsSalesSankey = data));
+      calculateDayByDayStats().then((data) => (statsDayByDay = data));
+      calculateMostSold().then((data) => (statsMostSold = data));
     }, 240_000);
 
     setInterval(async () => {
-      [locationMenuData] = await Promise.all([calculateMenuData()]);
+      calculateMenuData().then((data) => (locationMenuData = data));
     }, 20_000);
   });
 }
