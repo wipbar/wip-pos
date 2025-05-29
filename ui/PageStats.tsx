@@ -15,7 +15,6 @@ import { emptyArray, emptyObject } from "../util";
 
 export default function PageStats() {
   const currentCamp = useCurrentCamp();
-  // If no current camp is set, we use the first camp in the list
 
   const GALAXY_APP_VERSION_ID = useTracker(
     () => Session.get("GALAXY_APP_VERSION_ID") as string | undefined,
@@ -85,7 +84,7 @@ export default function PageStats() {
           `}
         >
           <CampByCamp />
-          {currentCamp ? <DayByDay /> : null}
+          {currentCamp ? <DayByDay currentCamp={currentCamp} /> : null}
         </div>
         {!GALAXY_APP_VERSION_ID ||
         Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
