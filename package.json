@@ -4,8 +4,9 @@
   "scripts": {
     "start": "meteor run --settings settings.json",
     "start-prod": "MONGO_URL=$(jq -r '.\"galaxy.meteor.com\".env.MONGO_URL' production-settings.json) MONGO_OPLOG_URL=$(jq -r '.\"galaxy.meteor.com\".env.MONGO_OPLOG_URL' production-settings.json) meteor run --settings production-settings.json",
-    "dump-prod": "mongodump --uri=\"$(jq '.\"galaxy.meteor.com\".env.MONGO_URL' production-settings.json)\" --out=\"mongodump/$(date '+%Y-%m-%d %H:%M:%S')\"",
+    "dump-prod": "mongodump --uri=\"$(jq '.\"galaxy.meteor.com\".env.MONGO_URL' production-settings.json)\" --out=\"mongodump/$(date '+%Y-%m-%d-%H:%M:%S')\"",
     "restore-local-from-dump": "mongorestore -h 127.0.0.1 --port 3001 --drop --nsFrom=\"test.*\" --nsTo=\"meteor.*\"",
+    "copy-prod": "npm run dump-prod && npm run restore-local-from-dump mongodump/$(ls -Art mongodump | tail -n 1)",
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "visualize": "meteor --production --extra-packages bundle-visualizer"

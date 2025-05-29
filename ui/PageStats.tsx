@@ -2,6 +2,7 @@ import { css } from "@emotion/css";
 import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import React, { useEffect, useMemo } from "react";
+import Camps from "../api/camps";
 import Products, { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
@@ -16,15 +17,20 @@ import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useMethod from "../hooks/useMethod";
 import useSubscription from "../hooks/useSubscription";
-import { emptyArray, emptyObject } from "../util";
+import { emptyObject } from "../util";
 
 export default function PageStats() {
   const campsLoading = useSubscription("camps");
 
+  const pastCamps = useFind(() =>
+    Camps.find({ start: { $lt: new Date() } }, { sort: { end: -1 } }),
+  );
   const currentCamp = useCurrentCamp();
+  const lastCamp = useMemo(() => pastCamps[0], [pastCamps]);
+  // If no current camp is set, we use the first camp in the list
 
   useSubscription(
-    !campsLoading && currentCamp && "sales",
+    !campsLoading && (currentCamp || lastCamp) && "sales",
     !campsLoading &&
       currentCamp && {
         from: currentCamp.buildup,
@@ -33,19 +39,18 @@ export default function PageStats() {
     [campsLoading, currentCamp],
   );
 
-  const campSales =
-    useFind(
-      () =>
-        currentCamp
-          ? Sales.find({
-              timestamp: {
-                $gte: currentCamp.buildup,
-                $lte: currentCamp.teardown,
-              },
-            })
-          : undefined,
-      [currentCamp],
-    ) || emptyArray;
+  const campSales = useFind(
+    () =>
+      currentCamp
+        ? Sales.find({
+            timestamp: {
+              $gte: currentCamp.buildup,
+              $lte: currentCamp.teardown,
+            },
+          })
+        : Sales.find({}),
+    [currentCamp],
+  );
 
   const stocks = useFind(() => Stocks.find());
 
@@ -54,8 +59,8 @@ export default function PageStats() {
   );
 
   const sales = useMemo(
-    () => (currentCamp ? campSales : []),
-    [currentCamp, campSales],
+    () => (currentCamp || lastCamp ? campSales : []),
+    [currentCamp, lastCamp, campSales],
   );
 
   const products = useFind(() =>
@@ -116,13 +121,13 @@ export default function PageStats() {
 
             @media (min-width: 900px) {
               > * {
-                ${campSales?.length ? `width: 50%;` : `flex: 1;`}
+                ${campSales?.length && currentCamp ? `width: 50%;` : `flex: 1;`}
               }
             }
           `}
         >
           <CampByCamp />
-          {campSales?.length ? <DayByDay /> : null}
+          {campSales?.length && currentCamp ? <DayByDay /> : null}
         </div>
         {!GALAXY_APP_VERSION_ID ||
         Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
@@ -160,9 +165,9 @@ export default function PageStats() {
                 >
                   <div
                     className={css`
-                      width: 50px;
+                      width: 80px;
                       text-align: right;
-                      margin-right: 8px;
+                      margin-right: 12px;
                       flex-shrink: 0;
                     `}
                   >
@@ -171,7 +176,7 @@ export default function PageStats() {
                   <div>
                     {product.brandName ? <>{product.brandName} - </> : null}
                     {product.name}{" "}
-                    {product?.components?.[0] ? (
+                    {product?.components?.[0] && currentCamp ? (
                       <small>
                         (
                         {(

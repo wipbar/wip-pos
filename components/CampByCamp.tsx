@@ -61,18 +61,20 @@ const emptyData = { data: emptyArray };
 export default function CampByCamp() {
   const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }));
   const currentCamp = useCurrentCamp();
+  const nextCamp = useMemo(
+    () => camps.find((camp) => camp.start > new Date()) || null,
+    [camps],
+  );
 
   const [getCampByCampData, { data: methodData }] = useMethod(
     "Sales.stats.CampByCamp",
   );
 
   const { data } = methodData || emptyData;
-
+  console.log({ data });
   const updateCampByCampData = useCallback(async () => {
-    if (currentCamp) {
-      await getCampByCampData(undefined);
-    }
-  }, [currentCamp, getCampByCampData]);
+    await getCampByCampData(undefined);
+  }, [getCampByCampData]);
 
   useEffect(() => {
     updateCampByCampData();
@@ -147,7 +149,7 @@ export default function CampByCamp() {
               angle: -90,
               offset: 70,
               position: "insideLeft",
-              style: { fill: currentCamp?.color },
+              style: { fill: (currentCamp || nextCamp)?.color },
             }}
           />
           <Tooltip
@@ -157,9 +159,10 @@ export default function CampByCamp() {
               ).padStart(2, "0")}`
             }
             contentStyle={{
-              background: currentCamp?.color,
+              background: (currentCamp || nextCamp)?.color,
               color:
-                currentCamp?.color && getCorrectTextColor(currentCamp?.color),
+                (currentCamp || nextCamp)?.color &&
+                getCorrectTextColor((currentCamp || nextCamp)!.color),
             }}
           />
           <Legend />
@@ -176,7 +179,7 @@ export default function CampByCamp() {
               },
             }}
             fill={"#ffffff"}
-            r={4}   
+            r={4}
             stroke={"#ffffff"}
           />
           {camps.map((camp) => (

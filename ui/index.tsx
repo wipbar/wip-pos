@@ -57,6 +57,12 @@ export default function UI() {
     ),
   );
   const currentCamp = useCurrentCamp();
+  const nextCamp = useFind(() =>
+    Camps.find(
+      { start: { $gte: new Date() } },
+      { sort: { start: 1 }, limit: 1 },
+    ),
+  )[0];
   const user = useCurrentUser();
   const locations = useFind(() => Locations.find());
   const userLocations = locations.filter(({ teamName }) =>
@@ -109,8 +115,11 @@ export default function UI() {
         html {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
             "Cantarell", "Open Sans", "Helvetica Neue", Arial, sans-serif;
-          color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
-          background-color: ${currentCamp?.color};
+          color: ${
+            (currentCamp || nextCamp) &&
+            getCorrectTextColor((currentCamp || nextCamp)!.color)
+          };
+          background-color: ${(currentCamp || nextCamp)?.color};
           /*
           background: linear-gradient(
               to right,
@@ -141,18 +150,19 @@ export default function UI() {
           */
         }
         a {
-          color: ${currentCamp?.color};
+          color: ${(currentCamp || nextCamp)?.color};
         }
         .my-masonry-grid > div {
-          border-color: ${currentCamp?.color};
+          border-color: ${(currentCamp || nextCamp)?.color};
         }
 
         #login-buttons-bornhack,
         #login-buttons-logout {
-          background: ${currentCamp?.color} !important;
-          border-color: ${currentCamp?.color} !important;
+          background: ${(currentCamp || nextCamp)?.color} !important;
+          border-color: ${(currentCamp || nextCamp)?.color} !important;
           color: ${
-            currentCamp && getCorrectTextColor(currentCamp.color)
+            (currentCamp || nextCamp) &&
+            getCorrectTextColor((currentCamp || nextCamp)!.color)
           } !important;
         }
       `}</style>
@@ -170,11 +180,14 @@ export default function UI() {
       </div>
       <div
         className={css`
-          background: ${currentCamp &&
-          opacify(-0.5, getCorrectTextColor(currentCamp?.color))};
+          background: ${(currentCamp || nextCamp) &&
+          opacify(-0.5, getCorrectTextColor((currentCamp || nextCamp)!.color))};
           border-bottom: 2px solid
-            ${currentCamp &&
-            opacify(-0.25, getCorrectTextColor(currentCamp?.color))};
+            ${(currentCamp || nextCamp) &&
+            opacify(
+              -0.25,
+              getCorrectTextColor((currentCamp || nextCamp)!.color),
+            )};
         `}
         hidden={
           ((pageSlug === "menu" ||
@@ -363,8 +376,8 @@ export default function UI() {
                     font-size: 3em;
                     justify-content: space-evenly;
                     a {
-                      color: ${currentCamp?.color &&
-                      getCorrectTextColor(currentCamp?.color)};
+                      color: ${(currentCamp || nextCamp)?.color &&
+                      getCorrectTextColor((currentCamp || nextCamp)!.color)};
                     }
                   `}
                 >

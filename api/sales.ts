@@ -247,7 +247,6 @@ if (Meteor.isServer) {
         calculateMenuData(),
       ]);
 
-    
     setInterval(async () => {
       [statsCampByCamp, statsSalesSankey, statsDayByDay] = await Promise.all([
         calculateCampByCampStats(),
@@ -353,45 +352,38 @@ async function calculateDayByDayStats() {
     }[]
   > = {};
   for (const currentCamp of camps) {
-    const numberOfDaysInCurrentCamp = currentCamp
-      ? Math.ceil(
-          differenceInHours(
-            min(new Date(), currentCamp.end),
-            currentCamp.start,
-          ) / 24,
-        )
-      : 0;
+    const numberOfDaysInCurrentCamp = Math.ceil(
+      differenceInHours(min(new Date(), currentCamp.end), currentCamp.start) /
+        24,
+    );
 
-    data[currentCamp.slug] = currentCamp
-      ? Array.from({ length: 24 }, (_, i) =>
-          Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
-            x: number;
-            [key: string]: number | null;
-          }>(
-            (memo, _, j) => {
-              const hour: number = j * 24 + i;
+    data[currentCamp.slug] = Array.from({ length: 24 }, (_, i) =>
+      Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
+        x: number;
+        [key: string]: number | null;
+      }>(
+        (memo, _, j) => {
+          const hour: number = j * 24 + i;
 
-              if (isFuture(addHours(currentCamp.start, hour + offset)))
-                return memo;
+          if (isFuture(addHours(currentCamp.start, hour + offset))) return memo;
 
-              return {
-                ...memo,
-                [j]: sumBy(
-                  sales.filter((sale) =>
-                    isWithinRange(
-                      sale.timestamp,
-                      addHours(currentCamp.start, j * 24 + offset),
-                      endOfHour(addHours(currentCamp.start, hour + offset)),
-                    ),
-                  ),
-                  "amount",
+          return {
+            ...memo,
+            [j]: sumBy(
+              sales.filter((sale) =>
+                isWithinRange(
+                  sale.timestamp,
+                  addHours(currentCamp.start, j * 24 + offset),
+                  endOfHour(addHours(currentCamp.start, hour + offset)),
                 ),
-              };
-            },
-            { x: i },
-          ),
-        )
-      : emptyArray;
+              ),
+              "amount",
+            ),
+          };
+        },
+        { x: i },
+      ),
+    );
   }
 
   const now3 = new Date();
