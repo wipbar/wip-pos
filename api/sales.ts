@@ -366,12 +366,15 @@ async function calculateDayByDayStats() {
 
     data[currentCamp.slug] = Array.from({ length: 24 });
     for (let dayIndex = 0; dayIndex < numberOfDaysInCurrentCamp; dayIndex++) {
-      const sales = await Sales.find({
-        timestamp: {
-          $gte: addHours(currentCamp.start, dayIndex * 24 + offset),
-          $lt: addHours(currentCamp.start, (dayIndex + 1) * 24 + offset),
+      const sales: Pick<ISale, "timestamp" | "amount">[] = await Sales.find(
+        {
+          timestamp: {
+            $gte: addHours(currentCamp.start, dayIndex * 24 + offset),
+            $lt: addHours(currentCamp.start, (dayIndex + 1) * 24 + offset),
+          },
         },
-      }).fetchAsync();
+        { fields: { timestamp: 1, amount: 1 } },
+      ).fetchAsync();
       for (let hourIndex = 0; hourIndex < 24; hourIndex++) {
         if (!data[currentCamp.slug]![hourIndex]) {
           data[currentCamp.slug]![hourIndex] = { x: hourIndex };
