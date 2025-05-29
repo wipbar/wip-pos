@@ -1,83 +1,41 @@
 import { css } from "@emotion/css";
 import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
-import React, { useEffect, useMemo } from "react";
-import Camps from "../api/camps";
-import Products, { ProductID } from "../api/products";
-import Sales from "../api/sales";
-import Stocks from "../api/stocks";
+import React, { useCallback, useEffect } from "react";
+import Products from "../api/products";
 import Styles, { type IStyle } from "../api/styles";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
-import RemainingStock, {
-  getRemainingServings,
-  getRemainingServingsEver,
-} from "../components/RemainingStock";
+import RemainingStock from "../components/RemainingStock";
 import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
-import useSubscription from "../hooks/useSubscription";
-import { emptyObject } from "../util";
+import { emptyArray, emptyObject } from "../util";
 
 export default function PageStats() {
-  const campsLoading = useSubscription("camps");
-
-  const pastCamps = useFind(() =>
-    Camps.find({ start: { $lt: new Date() } }, { sort: { end: -1 } }),
-  );
   const currentCamp = useCurrentCamp();
-  const lastCamp = useMemo(() => pastCamps[0], [pastCamps]);
   // If no current camp is set, we use the first camp in the list
-
-  useSubscription(
-    !campsLoading && (currentCamp || lastCamp) && "sales",
-    !campsLoading &&
-      currentCamp && {
-        from: currentCamp.buildup,
-        to: currentCamp.teardown,
-      },
-    [campsLoading, currentCamp],
-  );
-
-  const campSales = useFind(
-    () =>
-      currentCamp
-        ? Sales.find({
-            timestamp: {
-              $gte: currentCamp.buildup,
-              $lte: currentCamp.teardown,
-            },
-          })
-        : Sales.find({}),
-    [currentCamp],
-  );
-
-  const stocks = useFind(() => Stocks.find());
 
   const GALAXY_APP_VERSION_ID = useTracker(
     () => Session.get("GALAXY_APP_VERSION_ID") as string | undefined,
   );
 
-  const sales = useMemo(
-    () => (currentCamp || lastCamp ? campSales : []),
-    [currentCamp, lastCamp, campSales],
-  );
-
   const products = useFind(() =>
     Products.find({ removedAt: { $exists: false } }),
   );
-  const mostSold = useMemo(
-    () =>
-      Object.entries(
-        sales.reduce<Record<ProductID, number>>((m, sale) => {
-          sale.products.forEach((product) => {
-            m[product._id] = (m[product._id] || 0) + 1;
-          });
-          return m;
-        }, {}),
-      ).sort(([, a], [, b]) => b - a),
-    [sales],
-  );
+
+  const [getMostSoldData, result] = useMethod("Sales.stats.MostSold");
+  const mostSoldData = result?.data || emptyArray;
+
+  const updateDayByDayData = useCallback(async () => {
+    await getMostSoldData({ campSlug: currentCamp?.slug });
+  }, [currentCamp?.slug, getMostSoldData]);
+
+  useEffect(() => {
+    updateDayByDayData();
+  }, [updateDayByDayData]);
+  useInterval(() => updateDayByDayData(), 30000);
 
   const [getGoodbyeWorld] = useMethod("Sales.stats.GoodbyeWorld");
   useEffect(() => {
@@ -110,9 +68,7 @@ export default function PageStats() {
           min-width: 400px;
         `}
       >
-        {campSales?.length && currentCamp ? (
-          <SalesSankey currentCamp={currentCamp} />
-        ) : null}
+        {currentCamp ? <SalesSankey currentCamp={currentCamp} /> : null}
         <div
           className={css`
             display: flex;
@@ -123,13 +79,13 @@ export default function PageStats() {
 
             @media (min-width: 900px) {
               > * {
-                ${campSales?.length && currentCamp ? `width: 50%;` : `flex: 1;`}
+                ${currentCamp ? `width: 50%;` : `flex: 1;`}
               }
             }
           `}
         >
           <CampByCamp />
-          {campSales?.length && currentCamp ? <DayByDay /> : null}
+          {currentCamp ? <DayByDay /> : null}
         </div>
         {!GALAXY_APP_VERSION_ID ||
         Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
@@ -142,7 +98,7 @@ export default function PageStats() {
           flex: 1;
         `}
       >
-        {currentCamp && campSales?.length ? (
+        {currentCamp ? (
           <big>Most sold @ {currentCamp.name}:</big>
         ) : (
           <big>Most sold of all time:</big>
@@ -152,8 +108,8 @@ export default function PageStats() {
             padding: 0;
           `}
         >
-          {mostSold.length ? (
-            mostSold.map(([productId, count]) => {
+          {mostSoldData.length ? (
+            mostSoldData.map(([productId, count, stockPercentage]) => {
               const product = products.find(({ _id }) => _id == productId);
               if (!product) return null;
               return (
@@ -178,22 +134,10 @@ export default function PageStats() {
                   <div>
                     {product.brandName ? <>{product.brandName} - </> : null}
                     {product.name}{" "}
-                    {product?.components?.[0] && currentCamp ? (
+                    {stockPercentage ? (
                       <small>
                         (
-                        {(
-                          Math.min(
-                            1,
-                            1 -
-                              getRemainingServings(
-                                sales,
-                                stocks,
-                                product,
-                                new Date(),
-                              )! /
-                                getRemainingServingsEver(stocks, product),
-                          ) * 100
-                        ).toLocaleString("en-DK", {
+                        {(stockPercentage * 100).toLocaleString("en-DK", {
                           maximumFractionDigits: 1,
                         })}
                         % sold)

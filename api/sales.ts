@@ -11,6 +11,10 @@ import {
 import { groupBy, sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
+import {
+  getRemainingServings,
+  getRemainingServingsEver,
+} from "../components/RemainingStock";
 import type { CartID } from "../ui/PageTend";
 import { emptyArray, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
@@ -159,6 +163,18 @@ export const salesMethods = {
     return statsDayByDay?.data[campSlug];
   },
 
+  async "Sales.stats.MostSold"(
+    this: Meteor.MethodThisType,
+    { campSlug }: { campSlug?: ICamp["slug"] },
+  ) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    if (!campSlug) return statsMostSold?.data["all"];
+
+    return statsMostSold?.data[campSlug];
+  },
+
   async "Products.menu.Menu"(
     this: Meteor.MethodThisType,
     { locationSlug }: { locationSlug: ILocation["slug"] },
@@ -236,22 +252,30 @@ let locationMenuData: Awaited<ReturnType<typeof calculateMenuData>> | null =
   null;
 let statsDayByDay: Awaited<ReturnType<typeof calculateDayByDayStats>> | null =
   null;
+let statsMostSold: Awaited<ReturnType<typeof calculateMostSold>> | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
-    [statsCampByCamp, statsSalesSankey, statsDayByDay, locationMenuData] =
-      await Promise.all([
-        calculateCampByCampStats(),
-        calculateSalesSankeyData(),
-        calculateDayByDayStats(),
-        calculateMenuData(),
-      ]);
+    [
+      statsCampByCamp,
+      statsSalesSankey,
+      statsDayByDay,
+      locationMenuData,
+      statsMostSold,
+    ] = await Promise.all([
+      calculateCampByCampStats(),
+      calculateSalesSankeyData(),
+      calculateDayByDayStats(),
+      calculateMenuData(),
+      calculateMostSold(),
+    ]);
 
     setInterval(async () => {
       [statsCampByCamp, statsSalesSankey, statsDayByDay] = await Promise.all([
         calculateCampByCampStats(),
         calculateSalesSankeyData(),
         calculateDayByDayStats(),
+        calculateMostSold(),
       ]);
     }, 240_000);
 
@@ -689,6 +713,104 @@ async function calculateMenuData() {
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );
   return menuDataByLocation;
+}
+
+async function calculateMostSold() {
+  const now = new Date();
+
+  const [camps, products, stocks] = await Promise.all([
+    Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
+    Products.find({ removedAt: { $exists: false } }).fetchAsync(),
+    Stocks.find().fetchAsync(),
+  ]);
+
+  const now2 = new Date();
+
+  const data: Record<
+    ICamp["slug"] | "all",
+    [ProductID, number, number | null][]
+  > = {};
+  for (const currentCamp of camps) {
+    const sales = await Sales.find({
+      timestamp: {
+        $gte: currentCamp.buildup,
+        $lte: currentCamp.teardown,
+      },
+    }).fetchAsync();
+
+    const productsSold = sales.reduce<Record<ProductID, number>>(
+      (memo, sale) => {
+        for (const saleProduct of sale.products) {
+          memo[saleProduct._id] = (memo[saleProduct._id] || 0) + 1;
+        }
+        return memo;
+      },
+      {},
+    );
+
+    data[currentCamp.slug] = Object.entries(productsSold)
+      .map(([productId, count]) => {
+        const product = products.find(({ _id }) => _id == productId);
+
+        const remainingServings =
+          product?.components?.[0] &&
+          getRemainingServings(
+            sales,
+            stocks,
+            product,
+            min(new Date(), currentCamp.teardown),
+          );
+        const remainingServingsEver =
+          product?.components?.[0] && getRemainingServingsEver(stocks, product);
+
+        return [
+          productId as ProductID,
+          count,
+          remainingServingsEver
+            ? Math.min(1, 1 - remainingServings! / remainingServingsEver)
+            : null,
+        ] satisfies [ProductID, number, number | null];
+      })
+      .sort(([, a], [, b]) => b - a);
+  }
+
+  const allSales = await Sales.find({}).fetchAsync();
+  const allProductsSold = allSales.reduce<Record<ProductID, number>>(
+    (memo, sale) => {
+      for (const saleProduct of sale.products) {
+        memo[saleProduct._id] = (memo[saleProduct._id] || 0) + 1;
+      }
+      return memo;
+    },
+    {},
+  );
+  data.all = Object.entries(allProductsSold)
+    .map(([productId, count]) => {
+      const product = products.find(({ _id }) => _id == productId);
+      const remainingServings =
+        product?.components?.[0] && getRemainingServingsEver(stocks, product);
+      return [
+        productId as ProductID,
+        count,
+        remainingServings
+          ? Math.min(
+              1,
+              1 - getRemainingServingsEver(stocks, product) / remainingServings,
+            )
+          : null,
+      ] satisfies [ProductID, number, number | null];
+    })
+    .sort(([, a], [, b]) => b - a);
+
+  const now3 = new Date();
+
+  console.log(
+    `Sales.stats.MostSold: ${(now3.getTime() - now.getTime()) / 1000}s,(${
+      (now2.getTime() - now.getTime()) / 1000
+    }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
+  );
+
+  return { data };
 }
 
 Meteor.methods(salesMethods);

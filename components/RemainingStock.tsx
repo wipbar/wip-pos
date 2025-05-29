@@ -95,7 +95,7 @@ export function getRemainingServings(
     try {
       const componentServings =
         convert(
-          getStockLevelAtTime(sales, stock, timestamp)!,
+          getStockLevelAtTime(sales, stock, timestamp),
           stock.sizeUnit,
         ).to(component.sizeUnit) / component.unitSize;
 
