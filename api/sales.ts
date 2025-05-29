@@ -11,10 +11,6 @@ import {
 import { groupBy, sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import {
-  getRemainingServings,
-  getRemainingServingsEver,
-} from "../components/RemainingStock";
 import type { CartID } from "../ui/PageTend";
 import { emptyArray, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
@@ -710,10 +706,8 @@ async function calculateMenuData() {
 async function calculateMostSold() {
   const now = new Date();
 
-  const [camps, products, stocks] = await Promise.all([
+  const [camps] = await Promise.all([
     Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
-    Products.find({ removedAt: { $exists: false } }).fetchAsync(),
-    Stocks.find().fetchAsync(),
   ]);
 
   const now2 = new Date();
@@ -723,64 +717,71 @@ async function calculateMostSold() {
     [ProductID, number, number | null][]
   > = {};
   for (const currentCamp of camps) {
-    const sales = await Sales.find({
-      timestamp: {
-        $gte: currentCamp.buildup,
-        $lte: currentCamp.teardown,
-      },
-    }).fetchAsync();
+    const campAggregatedCount = await Sales.rawCollection()
+      .aggregate([
+        {
+          $match: {
+            timestamp: {
+              $gte: currentCamp.buildup,
+              $lte: currentCamp.teardown,
+            },
+          },
+        },
+        { $unwind: "$products" },
+        { $group: { _id: "$products._id", count: { $sum: 1 } } },
+        /*
+        {
+          $lookup: {
+            from: "sales",
+            localField: "_id",
+            foreignField: "products._id",
+            as: "sales",
+          },
+        },
+        */
+        { $sort: { count: -1 } },
+        { $project: { _id: 1, count: 1, sales: 1 } },
+      ])
+      .toArray();
 
-    const productsSold = sales.reduce<Record<ProductID, number>>(
-      (memo, sale) => {
-        for (const saleProduct of sale.products) {
-          memo[saleProduct._id] = (memo[saleProduct._id] || 0) + 1;
-        }
-        return memo;
-      },
-      {},
-    );
+    data[currentCamp.slug] = campAggregatedCount.map(
+      ({ _id, count /*sales*/ }) => {
+        /*
+        const product = products.find((p) => _id === p._id);
 
-    data[currentCamp.slug] = Object.entries(productsSold)
-      .map(([productId, count]) => {
-        const product = products.find(({ _id }) => _id == productId);
-
+        
         const remainingServings =
           product?.components?.[0] &&
           getRemainingServings(sales, stocks, product, now2);
         const remainingServingsEver =
           product?.components?.[0] && getRemainingServingsEver(stocks, product);
+          */
 
         return [
-          productId as ProductID,
+          _id,
           count,
+          /*
           remainingServingsEver
             ? Math.min(1, 1 - remainingServings! / remainingServingsEver)
-            : null,
+            :*/ null,
         ] satisfies [ProductID, number, number | null];
-      })
-      .sort(([, a], [, b]) => b - a);
+      },
+    );
   }
 
-  const allSales = await Sales.find({}).fetchAsync();
-  const allProductsSold = allSales.reduce<Record<ProductID, number>>(
-    (memo, sale) => {
-      for (const saleProduct of sale.products) {
-        memo[saleProduct._id] = (memo[saleProduct._id] || 0) + 1;
-      }
-      return memo;
-    },
-    {},
+  const aggregatedCount = await Sales.rawCollection()
+    .aggregate([
+      { $unwind: "$products" },
+      { $group: { _id: "$products._id", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $project: { _id: 1, count: 1 } },
+    ])
+    .toArray();
+
+  data.all = aggregatedCount.map(
+    ({ _id, count }) =>
+      [_id, count, null] satisfies [ProductID, number, number | null],
   );
-  data.all = Object.entries(allProductsSold)
-    .map(
-      ([productId, count]) =>
-        [productId as ProductID, count, null] satisfies [
-          ProductID,
-          number,
-          number | null,
-        ],
-    )
-    .sort(([, a], [, b]) => b - a);
 
   const now3 = new Date();
 
