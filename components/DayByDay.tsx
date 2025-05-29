@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import useCurrentCamp from "../hooks/useCurrentCamp";
+import type { ICamp } from "../api/camps";
 import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import { emptyArray, getCorrectTextColor } from "../util";
@@ -23,9 +23,7 @@ const XAxisTickFormatter = (hour: number) =>
 const tooltipLabelFormatter = (hour: number) =>
   `H${String((hour + 6) % 24).padStart(2, "0")}`;
 
-export default function DayByDay() {
-  const currentCamp = useCurrentCamp();
-
+export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
   const [getDayByDayData, result] = useMethod("Sales.stats.DayByDay");
   const data = result?.data || emptyArray;
 
