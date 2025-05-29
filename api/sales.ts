@@ -420,9 +420,8 @@ async function calculateDayByDayStats() {
 async function calculateSalesSankeyData() {
   const now = new Date();
 
-  const [camps, allSales, allProducts] = await Promise.all([
+  const [camps, allProducts] = await Promise.all([
     Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
-    Sales.find().fetchAsync(),
     Products.find().fetchAsync(),
   ]);
 
@@ -436,13 +435,25 @@ async function calculateSalesSankeyData() {
     }
   > = {};
   for (const currentCamp of camps) {
-    const campSales = allSales.filter((sale) =>
-      isWithinRange(sale.timestamp, currentCamp.buildup, currentCamp.teardown),
-    );
+    const campSales: Pick<ISale, "products" | "amount" | "timestamp">[] =
+      await Sales.find(
+        {
+          timestamp: {
+            $gte: currentCamp.buildup,
+            $lte: currentCamp.teardown,
+          },
+        },
+        {
+          fields: {
+            products: 1,
+            amount: 1,
+            timestamp: 1,
+          },
+        },
+      ).fetchAsync();
+    if (!campSales?.length) continue;
 
-    const sales = campSales?.length ? campSales : allSales;
-
-    const productsSold = sales.reduce<IProduct[]>((memo, sale) => {
+    const productsSold = campSales.reduce<IProduct[]>((memo, sale) => {
       for (const saleProduct of sale.products) {
         const product = allProducts.find(({ _id }) => _id === saleProduct._id);
         if (product) memo.push(product);
