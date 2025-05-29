@@ -252,6 +252,7 @@ let statsMostSold: Awaited<ReturnType<typeof calculateMostSold>> | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
+    console.time("Startup statsing");
     await Promise.all([
       calculateCampByCampStats().then((data) => (statsCampByCamp = data)),
       calculateSalesSankeyData().then((data) => (statsSalesSankey = data)),
@@ -259,6 +260,7 @@ if (Meteor.isServer) {
       calculateMenuData().then((data) => (locationMenuData = data)),
       calculateMostSold().then((data) => (statsMostSold = data)),
     ]);
+    console.timeEnd("Startup statsing");
 
     setInterval(async () => {
       calculateCampByCampStats().then((data) => (statsCampByCamp = data));
