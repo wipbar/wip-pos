@@ -337,9 +337,8 @@ async function calculateCampByCampStats() {
 async function calculateDayByDayStats() {
   const now = new Date();
 
-  const [camps, sales] = await Promise.all([
+  const [camps] = await Promise.all([
     Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
-    Sales.find().fetchAsync(),
   ]);
 
   const now2 = new Date();
@@ -352,9 +351,15 @@ async function calculateDayByDayStats() {
     }[]
   > = {};
   for (const currentCamp of camps) {
+    const sales = await Sales.find({
+      timestamp: {
+        $gte: currentCamp.buildup,
+        $lte: currentCamp.teardown,
+      },
+    }).fetchAsync();
+
     const numberOfDaysInCurrentCamp = Math.ceil(
-      differenceInHours(min(new Date(), currentCamp.end), currentCamp.start) /
-        24,
+      differenceInHours(min(now2, currentCamp.end), currentCamp.start) / 24,
     );
 
     data[currentCamp.slug] = Array.from({ length: 24 }, (_, i) =>
@@ -367,15 +372,16 @@ async function calculateDayByDayStats() {
 
           if (isFuture(addHours(currentCamp.start, hour + offset))) return memo;
 
+          const startOfCampHour = addHours(currentCamp.start, j * 24 + offset);
+          const endOfCampHour = endOfHour(
+            addHours(currentCamp.start, hour + offset),
+          );
+
           return {
             ...memo,
             [j]: sumBy(
               sales.filter((sale) =>
-                isWithinRange(
-                  sale.timestamp,
-                  addHours(currentCamp.start, j * 24 + offset),
-                  endOfHour(addHours(currentCamp.start, hour + offset)),
-                ),
+                isWithinRange(sale.timestamp, startOfCampHour, endOfCampHour),
               ),
               "amount",
             ),
@@ -384,9 +390,6 @@ async function calculateDayByDayStats() {
         { x: i },
       ),
     );
-
-    // Yield the event loop to reduce blocking
-    await new Promise((resolve) => setImmediate(resolve));
   }
 
   const now3 = new Date();
