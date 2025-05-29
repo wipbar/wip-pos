@@ -362,24 +362,27 @@ async function calculateDayByDayStats() {
       differenceInHours(min(now2, currentCamp.end), currentCamp.start) / 24,
     );
 
-    data[currentCamp.slug] = Array.from({ length: 24 }, (_, i) =>
+    data[currentCamp.slug] = Array.from({ length: 24 }, (_, hourIndex) =>
       Array.from({ length: numberOfDaysInCurrentCamp }).reduce<{
         x: number;
         [key: string]: number | null;
       }>(
-        (memo, _, j) => {
-          const hour: number = j * 24 + i;
+        (memo, _, dayIndex) => {
+          const hour: number = dayIndex * 24 + hourIndex;
 
           if (isFuture(addHours(currentCamp.start, hour + offset))) return memo;
 
-          const startOfCampHour = addHours(currentCamp.start, j * 24 + offset);
+          const startOfCampHour = addHours(
+            currentCamp.start,
+            dayIndex * 24 + offset,
+          );
           const endOfCampHour = endOfHour(
             addHours(currentCamp.start, hour + offset),
           );
 
           return {
             ...memo,
-            [j]: sumBy(
+            [dayIndex]: sumBy(
               sales.filter((sale) =>
                 isWithinRange(sale.timestamp, startOfCampHour, endOfCampHour),
               ),
@@ -387,7 +390,7 @@ async function calculateDayByDayStats() {
             ),
           };
         },
-        { x: i },
+        { x: hourIndex },
       ),
     );
   }
