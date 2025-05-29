@@ -271,12 +271,13 @@ if (Meteor.isServer) {
     ]);
 
     setInterval(async () => {
-      [statsCampByCamp, statsSalesSankey, statsDayByDay] = await Promise.all([
-        calculateCampByCampStats(),
-        calculateSalesSankeyData(),
-        calculateDayByDayStats(),
-        calculateMostSold(),
-      ]);
+      [statsCampByCamp, statsSalesSankey, statsDayByDay, statsMostSold] =
+        await Promise.all([
+          calculateCampByCampStats(),
+          calculateSalesSankeyData(),
+          calculateDayByDayStats(),
+          calculateMostSold(),
+        ]);
     }, 240_000);
 
     setInterval(async () => {
@@ -356,7 +357,7 @@ async function calculateCampByCampStats() {
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );
 
-  return { data };
+  return { data, asOf: now3 };
 }
 async function calculateDayByDayStats() {
   const now = new Date();
@@ -425,7 +426,7 @@ async function calculateDayByDayStats() {
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );
 
-  return { data };
+  return { data, asOf: now3 };
 }
 
 async function calculateSalesSankeyData() {
@@ -570,7 +571,7 @@ async function calculateSalesSankeyData() {
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );
 
-  return { data };
+  return { data, asOf: now3 };
 }
 
 const sparklineDays = 24;
@@ -754,12 +755,7 @@ async function calculateMostSold() {
 
         const remainingServings =
           product?.components?.[0] &&
-          getRemainingServings(
-            sales,
-            stocks,
-            product,
-            min(new Date(), currentCamp.teardown),
-          );
+          getRemainingServings(sales, stocks, product, now2);
         const remainingServingsEver =
           product?.components?.[0] && getRemainingServingsEver(stocks, product);
 
@@ -785,21 +781,14 @@ async function calculateMostSold() {
     {},
   );
   data.all = Object.entries(allProductsSold)
-    .map(([productId, count]) => {
-      const product = products.find(({ _id }) => _id == productId);
-      const remainingServings =
-        product?.components?.[0] && getRemainingServingsEver(stocks, product);
-      return [
-        productId as ProductID,
-        count,
-        remainingServings
-          ? Math.min(
-              1,
-              1 - getRemainingServingsEver(stocks, product) / remainingServings,
-            )
-          : null,
-      ] satisfies [ProductID, number, number | null];
-    })
+    .map(
+      ([productId, count]) =>
+        [productId as ProductID, count, null] satisfies [
+          ProductID,
+          number,
+          number | null,
+        ],
+    )
     .sort(([, a], [, b]) => b - a);
 
   const now3 = new Date();
@@ -810,7 +799,7 @@ async function calculateMostSold() {
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
   );
 
-  return { data };
+  return { data, asOf: now3 };
 }
 
 Meteor.methods(salesMethods);
