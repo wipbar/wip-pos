@@ -355,30 +355,26 @@ async function calculateDayByDayStats() {
 
   const now2 = new Date();
 
-  const data: Record<
-    ICamp["slug"],
-    {
-      x: number;
-      [key: string]: number | null;
-    }[]
-  > = {};
+  const data: Record<ICamp["slug"], { x: number; [key: string]: number }[]> =
+    {};
   for (const currentCamp of camps) {
-    const sales = await Sales.find({
-      timestamp: {
-        $gte: currentCamp.buildup,
-        $lte: currentCamp.teardown,
-      },
-    }).fetchAsync();
-
     const numberOfDaysInCurrentCamp = Math.ceil(
       differenceInHours(min(now2, currentCamp.end), currentCamp.start) / 24,
     );
 
     data[currentCamp.slug] = Array.from({ length: 24 });
-    for (let hourIndex = 0; hourIndex < 24; hourIndex++) {
-      data[currentCamp.slug]![hourIndex] = { x: hourIndex };
+    for (let dayIndex = 0; dayIndex < numberOfDaysInCurrentCamp; dayIndex++) {
+      const sales = await Sales.find({
+        timestamp: {
+          $gte: addHours(currentCamp.start, dayIndex * 24 + offset),
+          $lt: addHours(currentCamp.start, (dayIndex + 1) * 24 + offset),
+        },
+      }).fetchAsync();
+      for (let hourIndex = 0; hourIndex < 24; hourIndex++) {
+        if (!data[currentCamp.slug]![hourIndex]) {
+          data[currentCamp.slug]![hourIndex] = { x: hourIndex };
+        }
 
-      for (let dayIndex = 0; dayIndex < numberOfDaysInCurrentCamp; dayIndex++) {
         const hour = dayIndex * 24 + hourIndex;
 
         if (isFuture(addHours(currentCamp.start, hour + offset))) continue;
