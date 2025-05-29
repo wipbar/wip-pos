@@ -166,29 +166,35 @@ export default function CampByCamp() {
             }}
           />
           <Legend />
-          <ReferenceDot
-            y={yMax}
-            x={nowHour}
-            key="Now"
-            label={{
-              value: currentCamp?.start?.getFullYear(),
-              position: "insideBottomRight",
-              offset: 8,
-              style: {
-                fill: "#ffffff",
-              },
-            }}
-            fill={"#ffffff"}
-            r={4}
-            stroke={"#ffffff"}
-          />
+          {currentCamp ? (
+            <ReferenceDot
+              y={yMax}
+              x={nowHour}
+              key="Now"
+              label={{
+                value: currentCamp?.start?.getFullYear(),
+                position: "insideBottomRight",
+                offset: 8,
+                style: {
+                  fill: "#ffffff",
+                },
+              }}
+              fill={"#ffffff"}
+              r={4}
+              stroke={"#ffffff"}
+            />
+          ) : null}
           {camps.map((camp) => (
             <Line
               type="monotone"
               key={camp.slug}
               dataKey={camp.slug}
               name={"Σ" + camp.start.getFullYear()}
-              stroke={camp.slug === currentCamp?.slug ? "#ffffff" : camp.color}
+              stroke={
+                camp.slug === (currentCamp || nextCamp)?.slug
+                  ? "#ffffff"
+                  : camp.color
+              }
               fill={getCorrectTextColor(camp.color)}
               strokeDasharray={
                 camp.slug === currentCamp?.slug ? undefined : "3 3"
