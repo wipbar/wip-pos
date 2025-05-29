@@ -301,9 +301,6 @@ async function calculateCampByCampStats() {
   const data: { [key: string]: number; hour: number }[] = [];
   const campTotals: Record<string, number> = {};
   for (let i = 0; i < longestCampHours; i++) {
-    // avoid blocking the event loop for too long at a time
-    await new Promise((y) => setImmediate(y));
-
     const datapoint: (typeof data)[number] = { hour: i };
 
     for (const { slug, start } of camps) {
@@ -323,6 +320,9 @@ async function calculateCampByCampStats() {
     }
 
     data.push(datapoint);
+
+    // Yield the event loop to reduce blocking
+    await new Promise((resolve) => setImmediate(resolve));
   }
   const now3 = new Date();
 
@@ -384,6 +384,9 @@ async function calculateDayByDayStats() {
         { x: i },
       ),
     );
+
+    // Yield the event loop to reduce blocking
+    await new Promise((resolve) => setImmediate(resolve));
   }
 
   const now3 = new Date();
@@ -526,6 +529,9 @@ async function calculateSalesSankeyData() {
       .filter(({ value }) => value >= 1);
 
     data[currentCamp.slug] = { links, nodes: Array.from(nodes) };
+
+    // Yield the event loop to reduce blocking
+    await new Promise((resolve) => setImmediate(resolve));
   }
 
   const now3 = new Date();
@@ -666,6 +672,9 @@ async function calculateMenuData() {
     menuDataByLocation[location.slug] = await calculateMenuDataForLocation(
       location,
     );
+
+    // Yield the event loop to reduce blocking
+    await new Promise((resolve) => setImmediate(resolve));
   }
 
   const now3 = new Date();
