@@ -406,15 +406,15 @@ async function calculateDayByDayStats() {
     }
   }
 
-  const now3 = new Date();
+  const doneDate = new Date();
 
   console.log(
-    `Sales.stats.DayByDay: ${(now3.getTime() - now.getTime()) / 1000}s,(${
+    `Sales.stats.DayByDay: ${(doneDate.getTime() - now.getTime()) / 1000}s,(${
       (now2.getTime() - now.getTime()) / 1000
-    }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
+    }s fetch, ${(doneDate.getTime() - now2.getTime()) / 1000}s calc)`,
   );
 
-  return { data, asOf: now3 };
+  return { data, asOf: doneDate };
 }
 
 async function calculateSalesSankeyData() {
