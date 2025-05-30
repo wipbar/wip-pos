@@ -42,15 +42,15 @@ const Products = new Mongo.Collection<IProduct>("products");
 export default Products;
 
 export const productsMethods = {
-  "Products.addProduct"(
+  async "Products.addProduct"(
     this: Meteor.MethodThisType,
     {
       data,
     }: { data: Omit<IProduct, "_id" | "createdAt"> & { buyPrice?: number } },
   ) {
-    assertUserInAnyTeam(this.userId);
+    await assertUserInAnyTeam(this.userId);
     const createdAt = new Date();
-    return Products.insert({
+    return await Products.insertAsync({
       createdAt,
       updatedAt: createdAt,
       brandName: data.brandName.trim(),
@@ -68,7 +68,7 @@ export const productsMethods = {
         : undefined,
     });
   },
-  "Products.editProduct"(
+  async "Products.editProduct"(
     this: Meteor.MethodThisType,
     {
       productId,
@@ -78,10 +78,10 @@ export const productsMethods = {
       data: Partial<IProduct> & { buyPrice?: number };
     },
   ) {
-    assertUserInAnyTeam(this.userId);
-    const oldProduct = Products.findOne({ _id: productId });
+    await assertUserInAnyTeam(this.userId);
+    const oldProduct = await Products.findOneAsync({ _id: productId });
     const updatedAt = new Date();
-    return Products.update(productId, {
+    return await Products.updateAsync(productId, {
       $set: {
         ...updatedProduct,
         updatedAt,
@@ -93,13 +93,15 @@ export const productsMethods = {
       },
     });
   },
-  "Products.removeProduct"(
+  async "Products.removeProduct"(
     this: Meteor.MethodThisType,
     { productId }: { productId: ProductID },
   ) {
-    assertUserInAnyTeam(this.userId);
+    await assertUserInAnyTeam(this.userId);
     if (productId)
-      return Products.update(productId, { $set: { removedAt: new Date() } });
+      return Products.updateAsync(productId, {
+        $set: { removedAt: new Date() },
+      });
   },
   async "Products.getRemainingPercent"(
     this: Meteor.MethodThisType,

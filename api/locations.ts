@@ -17,46 +17,54 @@ export interface ILocation {
 const Locations = new Mongo.Collection<ILocation>("locations");
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    if (Locations.find().count() === 0) {
-      Locations.insert({ slug: "bar", name: "WIP Bar", teamName: "Bar" });
-      Locations.insert({ slug: "info", name: "Infodesk", teamName: "Info" });
+  Meteor.startup(async () => {
+    if ((await Locations.find().countAsync()) === 0) {
+      await Locations.insertAsync({
+        slug: "bar",
+        name: "WIP Bar",
+        teamName: "Bar",
+      });
+      await Locations.insertAsync({
+        slug: "info",
+        name: "Infodesk",
+        teamName: "Info",
+      });
     }
   });
 }
 export default Locations;
 
 export const locationMethods = {
-  "Locations.toggleCurfew"(
+  async "Locations.toggleCurfew"(
     this: Meteor.MethodThisType,
     { locationId }: { locationId: LocationID },
   ) {
-    const location = Locations.findOne(locationId);
+    const location = await Locations.findOneAsync(locationId);
 
-    if (!isUserInTeam(this.userId, location?.teamName)) {
+    if (!(await isUserInTeam(this.userId, location?.teamName))) {
       throw new Meteor.Error("Wait that's illegal");
     }
 
     return (
-      Locations.update(locationId, {
+      (await Locations.updateAsync(locationId, {
         $set: { curfew: !location?.curfew, updatedAt: new Date() },
-      }) && Locations.findOne(locationId)
+      })) && (await Locations.findOneAsync(locationId))
     );
   },
-  "Locations.toggleClosed"(
+  async "Locations.toggleClosed"(
     this: Meteor.MethodThisType,
     { locationId }: { locationId: LocationID },
   ) {
-    const location = Locations.findOne(locationId);
+    const location = await Locations.findOneAsync(locationId);
 
-    if (!isUserInTeam(this.userId, location?.teamName)) {
+    if (!(await isUserInTeam(this.userId, location?.teamName))) {
       throw new Meteor.Error("Wait that's illegal");
     }
 
     return (
-      Locations.update(locationId, {
+      (await Locations.updateAsync(locationId, {
         $set: { closed: !location?.closed, updatedAt: new Date() },
-      }) && Locations.findOne(locationId)
+      })) && (await Locations.findOneAsync(locationId))
     );
   },
 } as const;

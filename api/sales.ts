@@ -40,7 +40,9 @@ export interface ISale {
 
 const Sales = new Mongo.Collection<ISale>("sales");
 if (Meteor.isServer) {
-  Sales.createIndex({ timestamp: -1 });
+  Meteor.startup(async () => {
+    await Sales.createIndexAsync({ timestamp: -1 });
+  });
 }
 
 export const salesMethods = {
@@ -60,38 +62,45 @@ export const salesMethods = {
     if (!locationSlug || !productIds) throw new Meteor.Error("misisng");
     const { userId } = this;
     if (!userId) throw new Meteor.Error("log in please");
-    const location = Locations.findOne({ slug: locationSlug });
+    const location = await Locations.findOneAsync({ slug: locationSlug });
     if (!location) throw new Meteor.Error("invalid location");
 
     if (!isUserInTeam(userId, location.teamName))
       throw new Meteor.Error("Wait that's illegal");
 
-    const existingSale = Sales.findOne({ cartId });
+    const existingSale = await Sales.findOneAsync({ cartId });
     if (existingSale) {
       throw new Meteor.Error("CART_ALREADY_SOLD", "Cart already sold");
     }
 
-    const insertResult = Sales.insert({
+    let amountTotal = 0;
+    for (const _id of productIds) {
+      const product = await Products.findOneAsync({ _id });
+      if (!product) continue;
+
+      amountTotal += Number(product.salePrice);
+    }
+
+    const insertResult = await Sales.insertAsync({
       userId: userId!,
       locationId: location!._id,
       cartId,
       currency: "HAX",
       country: "DK",
-      amount: productIds.reduce(
-        (m: number, _id) => m + Number(Products.findOne({ _id })?.salePrice),
-        0,
-      ),
+      amount: amountTotal,
       timestamp: new Date(),
-      products: productIds.map((_id) => Products.findOne({ _id })!),
+      products: await Promise.all(
+        productIds.map(async (_id) => (await Products.findOneAsync({ _id }))!),
+      ),
     });
 
     try {
       for (const _id of productIds) {
-        const product = Products.findOne({ _id });
+        const product = await Products.findOneAsync({ _id });
         if (!product || !product.components?.length) continue;
 
         for (const component of product.components) {
-          const stock = Stocks.findOne({ _id: component.stockId });
+          const stock = await Stocks.findOneAsync({ _id: component.stockId });
           if (!stock) continue;
           if (!component.unitSize) continue;
           if (!component.sizeUnit) continue;
@@ -119,7 +128,7 @@ export const salesMethods = {
               componentInStockSize) /
             Number(stock.unitSize);
           if (!Number.isNaN(newApproxCount)) {
-            Stocks.update(component.stockId, {
+            await Stocks.updateAsync(component.stockId, {
               $set: { approxCount: newApproxCount },
             });
           }

@@ -28,7 +28,7 @@ export default function PageStock() {
   const [onlyShowStockWithoutProducts, setOnlyShowStockWithoutProducts] =
     useState(false);
 
-  const stocks = useFind(
+  const stocks: IStock[] = useFind(
     () =>
       Stocks.find(
         { removedAt: { $exists: false } },

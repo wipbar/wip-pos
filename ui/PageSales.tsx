@@ -143,11 +143,14 @@ export default function PageSales() {
                   <button
                     type="button"
                     disabled={!location}
-                    onClick={() => {
+                    onClick={async () => {
+                      const userIsResponsible = await isUserResponsible(
+                        currentUser,
+                      );
                       const statements = salesOfDay.map((sale) => ({
                         timestamp: sale.timestamp,
                         amount: sale.amount,
-                        cost: isUserResponsible(currentUser)
+                        cost: userIsResponsible
                           ? getSaleExpenses(sale, products)
                           : undefined,
                       }));

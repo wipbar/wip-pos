@@ -64,8 +64,9 @@ interface ConfigError {
 }
 
 declare module "meteor/service-configuration" {
-  var ServiceConfiguration: {
-    configurations: Mongo.Collection<Configuration & { clientId: string }>;
-    ConfigError: ConfigError;
-  };
+  export interface Configuration {
+    appId: string;
+    secret: string;
+    clientId: string;
+  }
 }

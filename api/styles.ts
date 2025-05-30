@@ -10,10 +10,10 @@ export interface IStyle {
 const Styles = new Mongo.Collection<IStyle>("styles");
 
 if (Meteor.isServer) {
-  Meteor.startup(() => {
-    if (Styles.find().count() === 0) {
-      Styles.insert({ page: "menu", style: {} });
-      Styles.insert({ page: "stats", style: {} });
+  Meteor.startup(async () => {
+    if ((await Styles.find().countAsync()) === 0) {
+      await Styles.insertAsync({ page: "menu", style: {} });
+      await Styles.insertAsync({ page: "stats", style: {} });
     }
   });
 }

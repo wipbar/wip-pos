@@ -55,17 +55,17 @@ export default function useMethod<
     (params: Input) =>
       new Promise<Output>((resolve, reject) => {
         dispatch({ type: "loading" });
-        const callbackHandler = (err: Error, result: Output) => {
-          if (err) {
-            dispatch({ type: "failure", payload: err });
-            reject(err);
-          } else {
+
+        Meteor.callAsync(method, params).then(
+          (result: Output) => {
             dispatch({ type: "success", payload: result });
             resolve(result);
-          }
-        };
-
-        Meteor.call(method, params, callbackHandler);
+          },
+          (err: Error) => {
+            dispatch({ type: "failure", payload: err });
+            reject(err);
+          },
+        );
       }),
     [method],
   );

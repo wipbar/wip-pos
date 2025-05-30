@@ -14,6 +14,7 @@ require("tls").DEFAULT_ECDH_CURVE = "auto";
 
 Accounts.config({ forbidClientAccountCreation: true });
 const service = "bornhack";
+// Are these secret? Who the fuck cares
 const code_verifier = "1IwjXGI5H56e8vWKLHJwLn615KuGr8_yQeCLFgftTJ4";
 const code_challenge = "pAiuYdomi8XWR3KVWRQaHCqvtkFhX0Sjw5aCw6E--gI";
 
@@ -22,14 +23,16 @@ if (!Meteor.isClient) {
     service,
     2,
     null,
-    ({ code, state }: { code: string; state: string }) => {
-      const config = ServiceConfiguration.configurations.findOne({ service });
+    async ({ code, state }: { code: string; state: string }) => {
+      const config = await ServiceConfiguration.configurations.findOneAsync({
+        service,
+      });
       if (!config) throw new ServiceConfiguration.ConfigError();
 
       let accessToken: string | string;
       let response;
       try {
-        response = HTTP.post("https://bornhack.dk/o/token/", {
+        response = await HTTP.post("https://bornhack.dk/o/token/", {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
           },
@@ -43,7 +46,7 @@ if (!Meteor.isClient) {
             client_secret: OAuth.openSecret(config.secret),
             redirect_uri: OAuth._redirectUri(service, config),
             state,
-            scope: "read",
+            scope: "profile:read",
           },
         });
       } catch ({ message, response }: any) {
@@ -55,6 +58,7 @@ if (!Meteor.isClient) {
         );
       }
       // if the http response was a json object with an error attribute
+      console.log(response);
       if (response.data.error) {
         throw new Error(
           "Failed to complete OAuth handshake with Bornhack. " +
@@ -70,9 +74,11 @@ if (!Meteor.isClient) {
         teams: { team: string; camp: string }[];
       };
       try {
-        identity = HTTP.get("https://bornhack.dk/profile/api/", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }).data;
+        identity = (
+          await HTTP.get("https://bornhack.dk/profile/api/", {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          })
+        ).data;
       } catch ({ message, response }: any) {
         throw Object.assign(
           new Error("Failed to fetch identity from Bornhack. " + message),
@@ -92,25 +98,29 @@ if (!Meteor.isClient) {
     },
   );
 
-  ServiceConfiguration.configurations.upsert(
-    { service },
-    {
-      $set: {
-        loginStyle: "redirect" || "popup",
-        clientId: Meteor.settings.BH_CLIENT_ID,
-        secret: Meteor.settings.BH_CLIENT_SECRET,
+  Meteor.startup(async () => {
+    await ServiceConfiguration.configurations.upsertAsync(
+      { service },
+      {
+        $set: {
+          loginStyle: "redirect" || "popup",
+          clientId: Meteor.settings.BH_CLIENT_ID,
+          secret: Meteor.settings.BH_CLIENT_SECRET,
+        },
       },
-    },
-  );
+    );
+  });
 }
 
 Accounts.oauth.registerService(service);
 
 if (Meteor.isClient) {
-  Accounts.registerClientLoginFunction(service, () => {
+  Accounts.registerClientLoginFunction(service, async () => {
     const credentialRequestCompleteCallback =
       Accounts.oauth.credentialRequestCompleteHandler();
-    const config = ServiceConfiguration.configurations.findOne({ service });
+    const config = await ServiceConfiguration.configurations.findOneAsync({
+      service,
+    });
     if (!config) {
       return credentialRequestCompleteCallback?.(
         new ServiceConfiguration.ConfigError(),
@@ -134,6 +144,7 @@ if (Meteor.isClient) {
     loginUrl.searchParams.set("code_challenge_method", "S256");
     loginUrl.searchParams.set("code_challenge", code_challenge);
     loginUrl.searchParams.set("code_verifier", code_verifier);
+    loginUrl.searchParams.set("scope", "profile:read");
 
     OAuth.launchLogin({
       loginService: service,
@@ -157,21 +168,23 @@ if (Meteor.isClient) {
   });
 }
 
-export const isUserAdmin = (userOrId: string | Meteor.User | null) => {
+export const isUserAdmin = async (userOrId: string | Meteor.User | null) => {
   if (!userOrId) return false;
 
-  const user = Meteor.users.findOne(
+  const user = await Meteor.users.findOneAsync(
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
 
   if (user?.services?.bornhack?.id === "klarstrup") return true;
 };
 
-export const isUserResponsible = (userOrId: string | Meteor.User | null) => {
+export const isUserResponsible = async (
+  userOrId: string | Meteor.User | null,
+) => {
   if (!userOrId) return false;
-  if (isUserAdmin(userOrId)) return true;
+  if (await isUserAdmin(userOrId)) return true;
 
-  const user = Meteor.users.findOne(
+  const user = await Meteor.users.findOneAsync(
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
 
@@ -186,16 +199,16 @@ export const isUserResponsible = (userOrId: string | Meteor.User | null) => {
     return true;
 };
 
-export const isUserInTeam = (
+export const isUserInTeam = async (
   userOrId: string | Meteor.User | null,
   inTeam: string | undefined,
 ) => {
   if (!userOrId || !inTeam) return false;
-  if (isUserAdmin(userOrId)) return true;
-  const user = Meteor.users.findOne(
+  if (await isUserAdmin(userOrId)) return true;
+  const user = await Meteor.users.findOneAsync(
     typeof userOrId === "string" ? userOrId : userOrId._id,
   );
-  const [currentCamp] = Camps.find({}, { sort: { end: -1 } }).fetch();
+  const currentCamp = await Camps.findOneAsync({}, { sort: { end: -1 } });
 
   return Boolean(
     user?.services?.bornhack?.teams?.some(
@@ -205,21 +218,14 @@ export const isUserInTeam = (
     ),
   );
 };
-export const assertUserInAnyTeam = (userOrId: string | Meteor.User | null) => {
-  if (
-    !Locations.find()
-      .fetch()
-      .some(({ teamName }) => isUserInTeam(userOrId, teamName))
-  )
-    throw new Meteor.Error(`You are not a member of an active team`);
-};
-
-export const assertUserInTeam = (
-  userOrId: string | Meteor.User,
-  inTeam: string,
+export const assertUserInAnyTeam = async (
+  userOrId: string | Meteor.User | null,
 ) => {
-  if (!isUserInTeam(userOrId, inTeam))
-    throw new Meteor.Error(`You are not a member of ${inTeam} Team`);
+  for (const location of await Locations.find().fetchAsync()) {
+    if (await isUserInTeam(userOrId, location.teamName)) return;
+  }
+
+  throw new Meteor.Error(`You are not a member of an active team`);
 };
 
 //In the client side

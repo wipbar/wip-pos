@@ -28,7 +28,7 @@ const Stocks = new Mongo.Collection<IStock>("stocks");
 export default Stocks;
 
 export const stocksMethods = {
-  "Stock.addStock"(
+  async "Stock.addStock"(
     this: Meteor.MethodThisType,
     {
       data,
@@ -39,16 +39,16 @@ export const stocksMethods = {
       >;
     },
   ) {
-    assertUserInAnyTeam(this.userId);
+    await assertUserInAnyTeam(this.userId);
     const createdAt = new Date();
-    return Stocks.insert({
+    return Stocks.insertAsync({
       createdAt,
       updatedAt: createdAt,
       approxCount: null,
       ...data,
     });
   },
-  "Stock.editStock"(
+  async "Stock.editStock"(
     this: Meteor.MethodThisType,
     {
       stockId,
@@ -58,32 +58,34 @@ export const stocksMethods = {
       data: Partial<IStock>;
     },
   ) {
-    assertUserInAnyTeam(this.userId);
+    await assertUserInAnyTeam(this.userId);
     const updatedAt = new Date();
-    return Stocks.update(stockId, {
+    return await Stocks.updateAsync(stockId, {
       $set: { ...updatedStock, updatedAt },
     });
   },
-  "Stock.takeStock"(
+  async "Stock.takeStock"(
     this: Meteor.MethodThisType,
     { stockId, count }: { stockId: StockID; count: number },
   ) {
-    assertUserInAnyTeam(this.userId);
+    await assertUserInAnyTeam(this.userId);
     if (stockId) {
       const updatedAt = new Date();
-      return Stocks.update(stockId, {
+      return await Stocks.updateAsync(stockId, {
         $set: { approxCount: count, updatedAt },
         $push: { levels: { count, timestamp: new Date() } },
       });
     }
   },
-  "Stock.removeStock"(
+  async "Stock.removeStock"(
     this: Meteor.MethodThisType,
     { stockId }: { stockId: StockID },
   ) {
-    assertUserInAnyTeam(this.userId);
+    await assertUserInAnyTeam(this.userId);
     if (stockId)
-      return Stocks.update(stockId, { $set: { removedAt: new Date() } });
+      return await Stocks.updateAsync(stockId, {
+        $set: { removedAt: new Date() },
+      });
   },
 } as const;
 

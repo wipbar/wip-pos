@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import React, { ReactElement, useEffect, useRef, useState } from "react";
 
 export const useKeyDownListener = (handler: (event: KeyboardEvent) => void) => {
-  const savedHandler = useRef<(event: KeyboardEvent) => void>();
+  const savedHandler = useRef<(event: KeyboardEvent) => void>(handler);
 
   useEffect(() => {
     savedHandler.current = handler;

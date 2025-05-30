@@ -11,14 +11,18 @@ import Styles from "../api/styles";
 import "./metrics";
 import "./sales";
 
-Meteor.publish("products", function (this: Subscription) {
+Meteor.publish("products", async function (this: Subscription) {
   return Products.find(
     {},
-    { fields: isUserResponsible(this.userId) ? undefined : { shopPrices: 0 } },
+    {
+      fields: (await isUserResponsible(this.userId))
+        ? undefined
+        : { shopPrices: 0 },
+    },
   );
 });
 Meteor.publish("camps", () => Camps.find({}, { sort: { end: -1 } }));
-Meteor.publish("sales", function (this: Subscription, rawOptions) {
+Meteor.publish("sales", async function (this: Subscription, rawOptions) {
   const { from, to } = rawOptions || {};
   let selector: Mongo.Selector<ISale> = {};
 
@@ -38,7 +42,7 @@ Meteor.publish("sales", function (this: Subscription, rawOptions) {
 
   return Sales.find(selector, {
     sort: { timestamp: -1 },
-    fields: isUserResponsible(this.userId)
+    fields: (await isUserResponsible(this.userId))
       ? undefined
       : { "products.shopPrices": 0 },
   });

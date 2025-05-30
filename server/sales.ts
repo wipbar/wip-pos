@@ -1,3 +1,4 @@
+/*
 import Fiber from "fibers";
 import { WebApp } from "meteor/webapp";
 import Sales from "../api/sales";
@@ -9,7 +10,7 @@ if (Number(false)) {
         res.setHeader("content-type", "application/json; charset=utf-8");
         return res.end(
           JSON.stringify(
-            Sales.find({}, { fields: { "products.shopPrices": 0 } }).fetch(),
+            await Sales.find({}, { fields: { "products.shopPrices": 0 } }).fetchAsync(),
           ),
         );
       } catch (error) {
@@ -20,3 +21,4 @@ if (Number(false)) {
     }).run(),
   );
 }
+*/
