@@ -31,20 +31,21 @@ if (!Meteor.isClient) {
       let response: unknown;
       try {
         const tokenURL = new URL("https://bornhack.dk/o/token/");
-        const tokenParams = tokenURL.searchParams;
-        tokenParams.set("code", code);
-        tokenParams.set("code_verifier", code_verifier);
-        tokenParams.set("code_challenge", code_challenge);
-        tokenParams.set("code_challenge_method", "S256");
-        tokenParams.set("grant_type", "authorization_code");
-        tokenParams.set("client_id", config.clientId);
-        tokenParams.set("client_secret", OAuth.openSecret(config.secret));
-        tokenParams.set("redirect_uri", OAuth._redirectUri(service, config));
-        tokenParams.set("state", state);
-        tokenParams.set("scope", "profile:read");
+        const tokenParams = new URLSearchParams();
+        tokenParams.append("code", code);
+        tokenParams.append("code_verifier", code_verifier);
+        tokenParams.append("code_challenge", code_challenge);
+        tokenParams.append("code_challenge_method", "S256");
+        tokenParams.append("grant_type", "authorization_code");
+        tokenParams.append("client_id", config.clientId);
+        tokenParams.append("client_secret", OAuth.openSecret(config.secret));
+        tokenParams.append("redirect_uri", OAuth._redirectUri(service, config));
+        tokenParams.append("state", state);
+        tokenParams.append("scope", "profile:read");
 
         response = await fetch(tokenURL, {
           method: "post",
+          body: tokenParams,
           headers: {
             "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
           },
@@ -52,7 +53,7 @@ if (!Meteor.isClient) {
       } catch (error) {
         throw Object.assign(
           new Error(
-            "Failed to complete OAuth handshake with Bornhack. " +
+            "Failed to complete OAuth handshake with Bornhack, failed to request token: " +
               String(error),
           ),
           { cause: error },
@@ -66,7 +67,7 @@ if (!Meteor.isClient) {
         response.error
       ) {
         throw new Error(
-          `Failed to complete OAuth handshake with Bornhack. ${String(
+          `Failed to complete OAuth handshake with Bornhack, received an error when requesting token: ${String(
             response.error,
           )}`,
         );
