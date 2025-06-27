@@ -16,7 +16,6 @@ import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import { emptyObject, getCorrectTextColor } from "../util";
-import "../global.d.ts";
 
 const flows = [
   ...draculaFlow,
