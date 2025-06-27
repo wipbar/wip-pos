@@ -8,11 +8,15 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
     "plugin:react/recommended",
     "prettier",
   ],
   parser: "@typescript-eslint/parser",
+  parserOptions: {
+    project: "./tsconfig.json",
+    tsconfigRootDir: __dirname,
+  },
   plugins: ["@typescript-eslint", "react", "react-hooks", "prettier"],
   rules: {
     "react/prop-types": "off",
@@ -28,7 +32,12 @@ module.exports = {
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-floating-promises": "on",
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        checksVoidReturn: { attributes: false },
+      },
+    ],
   },
-  ignorePatterns: ["**/vendor/**/*.js"],
+  ignorePatterns: ["**/vendor/**/*.js", ".eslintrc.js"],
 };

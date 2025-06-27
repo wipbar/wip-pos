@@ -160,7 +160,7 @@ export default function CartView({
     if (!locationSlug) return;
     if (!cart) return;
 
-    crankSound.play();
+    await crankSound.play();
     try {
       await doSellProducts({
         locationSlug,
@@ -173,13 +173,13 @@ export default function CartView({
         throw sellError;
       }
       if (sellError.error !== "CART_ALREADY_SOLD") {
-        ohnoSound.play();
+        await ohnoSound.play();
         return;
       }
     }
     setPickedProductIds(cart, emptyArray);
     setConfirmOpen(false);
-    dingSound.play();
+    await dingSound.play();
 
     navigator.vibrate?.(500);
   }, [cart, doSellProducts, locationSlug, setPickedProductIds]);

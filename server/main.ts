@@ -12,41 +12,45 @@ import "./metrics";
 import "./sales";
 
 Meteor.publish("products", async function (this: Subscription) {
+  const user = this.userId && (await Meteor.users.findOneAsync(this.userId));
+
   return Products.find(
     {},
-    {
-      fields: (await isUserResponsible(this.userId))
-        ? undefined
-        : { shopPrices: 0 },
-    },
+    { fields: user && isUserResponsible(user) ? undefined : { shopPrices: 0 } },
   );
 });
 Meteor.publish("camps", () => Camps.find({}, { sort: { end: -1 } }));
-Meteor.publish("sales", async function (this: Subscription, rawOptions) {
-  const { from, to } = rawOptions || {};
-  let selector: Mongo.Selector<ISale> = {};
+Meteor.publish(
+  "sales",
+  async function (this: Subscription, rawOptions?: { from?: Date; to?: Date }) {
+    const { from, to } = rawOptions || {};
+    let selector: Mongo.Selector<ISale> = {};
 
-  if (from) {
-    selector = {
-      ...selector,
-      timestamp: { ...selector.timestamp, $gte: from },
-    };
-  }
+    if (from) {
+      selector = {
+        ...selector,
+        timestamp: { ...selector.timestamp, $gte: from },
+      };
+    }
 
-  if (to) {
-    selector = {
-      ...selector,
-      timestamp: { ...selector.timestamp, $lte: to },
-    };
-  }
+    if (to) {
+      selector = {
+        ...selector,
+        timestamp: { ...selector.timestamp, $lte: to },
+      };
+    }
 
-  return Sales.find(selector, {
-    sort: { timestamp: -1 },
-    fields: (await isUserResponsible(this.userId))
-      ? undefined
-      : { "products.shopPrices": 0 },
-  });
-});
+    const user = this.userId && (await Meteor.users.findOneAsync(this.userId));
+
+    return Sales.find(selector, {
+      sort: { timestamp: -1 },
+      fields:
+        user && isUserResponsible(user)
+          ? undefined
+          : { "products.shopPrices": 0 },
+    });
+  },
+);
 Meteor.publish("styles", () => Styles.find());
 Meteor.publish("stocks", () => Stocks.find());
 Meteor.publish("locations", () => Locations.find());

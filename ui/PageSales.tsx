@@ -78,9 +78,9 @@ export default function PageSales() {
           min(
             max(
               startOfDay(subHours(timestamp, rolloverOffset)),
-              startOfDay(subHours(selectedCamp!.start!, rolloverOffset)),
+              startOfDay(subHours(selectedCamp!.start, rolloverOffset)),
             ),
-            startOfDay(subHours(selectedCamp!.end!, rolloverOffset)),
+            startOfDay(subHours(selectedCamp!.end, rolloverOffset)),
           ).toISOString(),
         ),
       )
@@ -143,10 +143,8 @@ export default function PageSales() {
                   <button
                     type="button"
                     disabled={!location}
-                    onClick={async () => {
-                      const userIsResponsible = await isUserResponsible(
-                        currentUser,
-                      );
+                    onClick={() => {
+                      const userIsResponsible = isUserResponsible(currentUser);
                       const statements = salesOfDay.map((sale) => ({
                         timestamp: sale.timestamp,
                         amount: sale.amount,

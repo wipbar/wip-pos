@@ -77,7 +77,7 @@ export default function CampByCamp() {
   }, [getCampByCampData]);
 
   useEffect(() => {
-    updateCampByCampData();
+    void updateCampByCampData();
   }, [updateCampByCampData]);
   useInterval(() => updateCampByCampData(), 30000);
 

@@ -31,7 +31,9 @@ import PageStats from "./PageStats";
 import PageStock from "./PageStock";
 import PageTend from "./PageTend";
 
-Tracker.autorun(() => (document.title = Session.get("DocumentTitle")));
+Tracker.autorun(() => {
+  document.title = Session.get("DocumentTitle") as string;
+});
 
 Meteor.subscribe("camps");
 Meteor.subscribe("locations");
@@ -48,7 +50,7 @@ export default function UI() {
   );
   const match = useMatch("/:locationSlug/*");
   const locationSlug = match?.params.locationSlug;
-  const pageSlug = (match?.params as any)?.["*"] as string | undefined;
+  const pageSlug = match?.params?.["*"];
 
   const camps = useFind(() =>
     Camps.find(
@@ -66,7 +68,7 @@ export default function UI() {
   const user = useCurrentUser();
   const locations = useFind(() => Locations.find());
   const userLocations = locations.filter(({ teamName }) =>
-    isUserInTeam(user, teamName),
+    isUserInTeam(user, currentCamp, teamName),
   );
   const currentLocation = useCurrentLocation()?.location || locations?.[0];
   useEffect(() => {
@@ -253,7 +255,7 @@ export default function UI() {
               ) : null}
               {user &&
               currentLocation &&
-              isUserInTeam(user, currentLocation.teamName) ? (
+              isUserInTeam(user, currentCamp, currentLocation.teamName) ? (
                 <>
                   <Link
                     to={`/${
@@ -308,7 +310,7 @@ export default function UI() {
           !(
             user &&
             currentLocation &&
-            isUserInTeam(user, currentLocation.teamName)
+            isUserInTeam(user, currentCamp, currentLocation.teamName)
           )
             ? locations.map(({ slug, name }) => (
                 <Link key={slug} to={`/${slug}/menu`}>

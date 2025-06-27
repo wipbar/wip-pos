@@ -7,6 +7,7 @@ import Locations from "../api/locations";
 import AccountsUIWrapper from "../ui/AccountsUIWrapper";
 import useCurrentUser from "./useCurrentUser";
 import useSubscription from "./useSubscription";
+import useCurrentCamp from "./useCurrentCamp";
 
 export default function useCurrentLocation(authorized?: boolean) {
   const match = useMatch("/:locationSlug/*");
@@ -19,6 +20,7 @@ export default function useCurrentLocation(authorized?: boolean) {
   );
 
   const user = useCurrentUser();
+  const camp = useCurrentCamp();
   const error =
     !loading &&
     (() => {
@@ -40,7 +42,7 @@ export default function useCurrentLocation(authorized?: boolean) {
           );
         }
 
-        if (!isUserInTeam(user, location.teamName)) {
+        if (!isUserInTeam(user, camp, location.teamName)) {
           return (
             <>
               You need to be a member of <code>{location.teamName} Team</code>{" "}

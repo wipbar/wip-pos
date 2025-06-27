@@ -6,7 +6,7 @@ interface Sub {
   hash: string;
   ready?: boolean;
   updated?: number;
-  identifier?: any[];
+  identifier?: unknown[];
 }
 class SubsManager {
   cacheLimit: number;
@@ -65,7 +65,7 @@ class SubsManager {
     }
 
     // add the current sub to the top of the list
-    const sub = this._cacheMap[hash]!;
+    const sub = this._cacheMap[hash];
     sub.updated = new Date().getTime();
 
     this._cacheList.splice(this._cacheList.indexOf(sub), 1);
@@ -127,11 +127,13 @@ class SubsManager {
     });
   }
   _createIdentifier = (args: Sub["args"]) =>
-    args.map((value) => (typeof value == "string" ? '"' + value + '"' : value));
+    args.map((value) =>
+      typeof value == "string" ? '"' + value + '"' : (value as unknown),
+    );
 
   _handleError(sub: Sub) {
     const args = sub.args;
-    const lastElement = args[args.length - 1];
+    const lastElement = args[args.length - 1] as unknown;
     sub.identifier = this._createIdentifier(args);
 
     if (!lastElement) {
@@ -139,23 +141,34 @@ class SubsManager {
     } else if (typeof lastElement == "function") {
       args.pop();
       args.push({ onReady: lastElement, onError: errorHandlingLogic });
-    } else if (typeof lastElement.onError == "function") {
+    } else if (
+      (typeof lastElement == "object" || typeof lastElement == "function") &&
+      "onError" in lastElement &&
+      typeof lastElement.onError == "function"
+    ) {
       const originalOnError = lastElement.onError;
       lastElement.onError = (err: any) => {
         errorHandlingLogic(err);
         originalOnError(err);
       };
-    } else if (typeof lastElement.onReady == "function") {
+    } else if (
+      (typeof lastElement == "object" || typeof lastElement == "function") &&
+      "onReady" in lastElement &&
+      typeof lastElement.onReady == "function"
+    ) {
+      // @ts-expect-error - lastElement is an object with onReady
       lastElement.onError = errorHandlingLogic;
     } else {
       args.push({ onError: errorHandlingLogic });
     }
 
-    function errorHandlingLogic(err: any) {
+    function errorHandlingLogic(err: unknown) {
       console.log(
         "Error invoking SubsManager.subscribe(%s): ",
         sub.identifier,
-        err.reason,
+        err && typeof err === "object" && "reason" in err
+          ? err.reason
+          : undefined,
       );
       // expire this sub right away.
       // Then expiration machanism will take care of the sub removal

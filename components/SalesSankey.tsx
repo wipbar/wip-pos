@@ -131,7 +131,7 @@ export default function SalesSankey({ currentCamp }: { currentCamp?: ICamp }) {
   }, [currentCamp, getData]);
 
   useEffect(() => {
-    updateData();
+    void updateData();
   }, [updateData]);
   useInterval(() => updateData(), 30000);
 

@@ -223,7 +223,7 @@ export default function PageProducts() {
 
           return memo;
         }, new Set<string>(activeFilters)),
-    ].sort(collator.compare);
+    ].sort(collator.compare.bind(collator));
   }, [
     activeFilters,
     location,
@@ -529,10 +529,10 @@ export default function PageProducts() {
                       `}
                     >
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (!location) return;
 
-                          editProduct({
+                          await editProduct({
                             productId: product._id,
                             data: isOnMenu
                               ? {
@@ -626,14 +626,14 @@ export default function PageProducts() {
                     {isUserAdmin(user) && (
                       <td>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (
                               window.confirm(
                                 "Are you sure you want to delete " +
                                   product.name,
                               )
                             ) {
-                              removeProduct({ productId: product._id });
+                              await removeProduct({ productId: product._id });
                             }
                           }}
                         >

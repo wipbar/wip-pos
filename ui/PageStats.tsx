@@ -32,14 +32,14 @@ export default function PageStats() {
   }, [currentCamp?.slug, getMostSoldData]);
 
   useEffect(() => {
-    updateDayByDayData();
+    void updateDayByDayData();
   }, [updateDayByDayData]);
   useInterval(() => updateDayByDayData(), 30000);
 
   const [getGoodbyeWorld] = useMethod("Sales.stats.GoodbyeWorld");
   useEffect(() => {
     if (currentCamp) {
-      getGoodbyeWorld({ campSlug: currentCamp.slug }).then(console.log);
+      void getGoodbyeWorld({ campSlug: currentCamp.slug }).then(console.log);
     }
   }, [currentCamp, getGoodbyeWorld]);
 

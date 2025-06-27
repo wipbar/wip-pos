@@ -65,7 +65,11 @@ export const salesMethods = {
     const location = await Locations.findOneAsync({ slug: locationSlug });
     if (!location) throw new Meteor.Error("invalid location");
 
-    if (!isUserInTeam(userId, location.teamName))
+    const user = await Meteor.users.findOneAsync(userId);
+    if (!user) throw new Meteor.Error("user not found");
+    const currentCamp = await Camps.findOneAsync({}, { sort: { end: -1 } });
+
+    if (!isUserInTeam(user, currentCamp, location.teamName))
       throw new Meteor.Error("Wait that's illegal");
 
     const existingSale = await Sales.findOneAsync({ cartId });
@@ -82,8 +86,8 @@ export const salesMethods = {
     }
 
     const insertResult = await Sales.insertAsync({
-      userId: userId!,
-      locationId: location!._id,
+      userId: userId,
+      locationId: location._id,
       cartId,
       currency: "HAX",
       country: "DK",
@@ -141,14 +145,14 @@ export const salesMethods = {
     return insertResult;
   },
 
-  async "Sales.stats.CampByCamp"(this: Meteor.MethodThisType) {
+  "Sales.stats.CampByCamp"(this: Meteor.MethodThisType) {
     this.unblock();
     if (this.isSimulation) return;
 
     return statsCampByCamp;
   },
 
-  async "Sales.stats.SalesSankey"(
+  "Sales.stats.SalesSankey"(
     this: Meteor.MethodThisType,
     { campSlug }: { campSlug: ICamp["slug"] },
   ) {
@@ -158,7 +162,7 @@ export const salesMethods = {
     return statsSalesSankey?.data[campSlug];
   },
 
-  async "Sales.stats.DayByDay"(
+  "Sales.stats.DayByDay"(
     this: Meteor.MethodThisType,
     { campSlug }: { campSlug: ICamp["slug"] },
   ) {
@@ -168,7 +172,7 @@ export const salesMethods = {
     return statsDayByDay?.data[campSlug];
   },
 
-  async "Sales.stats.MostSold"(
+  "Sales.stats.MostSold"(
     this: Meteor.MethodThisType,
     { campSlug }: { campSlug?: ICamp["slug"] },
   ) {
@@ -180,7 +184,7 @@ export const salesMethods = {
     return statsMostSold?.data[campSlug];
   },
 
-  async "Products.menu.Menu"(
+  "Products.menu.Menu"(
     this: Meteor.MethodThisType,
     { locationSlug }: { locationSlug: ILocation["slug"] },
   ) {
@@ -271,15 +275,15 @@ if (Meteor.isServer) {
     ]);
     console.timeEnd("Startup statsing");
 
-    setInterval(async () => {
-      calculateCampByCampStats().then((data) => (statsCampByCamp = data));
-      calculateSalesSankeyData().then((data) => (statsSalesSankey = data));
-      calculateDayByDayStats().then((data) => (statsDayByDay = data));
-      calculateMostSold().then((data) => (statsMostSold = data));
+    setInterval(() => {
+      void calculateCampByCampStats().then((data) => (statsCampByCamp = data));
+      void calculateSalesSankeyData().then((data) => (statsSalesSankey = data));
+      void calculateDayByDayStats().then((data) => (statsDayByDay = data));
+      void calculateMostSold().then((data) => (statsMostSold = data));
     }, 240_000);
 
-    setInterval(async () => {
-      calculateMenuData().then((data) => (locationMenuData = data));
+    setInterval(() => {
+      void calculateMenuData().then((data) => (locationMenuData = data));
     }, 20_000);
   });
 }
@@ -590,7 +594,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
   const products = await Products.find(
     {
       removedAt: { $exists: false },
-      locationIds: { $elemMatch: { $eq: location._id } },
+      locationIds: location._id.toString(),
     },
     { sort: { brandName: 1, name: 1 } },
   ).fetchAsync();
@@ -733,12 +737,9 @@ async function calculateMostSold() {
 
   const now2 = new Date();
 
-  const data: Record<
-    ICamp["slug"] | "all",
-    [ProductID, number, number | null][]
-  > = {};
+  const data: Record<ICamp["slug"], [ProductID, number, number | null][]> = {};
   for (const currentCamp of camps) {
-    const campAggregatedCount = await Sales.rawCollection()
+    const campAggregatedCount = (await Sales.rawCollection()
       .aggregate([
         {
           $match: {
@@ -763,7 +764,7 @@ async function calculateMostSold() {
         { $sort: { count: -1 } },
         { $project: { _id: 1, count: 1, sales: 1 } },
       ])
-      .toArray();
+      .toArray()) as (Pick<IProduct, "_id"> & { count: number })[];
 
     data[currentCamp.slug] = campAggregatedCount.map(
       ({ _id, count /*sales*/ }) => {
@@ -790,14 +791,14 @@ async function calculateMostSold() {
     );
   }
 
-  const aggregatedCount = await Sales.rawCollection()
+  const aggregatedCount = (await Sales.rawCollection()
     .aggregate([
       { $unwind: "$products" },
       { $group: { _id: "$products._id", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $project: { _id: 1, count: 1 } },
     ])
-    .toArray();
+    .toArray()) as (Pick<IProduct, "_id"> & { count: number })[];
 
   data.all = aggregatedCount.map(
     ({ _id, count }) =>

@@ -1,7 +1,5 @@
 /* eslint-disable no-var */
-import { Mongo } from "meteor/mongo";
-import { DetailedHTMLProps, HTMLAttributes } from "react";
-import "styled-components";
+/// <reference types="styled-components" />
 
 interface ShareData {
   text?: string;
@@ -14,9 +12,16 @@ declare global {
   var SERVER: boolean;
   var VIZSLA_VERSION: string;
   namespace JSX {
+    type React = import("react");
     interface IntrinsicElements {
-      center: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
-      marquee: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
+      center: React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      >;
+      marquee: React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      > & {
         scrollAmount: string;
       };
     }
@@ -34,12 +39,15 @@ declare module "meteor/meteor" {
       bornhack?: {
         id: string;
         teams: { team: string; camp: string }[];
+        publicCreditName?: string;
       };
     }
   }
 }
 declare module "meteor/accounts-base" {
   namespace Accounts {
+    type Mongo = import("meteor/mongo").Mongo;
+
     function addAutopublishFields(opts: {
       forLoggedInUser: string[];
       forOtherUsers: string[];
@@ -59,14 +67,52 @@ declare module "meteor/accounts-base" {
   }
 }
 
-interface ConfigError {
-  new (): Error;
+interface Configuration {
+  appId: string;
+  secret: string;
+  clientId: string;
 }
-
 declare module "meteor/service-configuration" {
-  export interface Configuration {
+  interface Configuration {
     appId: string;
     secret: string;
     clientId: string;
+  }
+  var ServiceConfiguration: {
+    configurations: import("meteor/mongo").Mongo.Collection<Configuration>;
+    ConfigError: {
+      new (): Error;
+    };
+  };
+}
+
+declare module "meteor/oauth" {
+  namespace OAuth {
+    function registerService(
+      name: string,
+      version: number,
+      urls: null,
+      handleOauthRequest: (query: { code: string; state: string }) => Promise<{
+        serviceData: Record<string, unknown>;
+      }>,
+    ): void;
+    function sealSecret(secret: string): string;
+    function credentialRequestCompleteHandler(
+      callback?: (error?: Error) => void,
+    ): (credentialTokenOrError: string | Error) => void;
+    function _loginStyle(service: string, config: Configuration): string;
+    function _redirectUri(service: string, config: Configuration): string;
+    function _stateParam(loginStyle: string, credentialToken: string): string;
+    function launchLogin(config: {
+      loginService: string;
+      loginStyle: string;
+      loginUrl: string;
+      credentialRequestCompleteCallback: (
+        credentialTokenOrError: string | Error,
+      ) => void;
+      credentialToken: string;
+      popupOptions?: { width: number; height: number } | undefined;
+    }): void;
+    function openSecret(secret: string): string;
   }
 }

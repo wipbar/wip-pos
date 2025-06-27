@@ -35,7 +35,7 @@ function ProductPickerProductStock({ product }: { product: IProduct }) {
   const [call, result] = useMethod("Products.getRemainingPercent");
 
   useEffect(() => {
-    call({ productId: product._id });
+    void call({ productId: product._id });
   }, [call, product._id]);
   useInterval(() => call({ productId: product._id }), 30000);
 
@@ -95,9 +95,11 @@ function ProductPickerProduct({
           : `rgba(255,255,255, 1)`};
         color: ${sortedTags.length
           ? getCorrectTextColor(
-              `rgba(${fac.getColorFromArray4(
-                sortedTags.map((tag) => stringToColours(tag)).flat(),
-              )})`,
+              `rgba(${fac
+                .getColorFromArray4(
+                  sortedTags.map((tag) => stringToColours(tag)).flat(),
+                )
+                .toString()})`,
             )
           : `rgba(0,0,0, 1)`};
         border: 2px solid black;
@@ -255,7 +257,7 @@ export default function ProductPicker({
 
             return memo;
           }, new Set<string>(activeFilters)),
-      ].sort(collator.compare),
+      ].sort(collator.compare.bind(collator)),
     [
       activeFilters,
       location,

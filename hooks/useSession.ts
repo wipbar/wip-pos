@@ -16,7 +16,7 @@ export default function useSession<T extends NoFunctionValue = any>(
   defaultValue?: T,
 ) {
   const currentValue = useTracker<T>(
-    () => Session.get(sessionName),
+    () => Session.get(sessionName) as T,
     [sessionName],
   );
   useEffect(() => {

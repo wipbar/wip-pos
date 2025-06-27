@@ -3,12 +3,13 @@ import Locations from "../api/locations";
 import Products from "../api/products";
 import Sales from "../api/sales";
 import * as client from "../vendor/prom-client";
+import Gauge from "../vendor/prom-client/lib/gauge";
 
 new client.Gauge({
   name: "location_product_sales",
   help: "Sale by product",
   labelNames: ["locationName", "brandName", "productName"],
-  async collect() {
+  async collect(this: Gauge) {
     const locations = await Locations.find().fetchAsync();
     for (const location of locations) {
       const locationSales = await Sales.find({

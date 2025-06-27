@@ -16,6 +16,7 @@ import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
 import { emptyObject, getCorrectTextColor } from "../util";
+import "../global.d.ts";
 
 const flows = [
   ...draculaFlow,
@@ -98,7 +99,7 @@ export default function PageMenu() {
   }, [currentCamp, getData, location]);
 
   useEffect(() => {
-    updateData();
+    void updateData();
   }, [updateData]);
   useInterval(() => updateData(), 10000);
 
@@ -143,6 +144,7 @@ export default function PageMenu() {
 
   if (!oij?.length) {
     return (
+      // @ts-ignore
       // eslint-disable-next-line react/no-unknown-property
       <marquee scrollAmount="20">
         <big
@@ -164,6 +166,7 @@ export default function PageMenu() {
         <center>
           <pre>Rendered: {new Date().toLocaleString()}</pre>
         </center>
+        {/* @ts-ignore */}
       </marquee>
     );
   }

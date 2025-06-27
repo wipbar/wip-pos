@@ -48,7 +48,10 @@ export const productsMethods = {
       data,
     }: { data: Omit<IProduct, "_id" | "createdAt"> & { buyPrice?: number } },
   ) {
-    await assertUserInAnyTeam(this.userId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
     const createdAt = new Date();
     return await Products.insertAsync({
       createdAt,
@@ -78,7 +81,10 @@ export const productsMethods = {
       data: Partial<IProduct> & { buyPrice?: number };
     },
   ) {
-    await assertUserInAnyTeam(this.userId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
     const oldProduct = await Products.findOneAsync({ _id: productId });
     const updatedAt = new Date();
     return await Products.updateAsync(productId, {
@@ -97,7 +103,10 @@ export const productsMethods = {
     this: Meteor.MethodThisType,
     { productId }: { productId: ProductID },
   ) {
-    await assertUserInAnyTeam(this.userId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
     if (productId)
       return Products.updateAsync(productId, {
         $set: { removedAt: new Date() },
@@ -112,7 +121,7 @@ export const productsMethods = {
 
     const currentCamp = (await Camps.findOneAsync({}, { sort: { end: -1 } }))!;
     if (productId) {
-      const product = await Products.findOneAsync(productId)!;
+      const product = await Products.findOneAsync(productId);
 
       if (!product) throw new Meteor.Error("Product not found");
 

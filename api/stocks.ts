@@ -39,7 +39,10 @@ export const stocksMethods = {
       >;
     },
   ) {
-    await assertUserInAnyTeam(this.userId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
     const createdAt = new Date();
     return Stocks.insertAsync({
       createdAt,
@@ -58,7 +61,10 @@ export const stocksMethods = {
       data: Partial<IStock>;
     },
   ) {
-    await assertUserInAnyTeam(this.userId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
     const updatedAt = new Date();
     return await Stocks.updateAsync(stockId, {
       $set: { ...updatedStock, updatedAt },
@@ -68,7 +74,10 @@ export const stocksMethods = {
     this: Meteor.MethodThisType,
     { stockId, count }: { stockId: StockID; count: number },
   ) {
-    await assertUserInAnyTeam(this.userId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
     if (stockId) {
       const updatedAt = new Date();
       return await Stocks.updateAsync(stockId, {
@@ -81,7 +90,10 @@ export const stocksMethods = {
     this: Meteor.MethodThisType,
     { stockId }: { stockId: StockID },
   ) {
-    await assertUserInAnyTeam(this.userId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
     if (stockId)
       return await Stocks.updateAsync(stockId, {
         $set: { removedAt: new Date() },

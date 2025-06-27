@@ -16,6 +16,7 @@ import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
 import PageProductsItem from "./PageProductsItem";
 import PageStockItem from "./PageStockItem";
+import type { Mongo } from "meteor/mongo";
 
 const NEW = Symbol("New");
 export default function PageStock() {
@@ -34,7 +35,9 @@ export default function PageStock() {
         { removedAt: { $exists: false } },
         {
           sort: sortBy
-            ? { [sortBy.split(".")[0]!]: sortBy.split(".")[1]! }
+            ? ({
+                [sortBy.split(".")[0]!]: sortBy.split(".")[1]!,
+              } as Mongo.SortSpecifier)
             : { updatedAt: -1, createdAt: -1 },
         },
       ),
@@ -68,7 +71,7 @@ export default function PageStock() {
           <PageProductsItem
             onCancel={() => setIsCreatingProductFromStock(null)}
             defaultValues={{
-              name: stockToCreateProductFrom!.name,
+              name: stockToCreateProductFrom.name,
               components: [
                 {
                   stockId: stockToCreateProductFrom._id,
@@ -225,13 +228,13 @@ export default function PageStock() {
                       </button>
                       {stock && isUserAdmin(user) && (
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (
                               window.confirm(
                                 "Are you sure you want to delete " + stock.name,
                               )
                             ) {
-                              removeStock({ stockId: stock._id });
+                              await removeStock({ stockId: stock._id });
                             }
                           }}
                         >

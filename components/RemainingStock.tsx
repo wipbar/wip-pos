@@ -284,8 +284,8 @@ export default function RemainingStock() {
             })
             .sort(
               (a, b) =>
-                getRemainingServings(sales, stocks, b, new Date())! -
-                getRemainingServings(sales, stocks, a, new Date())!,
+                getRemainingServings(sales, stocks, b, new Date()) -
+                getRemainingServings(sales, stocks, a, new Date()),
             )
             .map((product) => (
               <Line
@@ -299,7 +299,7 @@ export default function RemainingStock() {
             ))}
         </ComposedChart>
       </ResponsiveContainer>
-      {null &&
+      {!Math.random() &&
         stocks
           .map((stock) => {
             const remainingStock = getStockLevelAtTime(

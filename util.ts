@@ -3,6 +3,7 @@ import { readableColor } from "polished";
 export function stringToColours(inputString: string) {
   let sum = 0;
 
+  // eslint-disable-next-line @typescript-eslint/no-for-in-array
   for (const i in inputString.split("")) {
     sum += inputString.charCodeAt(Number(i));
   }

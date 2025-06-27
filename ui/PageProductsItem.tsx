@@ -17,7 +17,7 @@ import useMethod from "../hooks/useMethod";
 import { emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
 
-const toOptions = (items: any[]) =>
+const toOptions = (items: string[]) =>
   items.map((item) => ({ label: item, value: item }));
 
 const Label = ({
@@ -278,7 +278,7 @@ export default function PageProductsItem({
               onChange={(newValue) =>
                 setValue(
                   "tags",
-                  newValue?.map(({ value }) => value) || emptyArray,
+                  newValue?.map(({ value }) => String(value)) || emptyArray,
                   { shouldDirty: true },
                 )
               }

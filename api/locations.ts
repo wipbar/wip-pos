@@ -2,6 +2,7 @@ import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
+import Camps from "./camps";
 
 export type LocationID = Flavor<string, "LocationID">;
 
@@ -40,8 +41,11 @@ export const locationMethods = {
     { locationId }: { locationId: LocationID },
   ) {
     const location = await Locations.findOneAsync(locationId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    const currentCamp = await Camps.findOneAsync({}, { sort: { end: -1 } });
 
-    if (!(await isUserInTeam(this.userId, location?.teamName))) {
+    if (!isUserInTeam(user, currentCamp, location?.teamName)) {
       throw new Meteor.Error("Wait that's illegal");
     }
 
@@ -56,8 +60,11 @@ export const locationMethods = {
     { locationId }: { locationId: LocationID },
   ) {
     const location = await Locations.findOneAsync(locationId);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    const currentCamp = await Camps.findOneAsync({}, { sort: { end: -1 } });
 
-    if (!(await isUserInTeam(this.userId, location?.teamName))) {
+    if (!isUserInTeam(user, currentCamp, location?.teamName)) {
       throw new Meteor.Error("Wait that's illegal");
     }
 

@@ -19,7 +19,9 @@ export default function useWhyDidYouUpdate(
         if (previousProps.current?.[key] !== props[key]) {
           // Add to changesObj
           changesObj[key] = {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             from: previousProps.current?.[key],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             to: props[key],
           };
         }

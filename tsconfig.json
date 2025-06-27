@@ -4,6 +4,7 @@
     "target": "es2018",
     "module": "esNext",
     "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
     "allowJs": true,
     "checkJs": false,
     "jsx": "react",
@@ -26,13 +27,15 @@
     "resolveJsonModule": true,
     "types": ["node", "mocha"],
     "esModuleInterop": true,
-    "preserveSymlinks": true,
-    "paths": {
-      "meteor/*": [
-        "./node_modules/@types/meteor/*",
-        "./.meteor/local/types/packages.d.ts"
-      ]
-    }
+    "preserveSymlinks": true
   },
+  "files": ["global.d.ts"],
+  "include": [
+    "./.meteor/local/types/packages.d.ts",
+    "./.meteor/local/types/meteor.d.ts",
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./global.d.ts"
+  ],
   "exclude": ["./.meteor/**", "./packages/**"]
 }

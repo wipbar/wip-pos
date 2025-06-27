@@ -34,7 +34,7 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
   }, [currentCamp, getDayByDayData]);
 
   useEffect(() => {
-    updateDayByDayData();
+    void updateDayByDayData();
   }, [updateDayByDayData]);
   useInterval(() => updateDayByDayData(), 30000);
 
@@ -110,7 +110,7 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
               strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 3 : 2}
-              stroke={"#ffffff" || currentCamp?.color}
+              stroke={"#ffffff"}
               strokeOpacity={1 - (numberOfDaysInCurrentCamp - 1 - i) / 10}
               style={{
                 opacity: 1 - (numberOfDaysInCurrentCamp - 1 - i) / 10,
