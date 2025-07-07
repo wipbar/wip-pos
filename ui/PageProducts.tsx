@@ -52,19 +52,24 @@ export const Modal = ({
         display: flex;
         align-items: center;
         justify-content: center;
-        background: ${currentCamp &&
-        opacify(-0.25, getCorrectTextColor(currentCamp.color))};
+        background: ${opacify(
+          -0.25,
+          getCorrectTextColor(currentCamp?.color ?? "#000000"),
+        )};
         z-index: 665;
       `}
     >
       <div
         className={css`
-          background-color: ${currentCamp &&
-          getCorrectTextColor(currentCamp.color)};
-          color: ${currentCamp?.color};
+          background-color: ${getCorrectTextColor(
+            currentCamp?.color ?? "#000000",
+          )};
+          color: ${currentCamp?.color ?? "#000000"};
           box-shadow: 0 0 24px
-            ${currentCamp &&
-            opacify(-0.25, getCorrectTextColor(currentCamp.color, true))};
+            ${opacify(
+              -0.25,
+              getCorrectTextColor(currentCamp?.color ?? "#000000", true),
+            )};
           padding: 8px 8px;
           border-radius: 8px;
           position: relative;
