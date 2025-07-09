@@ -389,4 +389,6 @@ export const tranculaFlow = [
   "I eat breakfast for breakfast!",
   "I eat breakfast like it's cereal!",
   "STUMMY TWISTED",
+  "All i have are post-opps",
+  "Popped a mr bean and went non-verbal",
 ];
