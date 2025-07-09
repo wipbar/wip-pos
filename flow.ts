@@ -294,6 +294,7 @@ export const draculaFlow = [
   "This shit ain't nothing to me, man!",
 ] as const;
 
+// https://www.youtube.com/watch?v=roYq55doJX0
 export const blackulaFlow = [
   "The only plane I was on during 9/11 was a different plane of reality",
   "This shit ain’t, this shit ain’t nothing to me, man",
@@ -338,6 +339,27 @@ export const blackulaFlow = [
   "Fuck it",
 ];
 
+// https://www.instagram.com/p/DKXoWeOOrIb/
+export const negative25Flow = [
+  "I just crushed and adderall and a white monster then beat Halo 3 on a Guitar Hero controller",
+  "This shit ain't nothing to me man",
+  "I call my depression the matrix cause I'm in that bitch and I can't get out",
+  "In the function counting five things I can see and four things I can touch",
+  "Locked in on the details cause my autism different",
+  "So depressed I got my therapist going to therapy",
+  "The opps told me they'd believe that ADHD is real when someone other than a bisexual has it",
+  "Up shelf Zoloft got me disrupting my circadian rhythm",
+  "Monologued about my special interest and flew too close to the sun, guess you could say I gave her the Ickarus",
+  "Y'all stop playing with me man, I'll build an exact repliace of your life in The Sims",
+  "Neurotypicals wanted some initiative, I said hop on Stardew bitch",
+  "I'm in the club asking the bouncer if he's seen Adventure Time",
+  "Sent the opps straight to Hazbin Hotel, fuck you mean",
+  "Call me a good luck charm cause 90% of the shit that I worry about never happens",
+  "Robbed a Wells Fargo in broad daylight, cause I can't afford a formal diagnosis",
+  "Inject the opp with a 10 milligram dose of pure thoughts and good intentions",
+  "MY TUMMY HURT",
+];
+
 export const tranculaFlow = [
   "I want that twink obliterated",
   "Why do they call it oven when you of in the cold food of out hot eat the food?",
@@ -366,4 +388,5 @@ export const tranculaFlow = [
   "Am I therian? Yeah, I'm tearian' up that ass",
   "I eat breakfast for breakfast!",
   "I eat breakfast like it's cereal!",
+  "STUMMY TWISTED",
 ];

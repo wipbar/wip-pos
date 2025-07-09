@@ -10,7 +10,12 @@ import React, {
   useMemo,
 } from "react";
 import Styles, { type IStyle } from "../api/styles";
-import { blackulaFlow, draculaFlow, tranculaFlow } from "../flow";
+import {
+  blackulaFlow,
+  draculaFlow,
+  negative25Flow,
+  tranculaFlow,
+} from "../flow";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -21,6 +26,7 @@ const flows = [
   ...draculaFlow,
   ...blackulaFlow,
   ...blackulaFlow,
+  ...negative25Flow,
   ...tranculaFlow,
   ...tranculaFlow,
   ...tranculaFlow,
