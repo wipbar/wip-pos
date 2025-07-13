@@ -246,7 +246,15 @@ export default function UI() {
                     ))}
                   </select>
                 ) : (
-                  <big>
+                  <big
+                    className={css`
+                      color: ${(currentCamp || nextCamp)?.color &&
+                      getCorrectTextColor(
+                        (currentCamp || nextCamp)!.color,
+                        true,
+                      )};
+                    `}
+                  >
                     {locationSlug && currentLocation
                       ? currentLocation.name
                       : "WIP POS"}
