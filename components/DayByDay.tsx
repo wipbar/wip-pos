@@ -81,13 +81,13 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
           <Legend />
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
             <ReferenceDot
-              x={Math.max(...data.map((d) => (d[i] ? d.x : 0)))}
-              y={Math.max(...data.map((d) => d[i] || 0))}
+              x={Math.max(...data.map((d) => (d?.[i] ? d.x : 0)))}
+              y={Math.max(...data.map((d) => d?.[i] || 0))}
               key={i + "dot"}
               label={{
                 value: `D${i + 1}`,
                 position:
-                  Math.max(...data.map((d) => (d[i] ? d.x : 0))) > 21
+                  Math.max(...data.map((d) => (d?.[i] ? d.x : 0))) > 21
                     ? "left"
                     : "insideBottomRight",
                 offset: 8,

@@ -370,8 +370,10 @@ async function calculateDayByDayStats() {
 
   const now2 = new Date();
 
-  const data: Record<ICamp["slug"], { x: number; [key: string]: number }[]> =
-    {};
+  const data: Record<
+    ICamp["slug"],
+    ({ x: number; [key: string]: number } | null)[]
+  > = {};
   for (const currentCamp of camps) {
     const numberOfDaysInCurrentCamp = Math.ceil(
       differenceInHours(min(now2, currentCamp.end), currentCamp.start) / 24,
