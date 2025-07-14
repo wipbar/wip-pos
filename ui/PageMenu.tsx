@@ -175,6 +175,20 @@ export default function PageMenu() {
       </marquee>
     );
   }
+  const flow = sample(flows);
+
+  const flowSource = flow
+    ? draculaFlow.includes(flow)
+      ? "Dracula"
+      : blackulaFlow.includes(flow)
+      ? "Blackula"
+      : negative25Flow.includes(flow)
+      ? "Negative 25"
+      : tranculaFlow.includes(flow)
+      ? "Trancula"
+      : "Unknown"
+    : "Unknown";
+
   return (
     <div
       className={css`
@@ -454,28 +468,30 @@ export default function PageMenu() {
       >
         <pre>Rendered: {new Date().toLocaleString()}</pre>
       </center>
-      <p
-        className={css`
-          font-weight: 600;
-          text-align: center;
-          font-size: 1.25em;
-          color: ${currentCamp &&
-          getCorrectTextColor(
-            getCorrectTextColor(currentCamp?.color) === "white"
-              ? lighten(4 / 5, currentCamp?.color)
-              : darken(4 / 5, currentCamp?.color),
-          )};
-        `}
-      >
-        {`"${sample(flows)}"`}
+      {flow ? (
         <p
           className={css`
-            font-size: 0.5em;
+            font-weight: 600;
+            text-align: center;
+            font-size: 1em;
+            color: ${currentCamp &&
+            getCorrectTextColor(
+              getCorrectTextColor(currentCamp?.color) === "white"
+                ? lighten(4 / 5, currentCamp?.color)
+                : darken(4 / 5, currentCamp?.color),
+            )};
           `}
         >
-          - Drac
+          {`"${flow}"`}
+          <p
+            className={css`
+              font-size: 0.33em;
+            `}
+          >
+            - {flowSource}
+          </p>
         </p>
-      </p>
+      ) : null}
     </div>
   );
 }

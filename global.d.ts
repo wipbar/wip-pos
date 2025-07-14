@@ -1,6 +1,19 @@
 /* eslint-disable no-var */
 /// <reference types="styled-components" />
 
+interface Array<T> {
+  includes<U>(
+    searchElement: U,
+    fromIndex?: number,
+  ): U extends T ? boolean : false;
+}
+interface ReadonlyArray<T> {
+  includes<U>(
+    searchElement: U,
+    fromIndex?: number,
+  ): U extends T ? boolean : false;
+}
+
 interface ShareData {
   text?: string;
   title?: string;
