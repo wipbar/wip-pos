@@ -90,7 +90,7 @@ function SparkLine({
 
 export default function PageMenu() {
   const currentCamp = useCurrentCamp();
-  const currentDate = useCurrentDate(10000);
+  const currentDate = useCurrentDate(30000);
   const { location, error } = useCurrentLocation();
 
   const style =
@@ -106,7 +106,7 @@ export default function PageMenu() {
   useEffect(() => {
     void updateData();
   }, [updateData]);
-  useInterval(() => updateData(), 10000);
+  useInterval(() => updateData(), 30000);
 
   if (error) return error;
 
