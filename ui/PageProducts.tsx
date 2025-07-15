@@ -193,6 +193,10 @@ export default function PageProducts() {
   const [showOnlyStockedProducts, setShowOnlyStockedProducts] = useSession<
     boolean | null
   >("showOnlyStockedProducts", null);
+  const [
+    showOnlyProductsWithoutComponents,
+    setShowOnlyProductsWithoutComponents,
+  ] = useSession<boolean | null>("showOnlyProductsWithoutComponents", null);
 
   const toggleOnlyMenuItems = useCallback(
     () => setShowOnlyMenuItems(!showOnlyMenuItems),
@@ -315,8 +319,20 @@ export default function PageProducts() {
               type="checkbox"
               onChange={(e) => setShowOnlyStockedProducts(e.target.checked)}
               checked={Boolean(showOnlyStockedProducts)}
+              disabled={Boolean(showOnlyProductsWithoutComponents)}
             />
             show only products with all components in stock
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              onChange={(e) =>
+                setShowOnlyProductsWithoutComponents(e.target.checked)
+              }
+              checked={Boolean(showOnlyProductsWithoutComponents)}
+              disabled={Boolean(showOnlyStockedProducts)}
+            />
+            show only products without components
           </label>
         </div>
         <div
@@ -511,6 +527,11 @@ export default function PageProducts() {
 
                     return (stock?.approxCount ?? 0) > 0;
                   });
+                } else if (
+                  showOnlyProductsWithoutComponents &&
+                  components?.length
+                ) {
+                  return false;
                 }
 
                 return true;
