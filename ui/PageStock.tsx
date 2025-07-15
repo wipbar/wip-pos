@@ -2,6 +2,7 @@ import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
+import type { Mongo } from "meteor/mongo";
 import { useFind } from "meteor/react-meteor-data";
 import React, { Fragment, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
@@ -16,7 +17,6 @@ import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
 import PageProductsItem from "./PageProductsItem";
 import PageStockItem from "./PageStockItem";
-import type { Mongo } from "meteor/mongo";
 
 const NEW = Symbol("New");
 export default function PageStock() {
@@ -245,13 +245,12 @@ export default function PageStock() {
                     <td align="right">
                       {!(
                         mostRecentLevel &&
-                        mostRecentLevel.count &&
                         isBefore(
                           subDays(new Date(), 14),
                           new Date(mostRecentLevel.timestamp),
                         )
                       )
-                        ? `🚨 (${
+                        ? `⌛️ (${
                             stock.approxCount?.toLocaleString("en-US", {
                               maximumFractionDigits: 2,
                             }) ?? "❔"
