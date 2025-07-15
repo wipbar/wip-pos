@@ -44,7 +44,7 @@ export default function PageStats() {
   }, [currentCamp, getGoodbyeWorld]);
 
   const style =
-    useFind(() => Styles.find({ page: "menu" }))?.[0]?.style ||
+    useFind(() => Styles.find({ page: "stats" }))?.[0]?.style ||
     (emptyObject as IStyle["style"]);
 
   return (
