@@ -176,7 +176,7 @@ export default function PageStock() {
             <tr>
               <th />
               <th align="right">Count</th>
-              <th align="left">UPC</th>
+              <th align="center">UPC</th>
               <th align="left">Name</th>
               <th>Size</th>
               <th>Type</th>
@@ -257,7 +257,7 @@ export default function PageStock() {
                             maximumFractionDigits: 2,
                           }) ?? "❔"}
                     </td>
-                    <td>{stock.barCode ? "✅" : "❌"}</td>
+                    <td align="center">{stock.barCode ? "✅" : "❌"}</td>
                     <td>
                       {stock.name}{" "}
                       <small>

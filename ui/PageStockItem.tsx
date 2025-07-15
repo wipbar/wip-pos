@@ -1,14 +1,19 @@
 import { css } from "@emotion/css";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
+import { useFind } from "meteor/react-meteor-data";
 import React, { ReactNode, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
+import Products, { ProductID } from "../api/products";
 import { IStock } from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
+import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
 import useMethod from "../hooks/useMethod";
 import { units } from "../util";
 import { Modal } from "./PageProducts";
+import PageProductsItem from "./PageProductsItem";
 
 const Label = ({
   label,
@@ -56,6 +61,10 @@ export default function PageStockItem({
   const [addStock] = useMethod("Stock.addStock");
   const [editStock] = useMethod("Stock.editStock");
   const [takeStock] = useMethod("Stock.takeStock");
+  const [isEditingProduct, setIsEditingProduct] = useState<null | ProductID>();
+  const products = useFind(() =>
+    Products.find({ removedAt: { $exists: false } }),
+  );
 
   const {
     handleSubmit,
@@ -77,8 +86,23 @@ export default function PageStockItem({
     [setValue],
   );
 
+  const productsUsingStock = products.filter(
+    (product) =>
+      product?.components?.some(
+        (component) => component.stockId === stock?._id,
+      ),
+  );
+
   return (
     <>
+      {isEditingProduct ? (
+        <Modal onDismiss={() => setIsEditingProduct(null)}>
+          <PageProductsItem
+            product={products.find((p) => p._id === isEditingProduct)}
+            onCancel={() => setIsEditingProduct(null)}
+          />
+        </Modal>
+      ) : null}
       <form
         onSubmit={handleSubmit(async (data) => {
           if (!stock) {
@@ -214,7 +238,8 @@ export default function PageStockItem({
               width: 200px;
             `}
           >
-            {stock ? "Update" : "Create"} {isSubmitting ? "..." : ""}
+            {stock ? "Update Stock" : "Create Stock"}{" "}
+            {isSubmitting ? "..." : ""}
           </button>
           <button disabled={!isDirty} type="button" onClick={() => reset()}>
             Reset
@@ -287,6 +312,35 @@ export default function PageStockItem({
             />
             <button>Take Stock</button>
           </form>
+        </fieldset>
+      ) : null}
+      {productsUsingStock.length > 0 ? (
+        <fieldset
+          className={css`
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+          `}
+        >
+          <legend>Products using this stock</legend>
+          <ul>
+            {productsUsingStock.map((product) => (
+              <li key={product._id}>
+                {product.brandName} - {product.name}{" "}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    setIsEditingProduct(product._id);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPencilAlt} />
+                </button>
+              </li>
+            ))}
+          </ul>
         </fieldset>
       ) : null}
     </>

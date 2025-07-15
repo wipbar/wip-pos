@@ -629,7 +629,7 @@ export default function PageProductsItem({
               width: 200px;
             `}
           >
-            {product ? "Update" : "Create"} {isSubmitting ? "..." : ""}
+            {product ? "Update Product" : "Create Product"} {isSubmitting ? "..." : ""}
           </button>
           <button type="button" onClick={onCancel}>
             Cancel
