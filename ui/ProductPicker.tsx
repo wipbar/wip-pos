@@ -4,7 +4,7 @@ import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { lighten } from "polished";
 import React, {
-  HTMLProps,
+  type HTMLProps,
   useCallback,
   useEffect,
   useMemo,
@@ -12,7 +12,12 @@ import React, {
   useState,
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
-import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
+import Products, {
+  type IProduct,
+  type ProductID,
+  getProductSize,
+  isAlcoholic,
+} from "../api/products";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -140,8 +145,8 @@ function ProductPickerProduct({
               <small>
                 <small>
                   <i>
-                    {product.unitSize}
-                    {product.sizeUnit}
+                    {getProductSize(product)?.unitSize}
+                    {getProductSize(product)?.sizeUnit}
                   </i>{" "}
                   {sortedTags?.map((tag) => (
                     <span

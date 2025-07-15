@@ -4,7 +4,11 @@ import { Meteor } from "meteor/meteor";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Products, { type IProduct, type ProductID } from "../api/products";
+import Products, {
+  getProductSize,
+  type IProduct,
+  type ProductID,
+} from "../api/products";
 import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -28,6 +32,9 @@ function CartViewProductsItem({
   );
 
   if (!product) null;
+
+  const productSize = getProductSize(product);
+
   return (
     <li
       className={css`
@@ -80,11 +87,11 @@ function CartViewProductsItem({
             </>
           ) : null}
           {product.name}
-          {product.unitSize || product.sizeUnit ? (
+          {productSize ? (
             <small>
               {" "}
-              ({product.unitSize}
-              {product.sizeUnit})
+              ({productSize.unitSize}
+              {productSize.sizeUnit})
             </small>
           ) : null}
           {product.components && product.components?.length > 1 ? (
@@ -153,6 +160,7 @@ export default function CartView({
   const products = useFind(() =>
     Products.find({ removedAt: { $exists: false } }),
   );
+  const stocks = useFind(() => Stocks.find());
   const [doSellProducts, { isLoading: sellingLoading }] =
     useMethod("Sales.sellProducts");
 
@@ -194,7 +202,19 @@ export default function CartView({
 
   const handleBarCode = useCallback(
     (resultBarCode: string) => {
-      const product = products.find(({ barCode }) => resultBarCode === barCode);
+      let product = products.find(({ barCode }) => resultBarCode === barCode);
+
+      if (!product) {
+        const stock = stocks.find(({ barCode }) => barCode === resultBarCode);
+
+        if (stock) {
+          product = products.find(
+            ({ components }) =>
+              components?.length == 1 &&
+              components?.some(({ stockId }) => stockId === stock._id),
+          );
+        }
+      }
 
       if (!product) return;
 
@@ -211,6 +231,7 @@ export default function CartView({
       setPickedProductIds,
       setShowOnlyBarCodeLessItems,
       showOnlyBarCodeLessItems,
+      stocks,
     ],
   );
 

@@ -16,7 +16,12 @@ import { opacify, transparentize } from "polished";
 import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { isUserAdmin, isUserResponsible } from "../api/accounts";
 import type { ILocation } from "../api/locations";
-import Products, { IProduct, ProductID, isAlcoholic } from "../api/products";
+import Products, {
+  IProduct,
+  ProductID,
+  getProductSize,
+  isAlcoholic,
+} from "../api/products";
 import Stocks from "../api/stocks";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -605,8 +610,8 @@ export default function PageProducts() {
                       <br />
                       <b>{product.name}</b>
                       <br />
-                      {product.unitSize}
-                      {product.sizeUnit}
+                      {getProductSize(product)?.unitSize}
+                      {getProductSize(product)?.sizeUnit}
                     </td>
                     <td
                       align="center"

@@ -9,6 +9,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
+import { getProductSize } from "../api/products";
 import Styles, { type IStyle } from "../api/styles";
 import {
   blackulaFlow,
@@ -346,14 +347,16 @@ export default function PageMenu() {
                         gap: 0.125em;
                       `}
                     >
-                      {products.map(([product, productSpark]) => (
-                        <div
-                          key={product._id}
-                          className={css`
-                            position: relative;
-                            break-inside: avoid;
-                            ${product.salePrice == 0
-                              ? `
+                      {products.map(([product, productSpark]) => {
+                        const productSize = getProductSize(product);
+                        return (
+                          <div
+                            key={product._id}
+                            className={css`
+                              position: relative;
+                              break-inside: avoid;
+                              ${product.salePrice == 0
+                                ? `
                           box-shadow: 0 0 20px black, 0 0 40px black;
                           color: black;
                           background: rgba(255, 0, 0, 1);
@@ -363,10 +366,10 @@ export default function PageMenu() {
                           animation-duration: 2s;
                           z-index: 50;
                       `
-                              : ""}
-                          `}
-                        >
-                          {/*<ProductTrend
+                                : ""}
+                            `}
+                          >
+                            {/*<ProductTrend
                             product={product}
                             className={css`
                               position: absolute !important;
@@ -375,82 +378,81 @@ export default function PageMenu() {
                               z-index: 0;
                             `}
                           />*/}
-                          <div
-                            className={css`
-                              flex: 1;
-                              display: flex;
-                              justify-content: space-between;
-                            `}
-                          >
-                            <span>
-                              <div
-                                className={css`
-                                  font-weight: bold;
-                                `}
-                              >
-                                {product.name}
-                              </div>
-                              <small
-                                className={css`
-                                  margin-top: -0.25em;
-                                  display: block;
-                                `}
-                              >
-                                {[
-                                  product.description || null,
-                                  (typeof product.abv === "number" &&
-                                    !Number.isNaN(product.abv)) ||
-                                  (typeof product.abv === "string" &&
-                                    product.abv)
-                                    ? `${product.abv}%`
-                                    : null,
-                                  typeof product.sizeUnit === "string" &&
-                                  typeof product.unitSize === "number" &&
-                                  product.sizeUnit &&
-                                  product.unitSize
-                                    ? `${product.unitSize}${product.sizeUnit}`
-                                    : null,
-                                ]
-                                  .filter(Boolean)
-                                  .map((thing, i) => (
-                                    <Fragment key={thing}>
-                                      {i > 0 ? ", " : null}
-                                      <small key={thing}>{thing}</small>
-                                    </Fragment>
-                                  ))}
-                              </small>
-                            </span>
                             <div
                               className={css`
-                                text-align: right;
+                                flex: 1;
+                                display: flex;
+                                justify-content: space-between;
                               `}
                             >
-                              <b>{Number(product.salePrice) || "00"}</b>
-                              {product.tap ? (
+                              <span>
                                 <div
                                   className={css`
-                                    line-height: 0.5;
-                                    white-space: nowrap;
+                                    font-weight: bold;
                                   `}
                                 >
-                                  <small>🚰 {product.tap}</small>
+                                  {product.name}
                                 </div>
-                              ) : null}
+                                <small
+                                  className={css`
+                                    margin-top: -0.25em;
+                                    display: block;
+                                  `}
+                                >
+                                  {[
+                                    product.description || null,
+                                    (typeof product.abv === "number" &&
+                                      !Number.isNaN(product.abv)) ||
+                                    (typeof product.abv === "string" &&
+                                      product.abv)
+                                      ? `${product.abv}%`
+                                      : null,
+
+                                    productSize
+                                      ? `${productSize.unitSize}${productSize.sizeUnit}`
+                                      : null,
+                                  ]
+                                    .filter(Boolean)
+                                    .map((thing, i) => (
+                                      <Fragment key={thing}>
+                                        {i > 0 ? ", " : null}
+                                        <small key={thing}>{thing}</small>
+                                      </Fragment>
+                                    ))}
+                                </small>
+                              </span>
+                              <div
+                                className={css`
+                                  text-align: right;
+                                `}
+                              >
+                                <b>{Number(product.salePrice) || "00"}</b>
+                                {product.tap ? (
+                                  <div
+                                    className={css`
+                                      line-height: 0.5;
+                                      white-space: nowrap;
+                                    `}
+                                  >
+                                    <small>🚰 {product.tap}</small>
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
+                            <SparkLine
+                              className={css`
+                                margin-left: -0.5em;
+                                margin-right: -0.5em;
+                                width: calc(100% + 1em);
+                                display: block;
+                                border-bottom: ${currentCamp?.color} 1px solid;
+                              `}
+                              fill={currentCamp?.color}
+                              data={productSpark}
+                            />
                           </div>
-                          <SparkLine
-                            className={css`
-                              margin-left: -0.5em;
-                              margin-right: -0.5em;
-                              width: calc(100% + 1em);
-                              display: block;
-                              border-bottom: ${currentCamp?.color} 1px solid;
-                            `}
-                            fill={currentCamp?.color}
-                            data={productSpark}
-                          />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </li>
                 </>

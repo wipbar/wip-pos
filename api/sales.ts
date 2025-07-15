@@ -17,6 +17,7 @@ import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
 import Products, {
+  getProductSize,
   isAlcoholic,
   isMate,
   type IProduct,
@@ -85,6 +86,7 @@ export const salesMethods = {
       amountTotal += Number(product.salePrice);
     }
 
+    const timestamp = new Date();
     const insertResult = await Sales.insertAsync({
       userId: userId,
       locationId: location._id,
@@ -92,7 +94,7 @@ export const salesMethods = {
       currency: "HAX",
       country: "DK",
       amount: amountTotal,
-      timestamp: new Date(),
+      timestamp,
       products: await Promise.all(
         productIds.map(async (_id) => (await Products.findOneAsync({ _id }))!),
       ),
@@ -220,13 +222,13 @@ export const salesMethods = {
    ${Math.round(
      productsSold
        .filter(({ tags }) => tags?.includes("beer"))
-       .reduce(
-         (totalLiters, { unitSize, sizeUnit }) =>
-           unitSize && sizeUnit === "cl"
-             ? totalLiters + Number(unitSize) / 100
-             : totalLiters,
-         0,
-       ),
+       .reduce((totalLiters, product) => {
+         const { unitSize, sizeUnit } = getProductSize(product) || {};
+
+         return unitSize && sizeUnit === "cl"
+           ? totalLiters + Number(unitSize) / 100
+           : totalLiters;
+       }, 0),
    )} liters of beer
    ${Math.round(
      productsSold
@@ -234,13 +236,13 @@ export const salesMethods = {
          ({ brandName }) =>
            brandName === "Club Mate" || brandName === "Mio Mio",
        )
-       .reduce(
-         (totalLiters, { unitSize, sizeUnit }) =>
-           unitSize && sizeUnit === "cl"
-             ? totalLiters + Number(unitSize) / 100
-             : totalLiters,
-         0,
-       ),
+       .reduce((totalLiters, product) => {
+         const { unitSize, sizeUnit } = getProductSize(product) || {};
+
+         return unitSize && sizeUnit === "cl"
+           ? totalLiters + Number(unitSize) / 100
+           : totalLiters;
+       }, 0),
    )} liters of mate
    ${
      productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
