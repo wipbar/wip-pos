@@ -85,8 +85,6 @@ export default function PageStock() {
                   : stockToCreateProductFrom.packageType === "BO"
                   ? ["bottle"]
                   : undefined,
-              unitSize: stockToCreateProductFrom.unitSize,
-              sizeUnit: stockToCreateProductFrom.sizeUnit,
             }}
           />
         </Modal>
