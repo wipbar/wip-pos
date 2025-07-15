@@ -485,7 +485,7 @@ export default function PageMenu() {
           {`"${flow}"`}
           <p
             className={css`
-              font-size: 0.33em;
+              font-size: 0.5em;
             `}
           >
             - {flowSource}
