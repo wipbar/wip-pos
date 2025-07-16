@@ -126,13 +126,15 @@ export default function CampByCamp() {
     <div>
       <ResponsiveContainer width="100%" height={currentCamp ? 350 : 700}>
         <ComposedChart
-          data={data.map((d) =>
-            d.hour === trendData[0].hour
-              ? { ...d, ...trendData[0] }
-              : d.hour === trendData[1].hour
-              ? { ...d, ...trendData[1] }
-              : d,
-          )}
+          data={data
+            .filter(currentCamp ? (d) => d.hour <= trendData[1].hour : (d) => d)
+            .map((d) =>
+              d.hour === trendData[0].hour
+                ? { ...d, ...trendData[0] }
+                : d.hour === trendData[1].hour
+                ? { ...d, ...trendData[1] }
+                : d,
+            )}
           margin={{ top: 24, right: 8, left: currentCamp ? 16 : 64, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
