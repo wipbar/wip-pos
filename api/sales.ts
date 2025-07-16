@@ -11,6 +11,10 @@ import {
 import { groupBy, sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
+import {
+  getRemainingServings,
+  getRemainingServingsEver,
+} from "../components/RemainingStock";
 import type { CartID } from "../ui/PageTend";
 import { emptyArray, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
@@ -738,6 +742,9 @@ async function calculateMostSold() {
   const [camps] = await Promise.all([
     Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
   ]);
+  const products = await Products.find().fetchAsync();
+  const stocks = await Stocks.find().fetchAsync();
+  const sales = await Sales.find().fetchAsync();
 
   const now2 = new Date();
 
@@ -772,24 +779,22 @@ async function calculateMostSold() {
 
     data[currentCamp.slug] = campAggregatedCount.map(
       ({ _id, count /*sales*/ }) => {
-        /*
         const product = products.find((p) => _id === p._id);
 
-        
         const remainingServings =
           product?.components?.[0] &&
           getRemainingServings(sales, stocks, product, now2);
         const remainingServingsEver =
-          product?.components?.[0] && getRemainingServingsEver(stocks, product);
-          */
+          product?.components?.[0] &&
+          getRemainingServingsEver(currentCamp, stocks, product);
 
         return [
           _id,
           count,
-          /*
+
           remainingServingsEver
             ? Math.min(1, 1 - remainingServings! / remainingServingsEver)
-            :*/ null,
+            : null,
         ] satisfies [ProductID, number, number | null];
       },
     );

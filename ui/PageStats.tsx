@@ -134,12 +134,17 @@ export default function PageStats() {
                     {product.brandName ? <>{product.brandName} - </> : null}
                     {product.name}{" "}
                     {stockPercentage ? (
-                      <small>
-                        (
-                        {(stockPercentage * 100).toLocaleString("en-DK", {
-                          maximumFractionDigits: 1,
-                        })}
-                        % sold)
+                      <small
+                        className={css`
+                          white-space: nowrap;
+                        `}
+                      >
+                        <small>
+                          {(stockPercentage * 100).toLocaleString("en-DK", {
+                            maximumFractionDigits: 1,
+                          })}
+                          % sold
+                        </small>
                       </small>
                     ) : null}
                   </div>
