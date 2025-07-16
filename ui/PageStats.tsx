@@ -87,6 +87,7 @@ export default function PageStats() {
           {currentCamp ? <DayByDay currentCamp={currentCamp} /> : null}
         </div>
         {!GALAXY_APP_VERSION_ID ||
+        GALAXY_APP_VERSION_ID ||
         Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
           <RemainingStock />
         )}
