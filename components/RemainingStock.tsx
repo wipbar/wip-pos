@@ -11,11 +11,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Products, { IProduct } from "../api/products";
-import Sales, { ISale } from "../api/sales";
-import Stocks, { IStock } from "../api/stocks";
+import { type ICamp } from "../api/camps";
+import Products, { type IProduct } from "../api/products";
+import Sales, { type ISale } from "../api/sales";
+import Stocks, { type IStock } from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { emptyArray, getCorrectTextColor } from "../util";
+
+export const getStockLevelAtStartOfCamp = (camp: ICamp, stock: IStock) => {
+  return (
+    Array.from(stock.levels || [])
+      .sort(
+        (a, b) =>
+          Math.abs(camp.start.valueOf() - a.timestamp.valueOf()) -
+          Math.abs(camp.start.valueOf() - b.timestamp.valueOf()),
+      )
+      .at(0)?.count || NaN
+  );
+};
 
 export const getMaxStockLevelEver = (stock: IStock) => {
   const levels = stock.levels?.map((level) => level.count) || [];
@@ -95,7 +108,7 @@ export function getRemainingServings(
     try {
       const componentServings =
         convert(
-          getStockLevelAtTime(sales, stock, timestamp),
+          getStockLevelAtTime(sales, stock, timestamp) * stock.unitSize,
           stock.sizeUnit,
         ).to(component.sizeUnit) / component.unitSize;
 
@@ -142,7 +155,11 @@ export function getApproxRemainingServings(
 
   return minServings;
 }
-export function getRemainingServingsEver(stocks: IStock[], product: IProduct) {
+export function getRemainingServingsEver(
+  camp: ICamp,
+  stocks: IStock[],
+  product: IProduct,
+) {
   let minServings;
   for (const component of product.components || []) {
     const stock = stocks.find((stock) => stock._id === component.stockId);
@@ -150,9 +167,10 @@ export function getRemainingServingsEver(stocks: IStock[], product: IProduct) {
 
     try {
       const componentServings =
-        convert(getMaxStockLevelEver(stock), stock.sizeUnit).to(
-          component.sizeUnit,
-        ) / component.unitSize;
+        convert(
+          getStockLevelAtStartOfCamp(camp, stock) * stock.unitSize,
+          stock.sizeUnit,
+        ).to(component.sizeUnit) / component.unitSize;
 
       if (minServings === undefined || componentServings < minServings) {
         minServings = componentServings;
@@ -212,7 +230,7 @@ export default function RemainingStock() {
         Number(currentCamp.start) + (i + offset) * HOUR_IN_MS + HOUR_IN_MS;
 
       for (const product of products) {
-        const maxLevel = getRemainingServingsEver(stocks, product);
+        const maxLevel = getRemainingServingsEver(currentCamp, stocks, product);
         const level = getRemainingServings(
           sales,
           stocks,

@@ -156,7 +156,7 @@ export const productsMethods = {
 
       const servings =
         getRemainingServings(sales, stocks, product, new Date()) /
-        getRemainingServingsEver(stocks, product);
+        getRemainingServingsEver(currentCamp, stocks, product);
 
       return servings;
     }
