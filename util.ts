@@ -86,3 +86,11 @@ export const onProfilerRenderCallback: React.ProfilerOnRenderCallback = (
 
 export const emptyObject = Object.freeze({});
 export const emptyArray = [];
+
+export function catchNaN(fn: () => number): number {
+  try {
+    return fn();
+  } catch {
+    return NaN;
+  }
+}

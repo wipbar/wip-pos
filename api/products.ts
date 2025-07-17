@@ -5,7 +5,7 @@ import {
   getRemainingServings,
   getRemainingServingsEver,
 } from "../components/RemainingStock";
-import { emptyArray, Flavor, SizeUnit } from "../util";
+import { catchNaN, emptyArray, Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
 import Camps from "./camps";
 import Sales from "./sales";
@@ -213,7 +213,10 @@ export function getProductSize(product: IProduct): {
   if (!sizeUnit) return null;
   const unitSize = components.reduce(
     (acc, component) =>
-      acc + convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+      acc +
+      catchNaN(() =>
+        convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+      ),
     0,
   );
 

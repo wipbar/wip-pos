@@ -17,7 +17,7 @@ import { packageTypes } from "../data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
-import { emptyArray, units } from "../util";
+import { catchNaN, emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
 import PageStockItem from "./PageStockItem";
 
@@ -143,7 +143,10 @@ export default function PageProductsItem({
     if (!sizeUnit) return null;
     const unitSize = components.reduce(
       (acc, component) =>
-        acc + convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+        acc +
+        catchNaN(() =>
+          convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+        ),
       0,
     );
 
@@ -567,10 +570,12 @@ export default function PageProductsItem({
                     (~
                     {(
                       (stock.approxCount * stock.unitSize) /
-                      convert(
-                        watch(`components.${index}.unitSize`),
-                        field.sizeUnit,
-                      ).to(stock.sizeUnit)
+                      catchNaN(() =>
+                        convert(
+                          watch(`components.${index}.unitSize`),
+                          field.sizeUnit,
+                        ).to(stock.sizeUnit),
+                      )
                     ).toLocaleString("en-DK", {
                       maximumFractionDigits: 2,
                     })}{" "}
@@ -629,7 +634,8 @@ export default function PageProductsItem({
               width: 200px;
             `}
           >
-            {product ? "Update Product" : "Create Product"} {isSubmitting ? "..." : ""}
+            {product ? "Update Product" : "Create Product"}{" "}
+            {isSubmitting ? "..." : ""}
           </button>
           <button type="button" onClick={onCancel}>
             Cancel
