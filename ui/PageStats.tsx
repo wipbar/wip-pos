@@ -123,13 +123,14 @@ export default function PageStats() {
                 >
                   <div
                     className={css`
-                      width: 80px;
+                      width: 2.5em;
                       text-align: right;
-                      margin-right: 12px;
+                      margin-right: 0.5em;
                       flex-shrink: 0;
                     `}
                   >
-                    <b>{count}</b>x
+                    <b>{count}</b>
+                    <small>x</small>
                   </div>
                   <div>
                     {product.brandName ? <>{product.brandName} - </> : null}
@@ -138,6 +139,7 @@ export default function PageStats() {
                       <small
                         className={css`
                           white-space: nowrap;
+                          line-height: 0.5;
                         `}
                       >
                         <small>
