@@ -211,8 +211,8 @@ export default function PageMenu() {
       style={style}
     >
       {oij
-        .sort((a, b) => getOijProductsLength(a) - getOijProductsLength(b))
-        .map((_, i, list) => (i % 2 ? list[i]! : list[list.length - 1 - i]!))
+        .sort((a, b) => getOijProductsLength(b) - getOijProductsLength(a))
+        .map((_, i, list) => (!(i % 2) ? list[i]! : list[list.length  - i]!))
         .map(([tags, productsByBrandName, tagsSpark]) => (
           <div
             key={tags}
