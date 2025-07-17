@@ -10,7 +10,7 @@
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "visualize": "meteor --production --extra-packages bundle-visualizer",
-    "deploy":"cd .deploy && time mup deploy"
+    "deploy": "cd .deploy && time mup deploy"
   },
   "dependencies": {
     "@babel/runtime": "^7.27.6",
@@ -44,7 +44,8 @@
       "client": "client/main.tsx",
       "server": "server/main.ts"
     },
-    "testModule": "tests/main.ts"
+    "testModule": "tests/main.ts",
+    "modern": true
   },
   "devDependencies": {
     "@types/fibers": "^3.1.4",
