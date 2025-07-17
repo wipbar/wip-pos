@@ -1,5 +1,5 @@
 import { css } from "@emotion/css";
-import { sample } from "lodash";
+import { sample, zip } from "lodash";
 import { useFind } from "meteor/react-meteor-data";
 import { darken, lighten, transparentize } from "polished";
 import React, {
@@ -193,6 +193,10 @@ export default function PageMenu() {
   const getOijProductsLength = (o: NonNullable<typeof oij>[number]): number =>
     o[1]?.reduce((m, b) => m + b[1].length, 0) || NaN;
 
+  const list = oij.sort(
+    (a, b) => getOijProductsLength(b) - getOijProductsLength(a),
+  );
+
   return (
     <div
       className={css`
@@ -210,10 +214,23 @@ export default function PageMenu() {
       `}
       style={style}
     >
-      {oij
+      {
+        /*oij
         .sort((a, b) => getOijProductsLength(b) - getOijProductsLength(a))
-        .map((_, i, list) => (!(i % 2) ? list[i]! : list[list.length  - i]!))
-        .map(([tags, productsByBrandName, tagsSpark]) => (
+        .map((_, i, list) =>
+          zip(
+            list.slice(0, list.length / 2),
+            list.slice(list.length / 2, list.length).reverse(),
+          ).flat(),
+        )*/
+        (
+          zip(
+            list.slice(0, Math.ceil(list.length / 2)),
+            list.slice(Math.ceil(list.length / 2), list.length).reverse(),
+          )
+            .flat()
+            .filter(Boolean) as typeof list
+        ).map(([tags, productsByBrandName, tagsSpark]) => (
           <div
             key={tags}
             className={css`
@@ -466,7 +483,8 @@ export default function PageMenu() {
               </ul>
             </div>
           </div>
-        ))}
+        ))
+      }
       <center
         className={css`
           margin-top: -0.5em;
