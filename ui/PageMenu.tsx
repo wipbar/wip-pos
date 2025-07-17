@@ -242,8 +242,7 @@ export default function PageMenu() {
               )};
 
               break-inside: avoid;
-              padding: 0.25em;
-              margin-bottom: 0.5em;
+              padding: 0.25em; 
             `}
           >
             <h1
