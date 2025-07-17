@@ -64,7 +64,7 @@ export default function PageStats() {
         className={css`
           flex: 2;
           min-height: 100%;
-          min-width: 400px;
+          min-width: 300px;
         `}
       >
         {currentCamp ? <SalesSankey currentCamp={currentCamp} /> : null}
