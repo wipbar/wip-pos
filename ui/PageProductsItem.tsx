@@ -1,5 +1,11 @@
 import { css } from "@emotion/css";
-import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBan,
+  faFolderMinus,
+  faFolderPlus,
+  faTimes,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import convert from "convert";
 import { useFind } from "meteor/react-meteor-data";
@@ -9,7 +15,7 @@ import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { isUserResponsible } from "../api/accounts";
 import Locations, { ILocation } from "../api/locations";
-import Products, { IProduct } from "../api/products";
+import Products, { IProduct, isAlcoholic } from "../api/products";
 import Stocks, { type StockID } from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
@@ -132,6 +138,7 @@ export default function PageProductsItem({
   const stocks = useFind(() =>
     Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
   );
+  const isOnMenu = location && product?.locationIds?.includes(location?._id);
 
   const components = watch("components");
 
@@ -637,6 +644,50 @@ export default function PageProductsItem({
             {product ? "Update Product" : "Create Product"}{" "}
             {isSubmitting ? "..." : ""}
           </button>
+          {product ? (
+            <button
+              onClick={async () => {
+                if (!location) return;
+
+                await editProduct({
+                  productId: product._id,
+                  data: isOnMenu
+                    ? {
+                        locationIds: product.locationIds?.filter(
+                          (id) => id !== location._id,
+                        ),
+                      }
+                    : {
+                        locationIds: [
+                          ...(product.locationIds || emptyArray),
+                          location._id,
+                        ],
+                      },
+                });
+              }}
+              disabled={location?.curfew && isAlcoholic(product)}
+              style={{
+                background:
+                  location?.curfew && isAlcoholic(product)
+                    ? "gray"
+                    : isOnMenu
+                    ? "red"
+                    : "limegreen",
+                color: "white",
+              }}
+            >
+              <FontAwesomeIcon
+                icon={
+                  location?.curfew && isAlcoholic(product)
+                    ? faBan
+                    : isOnMenu
+                    ? faFolderMinus
+                    : faFolderPlus
+                }
+              />{" "}
+              Menu
+            </button>
+          ) : null}
           <button type="button" onClick={onCancel}>
             Cancel
           </button>
