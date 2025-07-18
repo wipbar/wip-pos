@@ -310,15 +310,22 @@ export default function PageMenu() {
                         justify-content: space-around;
                       `}
                     >
-                      <small
+                      <div
                         className={css`
                           flex: 1;
                           text-align: center;
+                          font-weight: 600;
                         `}
                       >
                         {brandName}
+                      </div>
+                      <small
+                        className={css`
+                          padding: 0.25em 0.9em 0px;
+                        `}
+                      >
+                        ʜᴀx
                       </small>
-                      <small>ʜᴀx</small>
                     </small>
                     <li
                       key={brandName}
@@ -369,8 +376,22 @@ export default function PageMenu() {
                           gap: 0.125em;
                         `}
                       >
-                        {products.map(([product, productSpark]) => {
+                        {products.map(([product, productSpark], i, list) => {
+                          const nextProduct = list[i + 1]?.[0];
                           const productSize = getProductSize(product);
+                          const subTexts = [
+                            product.description || null,
+                            (typeof product.abv === "number" &&
+                              !Number.isNaN(product.abv)) ||
+                            (typeof product.abv === "string" && product.abv)
+                              ? `${product.abv}%`
+                              : null,
+
+                            productSize
+                              ? `${productSize.unitSize}${productSize.sizeUnit}`
+                              : null,
+                          ].filter(Boolean);
+
                           return (
                             <div
                               key={product._id}
@@ -381,11 +402,12 @@ export default function PageMenu() {
                                   ? `
                           box-shadow: 0 0 20px black, 0 0 40px black;
                           color: black;
-                          background: rgba(255, 0, 0, 1);
+                          background: turquoise;
                           padding: 0 4px;
                           animation-name: wobble;
                           animation-iteration-count: infinite;
                           animation-duration: 2s;
+                          transform-origin: 50% 50%;
                           z-index: 50;
                       `
                                   : ""}
@@ -413,35 +435,49 @@ export default function PageMenu() {
                                       font-weight: bold;
                                     `}
                                   >
-                                    {product.name}
+                                    {product.name}{" "}
+                                    {subTexts.length === 1 ? (
+                                      <small
+                                        style={{
+                                          fontWeight: "normal",
+                                          ...(product.name.startsWith(
+                                            "Purple",
+                                          ) &&
+                                          nextProduct?.name.startsWith("Purple")
+                                            ? { display: "none" }
+                                            : {}),
+                                        }}
+                                      >
+                                        {subTexts.map((thing, i) => (
+                                          <Fragment key={thing}>
+                                            {i > 0 ? ", " : null}
+                                            <small key={thing}>{thing}</small>
+                                          </Fragment>
+                                        ))}
+                                      </small>
+                                    ) : null}
                                   </div>
-                                  <small
-                                    className={css`
-                                      margin-top: -0.25em;
-                                      display: block;
-                                    `}
-                                  >
-                                    {[
-                                      product.description || null,
-                                      (typeof product.abv === "number" &&
-                                        !Number.isNaN(product.abv)) ||
-                                      (typeof product.abv === "string" &&
-                                        product.abv)
-                                        ? `${product.abv}%`
-                                        : null,
-
-                                      productSize
-                                        ? `${productSize.unitSize}${productSize.sizeUnit}`
-                                        : null,
-                                    ]
-                                      .filter(Boolean)
-                                      .map((thing, i) => (
+                                  {subTexts.length > 1 ? (
+                                    <small
+                                      className={css`
+                                        margin-top: -0.25em;
+                                        display: block;
+                                      `}
+                                      style={
+                                        product.name.startsWith("Purple") &&
+                                        nextProduct?.name.startsWith("Purple")
+                                          ? { display: "none" }
+                                          : {}
+                                      }
+                                    >
+                                      {subTexts.map((thing, i) => (
                                         <Fragment key={thing}>
                                           {i > 0 ? ", " : null}
                                           <small key={thing}>{thing}</small>
                                         </Fragment>
                                       ))}
-                                  </small>
+                                    </small>
+                                  ) : null}
                                 </span>
                                 <div
                                   className={css`

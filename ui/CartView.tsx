@@ -286,7 +286,6 @@ export default function CartView({
         color: black;
         display: flex;
         flex-direction: column;
-        max-height: 100%;
         border-left: 1px solid rgba(255, 255, 255, 0.4);
         transition: all 300ms ease-in-out;
         margin-top: 6px;
