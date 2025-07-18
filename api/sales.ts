@@ -273,21 +273,21 @@ if (Meteor.isServer) {
     console.log("Startup statsing");
     console.time("Startup statsing");
     await Promise.all([
-      calculateCampByCampStats().then((data) => (statsCampByCamp = data)),
-      calculateSalesSankeyData().then((data) => (statsSalesSankey = data)),
-      calculateDayByDayStats().then((data) => (statsDayByDay = data)),
+//      calculateCampByCampStats().then((data) => (statsCampByCamp = data)),
+//      calculateSalesSankeyData().then((data) => (statsSalesSankey = data)),
+//      calculateDayByDayStats().then((data) => (statsDayByDay = data)),
       calculateMenuData().then((data) => (locationMenuData = data)),
-      calculateMostSold().then((data) => (statsMostSold = data)),
+//      calculateMostSold().then((data) => (statsMostSold = data)),
     ]);
     console.timeEnd("Startup statsing");
-
+/*
     setInterval(() => {
       void calculateCampByCampStats().then((data) => (statsCampByCamp = data));
       void calculateSalesSankeyData().then((data) => (statsSalesSankey = data));
       void calculateDayByDayStats().then((data) => (statsDayByDay = data));
       void calculateMostSold().then((data) => (statsMostSold = data));
     }, 240_000);
-
+*/
     setInterval(() => {
       void calculateMenuData().then((data) => (locationMenuData = data));
     }, 20_000);

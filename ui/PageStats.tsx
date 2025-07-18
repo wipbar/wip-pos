@@ -39,7 +39,7 @@ export default function PageStats() {
   const [getGoodbyeWorld] = useMethod("Sales.stats.GoodbyeWorld");
   useEffect(() => {
     if (currentCamp) {
-      void getGoodbyeWorld({ campSlug: currentCamp.slug }).then(console.log);
+      // void getGoodbyeWorld({ campSlug: currentCamp.slug }).then(console.log);
     }
   }, [currentCamp, getGoodbyeWorld]);
 
