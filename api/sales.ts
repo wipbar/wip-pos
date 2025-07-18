@@ -16,7 +16,7 @@ import {
   getRemainingServingsEver,
 } from "../components/RemainingStock";
 import type { CartID } from "../ui/PageTend";
-import { emptyArray, type Flavor } from "../util";
+import { tagsToString, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
@@ -612,13 +612,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
       products.filter((product) =>
         location.curfew ? !isAlcoholic(product) : true,
       ),
-      ({ tags }) =>
-        [...(tags || emptyArray)].sort()?.join(",") ||
-        //?.replace("beer,can", "beer")
-        //?.replace("beer,bottle", "beer")
-        //?.replace("beer,tap", "tap")
-        //?.replace("bottle,soda", "soda")
-        "other",
+      ({ tags }) => tagsToString(tags) || "other",
     ),
   );
 

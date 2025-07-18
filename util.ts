@@ -63,8 +63,12 @@ export function removeItem<T>(items: T[], i: number) {
   return items.slice(0, i).concat(items.slice(i + 1, items.length));
 }
 
+const types = ["beer", "soda", "cocktail", "spirit"];
 export const tagsToString = (tags: string[] = emptyArray) =>
-  [...tags].sort().join(",");
+  [...tags]
+    .sort()
+    .sort((a, b) => Number(types.includes(b)) - Number(types.includes(a)))
+    .join(",");
 
 export const onProfilerRenderCallback: React.ProfilerOnRenderCallback = (
   id,

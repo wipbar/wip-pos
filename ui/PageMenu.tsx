@@ -236,13 +236,13 @@ export default function PageMenu() {
             className={css`
               color: ${currentCamp &&
               getCorrectTextColor(
-                getCorrectTextColor(currentCamp?.color) === "white"
-                  ? lighten(4 / 5, currentCamp?.color)
-                  : darken(4 / 5, currentCamp?.color),
+                getCorrectTextColor(currentCamp.color) === "white"
+                  ? lighten(4 / 5, currentCamp.color)
+                  : darken(4 / 5, currentCamp.color),
               )};
 
               break-inside: avoid;
-              padding: 0.25em; 
+              padding: 0.25em;
             `}
           >
             <h1
