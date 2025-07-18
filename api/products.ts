@@ -9,7 +9,7 @@ import { catchNaN, emptyArray, Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
 import Camps from "./camps";
 import Sales from "./sales";
-import Stocks, { StockID } from "./stocks";
+import Stocks, { type IStock, type StockID } from "./stocks";
 
 export type ProductID = Flavor<string, "ProductID">;
 
@@ -222,4 +222,18 @@ export function getProductSize(product: IProduct): {
   );
 
   return { unitSize, sizeUnit };
+}
+
+export function getProductBarCode(product: IProduct, stocks: IStock[]) {
+  const singleComponent =
+    product?.components?.length === 1 &&
+    product?.components?.find(
+      (component) =>
+        stocks.find(({ _id }) => _id === component.stockId)?.barCode,
+    );
+  const componentStock =
+    singleComponent &&
+    stocks.find(({ _id }) => _id === singleComponent.stockId);
+
+  return componentStock ? componentStock?.barCode : product?.barCode;
 }

@@ -3,21 +3,22 @@ import {
   faBan,
   faFolderMinus,
   faFolderPlus,
-  faTimes,
-  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import convert from "convert";
 import { useFind } from "meteor/react-meteor-data";
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
+import React, { ReactNode, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { isUserResponsible } from "../api/accounts";
 import Locations, { ILocation } from "../api/locations";
-import Products, { IProduct, isAlcoholic } from "../api/products";
+import Products, {
+  getProductBarCode,
+  IProduct,
+  isAlcoholic,
+} from "../api/products";
 import Stocks, { type StockID } from "../api/stocks";
-import BarcodeScannerComponent from "../components/BarcodeScanner";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -80,12 +81,10 @@ export default function PageProductsItem({
 }) {
   const currentUser = useCurrentUser();
   const locations = useFind(() => Locations.find());
-  const [scanningBarcode, setScanningBarcode] = useState(false);
   const { location } = useCurrentLocation();
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
   const [isEditingStock, setIsEditingStock] = useState<null | StockID>(null);
-  const [editingBarCode, setEditingBarCode] = useState(false);
   const products = useFind(() => Products.find());
   const allTags = useMemo(
     () =>
@@ -121,14 +120,6 @@ export default function PageProductsItem({
   } = useForm<
     Partial<IProduct> & { name: string; brandName: string; buyPrice: number }
   >({ defaultValues: { components: product?.components, ...defaultValues } });
-
-  const handleBarCode = useCallback(
-    (resultBarCode: string) => {
-      setValue("barCode", resultBarCode, { shouldDirty: true });
-      setScanningBarcode(false);
-    },
-    [setValue],
-  );
 
   const { fields, append, update, remove } = useFieldArray({
     control,
@@ -322,64 +313,27 @@ export default function PageProductsItem({
           />
         </Label>
         <Label label="Bar Code">
-          {!editingBarCode &&
-          !product?.barCode &&
-          product?.components?.length === 1 &&
-          product?.components?.find(
+          {product?.components?.length === 1 &&
+          product?.components?.some(
             (component) =>
               stocks.find(({ _id }) => _id === component.stockId)?.barCode,
           ) ? (
             <div>
-              <code>
-                {
-                  stocks.find(
-                    ({ _id }) =>
-                      _id ===
-                      product?.components?.find(
-                        (component) =>
-                          stocks.find(({ _id }) => _id === component.stockId)
-                            ?.barCode,
-                      )?.stockId,
-                  )?.barCode
-                }
-              </code>
+              <code>{getProductBarCode(product, stocks)}</code>
               <small> (via stock)</small>
-              <button type="button" onClick={() => setEditingBarCode(true)}>
-                <FontAwesomeIcon icon={faPencilAlt} />
-              </button>
+            </div>
+          ) : product?.barCode ? (
+            <div>
+              <code>{getProductBarCode(product, stocks)}</code>
+              <small> (legacy entry)</small>
             </div>
           ) : (
-            <>
-              <div
-                className={css`
-                  white-space: nowrap;
-                `}
-              >
-                <button type="button" onClick={() => setScanningBarcode(true)}>
-                  Scan
-                </button>
-                <input
-                  type="text"
-                  defaultValue={product?.barCode || ""}
-                  {...register("barCode")}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingBarCode(false);
-
-                    setValue("barCode", "");
-                  }}
-                >
-                  <FontAwesomeIcon icon={editingBarCode ? faTimes : faTrash} />
-                </button>
-              </div>
-              {scanningBarcode ? (
-                <Modal onDismiss={() => setScanningBarcode(false)}>
-                  <BarcodeScannerComponent onResult={handleBarCode} />
-                </Modal>
+            <div>
+              <code>No Bar Code</code>
+              {product?.components?.length === 1 ? (
+                <small> (via component)</small>
               ) : null}
-            </>
+            </div>
           )}
         </Label>
         <Label label="Tap">
