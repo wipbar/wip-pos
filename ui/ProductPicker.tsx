@@ -11,7 +11,7 @@ import React, {
   useState,
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
-import { type LongPressCallbackReason, useLongPress } from "use-long-press";
+import { LongPressCallbackReason, useLongPress } from "use-long-press";
 import Products, {
   type IProduct,
   type ProductID,
