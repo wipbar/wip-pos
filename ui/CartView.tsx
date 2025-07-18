@@ -141,6 +141,8 @@ crankSound.volume = 0.75;
 const dingSound = new Audio("/cashregisterding.mp3");
 dingSound.volume = 0.75;
 const ohnoSound = new Audio("/cashregisterohno.mp3");
+const badbarcodeSound = new Audio("/badbarcode.mp3");
+const badBarCodes = ["5707323573420"];
 
 export default function CartView({
   cart,
@@ -201,7 +203,12 @@ export default function CartView({
   >("showOnlyBarCodeLessItems", null);
 
   const handleBarCode = useCallback(
-    (resultBarCode: string) => {
+    async (resultBarCode: string) => {
+      if (badBarCodes.includes(resultBarCode)) {
+        await badbarcodeSound.play();
+        return;
+      }
+
       let product = products.find(({ barCode }) => resultBarCode === barCode);
 
       if (!product) {
