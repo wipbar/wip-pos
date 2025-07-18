@@ -1,7 +1,6 @@
 import { css } from "@emotion/css";
 import { FastAverageColor } from "fast-average-color";
-import { useFind, useTracker } from "meteor/react-meteor-data";
-import { Session } from "meteor/session";
+import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import React, {
   type HTMLProps,
@@ -77,10 +76,6 @@ function ProductPickerProduct({
   const sortedTags = useMemo(
     () => Array.from(product.tags || emptyArray).sort(),
     [product],
-  );
-
-  const GALAXY_APP_VERSION_ID = useTracker(
-    () => Session.get("GALAXY_APP_VERSION_ID") as string | undefined,
   );
 
   return (
@@ -165,8 +160,7 @@ function ProductPickerProduct({
                       {tag.trim()}
                     </span>
                   ))}{" "}
-                  {!GALAXY_APP_VERSION_ID ||
-                  Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
+                  {Math.random() + 1 ? null : (
                     <ProductPickerProductStock product={product} />
                   )}
                 </small>
