@@ -140,6 +140,7 @@ export const productsMethods = {
     { productId }: { productId: ProductID },
   ) {
     this.unblock();
+    return NaN;
     if (this.isSimulation) return NaN;
 
     const currentCamp = (await Camps.findOneAsync({}, { sort: { end: -1 } }))!;
