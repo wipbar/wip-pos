@@ -37,7 +37,8 @@
     "react-select": "^5.10.1",
     "react-use-draggable-scroll": "^0.4.7",
     "recharts": "^2.15.3",
-    "tdigest": "^0.1.2"
+    "tdigest": "^0.1.2",
+    "use-long-press": "^3.3.0"
   },
   "meteor": {
     "mainModule": {

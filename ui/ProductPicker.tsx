@@ -11,6 +11,7 @@ import React, {
   useState,
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
+import { type LongPressCallbackReason, useLongPress } from "use-long-press";
 import Products, {
   type IProduct,
   type ProductID,
@@ -30,6 +31,8 @@ import {
   stringToColours,
   tagsToString,
 } from "../util";
+import { Modal } from "./PageProducts";
+import PageProductsItem from "./PageProductsItem";
 
 const fac = new FastAverageColor();
 
@@ -62,16 +65,23 @@ function ProductPickerProductStock({ product }: { product: IProduct }) {
 function ProductPickerProduct({
   product,
   onPickedProduct,
+  onLongPressedProduct,
   showItemDetails,
 }: {
   product: IProduct;
   onPickedProduct: (product: IProduct) => void;
+  onLongPressedProduct: (product: IProduct) => void;
   showItemDetails: boolean;
 }) {
-  const handleClick = useCallback(
-    () => onPickedProduct(product),
-    [product, onPickedProduct],
-  );
+  const handlers = useLongPress(() => onLongPressedProduct(product), {
+    cancelOnMovement: true,
+    cancelOutsideElement: true,
+    onCancel: (_event, meta) => {
+      if (meta.reason === LongPressCallbackReason.CancelledByRelease) {
+        onPickedProduct(product);
+      }
+    },
+  });
 
   const sortedTags = useMemo(
     () => Array.from(product.tags || emptyArray).sort(),
@@ -81,7 +91,7 @@ function ProductPickerProduct({
   return (
     <button
       key={product._id}
-      onClick={handleClick}
+      {...handlers()}
       className={css`
         background: ${sortedTags.length
           ? sortedTags.length === 1 && sortedTags[0]
@@ -205,6 +215,7 @@ export default function ProductPicker({
     boolean | null
   >("showOnlyBarCodeLessItems", null);
   const [showItemDetails, setShowItemDetails] = useState(true);
+  const [isEditingProduct, setIsEditingProduct] = useState<null | ProductID>();
   const toggleOnlyMenuItems = useCallback(
     () => setShowOnlyMenuItems(!showOnlyMenuItems),
     [showOnlyMenuItems],
@@ -272,6 +283,10 @@ export default function ProductPicker({
     },
     [pickedProductIds, setPickedProductIds],
   );
+
+  const handleLongPressedProduct = useCallback((product: IProduct) => {
+    setIsEditingProduct(product._id);
+  }, []);
 
   const sortedProducts = useMemo(
     () =>
@@ -417,6 +432,14 @@ export default function ProductPicker({
           </label>
         ))}
       </div>
+      {isEditingProduct ? (
+        <Modal onDismiss={() => setIsEditingProduct(null)}>
+          <PageProductsItem
+            product={products.find((p) => p._id === isEditingProduct)}
+            onCancel={() => setIsEditingProduct(null)}
+          />
+        </Modal>
+      ) : null}
       <div
         className={css`
           display: grid;
@@ -430,6 +453,7 @@ export default function ProductPicker({
             key={product._id}
             product={product}
             onPickedProduct={handlePickedProduct}
+            onLongPressedProduct={handleLongPressedProduct}
             showItemDetails={showItemDetails}
           />
         ))}
