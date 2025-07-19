@@ -619,6 +619,7 @@ export default function PageProductsItem({
                       },
                 });
               }}
+              type="button"
               disabled={location?.curfew && isAlcoholic(product)}
               style={{
                 background:

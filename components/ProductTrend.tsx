@@ -21,10 +21,10 @@ export default function ProductTrend({
 
   useSubscription(
     currentCamp && "sales",
-    currentCamp && {
-      from: currentCamp.buildup,
-      to: currentCamp.teardown,
-    },
+      currentCamp && {
+        from: currentCamp.buildup,
+        to: currentCamp.teardown,
+      },
     [currentCamp],
   );
   const data = useFind(
