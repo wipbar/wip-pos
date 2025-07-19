@@ -385,4 +385,5 @@ export const tranculaFlow = [
   "STUMMY TWISTED",
   "All i have are post-opps",
   "Popped a mr bean and went non-verbal",
+  "If the piss ain't recreational I don't even want it",
 ];
