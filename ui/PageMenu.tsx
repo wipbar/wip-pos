@@ -202,9 +202,9 @@ export default function PageMenu() {
       className={css`
         font-size: 0.8em;
         padding: 0.5em;
-        column-width: 18em;
+        column-width: 15em;
         @media (min-width: 1400px) {
-          column-width: 20vw;
+          column-width: 17vw;
         }
         column-fill: balance;
         column-gap: 0.5em;
