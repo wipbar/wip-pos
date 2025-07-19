@@ -202,9 +202,9 @@ export default function PageMenu() {
       className={css`
         font-size: 0.8em;
         padding: 0.5em;
-        column-width: 15em;
+        column-width: 18em;
         @media (min-width: 1400px) {
-          column-width: 17vw;
+          column-width: 20vw;
         }
         column-fill: balance;
         column-gap: 0.5em;
@@ -242,7 +242,6 @@ export default function PageMenu() {
               )};
 
               break-inside: avoid;
-              padding: 0.25em;
             `}
           >
             <h1
@@ -256,6 +255,7 @@ export default function PageMenu() {
             </h1>
             <SparkLine
               className={css`
+                margin-top: -8px;
                 display: block;
                 border-bottom: ${currentCamp &&
                   getCorrectTextColor(
@@ -398,6 +398,7 @@ export default function PageMenu() {
                               className={css`
                                 position: relative;
                                 break-inside: avoid;
+                                line-height: 1.2;
                                 ${product.salePrice == 0
                                   ? `
                           box-shadow: 0 0 20px black, 0 0 40px black;
@@ -432,43 +433,22 @@ export default function PageMenu() {
                                 <span>
                                   <div
                                     className={css`
+                                      margin-top: 2px;
                                       font-weight: bold;
+                                      line-height: 0.8;
                                     `}
                                   >
                                     {product.name}{" "}
-                                    {subTexts.length === 1 ? (
-                                      <small
-                                        style={{
-                                          fontWeight: "normal",
-                                          ...(product.name.startsWith(
-                                            "Purple",
-                                          ) &&
-                                          nextProduct?.name.startsWith("Purple")
-                                            ? { display: "none" }
-                                            : {}),
-                                        }}
-                                      >
-                                        {subTexts.map((thing, i) => (
-                                          <Fragment key={thing}>
-                                            {i > 0 ? ", " : null}
-                                            <small key={thing}>{thing}</small>
-                                          </Fragment>
-                                        ))}
-                                      </small>
-                                    ) : null}
-                                  </div>
-                                  {subTexts.length > 1 ? (
                                     <small
-                                      className={css`
-                                        margin-top: -0.25em;
-                                        display: block;
-                                      `}
-                                      style={
-                                        product.name.startsWith("Purple") &&
+                                      style={{
+                                        fontWeight: "normal",
+                                        lineHeight: 1,
+                                        display: "inline-block",
+                                        ...(product.name.startsWith("Purple") &&
                                         nextProduct?.name.startsWith("Purple")
                                           ? { display: "none" }
-                                          : {}
-                                      }
+                                          : {}),
+                                      }}
                                     >
                                       {subTexts.map((thing, i) => (
                                         <Fragment key={thing}>
@@ -477,7 +457,7 @@ export default function PageMenu() {
                                         </Fragment>
                                       ))}
                                     </small>
-                                  ) : null}
+                                  </div>
                                 </span>
                                 <div
                                   className={css`
@@ -499,6 +479,7 @@ export default function PageMenu() {
                               </div>
                               <SparkLine
                                 className={css`
+                                  margin-top: -2px;
                                   margin-left: -0.5em;
                                   margin-right: -0.5em;
                                   width: calc(100% + 1em);
@@ -534,7 +515,7 @@ export default function PageMenu() {
           className={css`
             font-weight: 600;
             text-align: center;
-            font-size: 1em;
+            font-size: 0.9em;
             color: ${currentCamp &&
             getCorrectTextColor(
               getCorrectTextColor(currentCamp?.color) === "white"
@@ -546,7 +527,7 @@ export default function PageMenu() {
           {`"${flow}"`}
           <p
             className={css`
-              font-size: 0.5em;
+              font-size: 0.55em;
             `}
           >
             - {flowSource}
