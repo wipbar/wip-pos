@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import { sumBy } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { useFind } from "meteor/react-meteor-data";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Products, {
   getProductSize,
@@ -12,18 +12,21 @@ import Products, {
 import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import useCurrentCamp from "../hooks/useCurrentCamp";
+import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import { emptyArray, getCorrectTextColor } from "../util";
 import CartViewOpenedAt from "./CartOpenedAt";
-import type { Cart } from "./PageTend";
+import type { Cart, CartID } from "./PageTend";
 
 function CartViewProductsItem({
   product,
   onRemoveClick,
+  sellingLoading,
 }: {
   product: IProduct;
   onRemoveClick?: () => any;
+  sellingLoading: boolean;
 }) {
   const currentCamp = useCurrentCamp();
 
@@ -71,6 +74,7 @@ function CartViewProductsItem({
             ${!onRemoveClick ? "opacity:0;" : ""}
           `}
           onClick={onRemoveClick}
+          disabled={sellingLoading}
         >
           🚮
         </button>
@@ -149,11 +153,13 @@ export default function CartView({
   setPickedProductIds,
   isActive,
   onSetActive,
+  onSetCurrentCartId,
 }: {
   cart?: Cart;
   setPickedProductIds: (cart: Cart | undefined, value: ProductID[]) => void;
   isActive?: boolean;
   onSetActive?: (cart: Cart | undefined) => void;
+  onSetCurrentCartId: (id: CartID | null) => void;
 }) {
   const currentCamp = useCurrentCamp();
 
@@ -166,11 +172,14 @@ export default function CartView({
   const [doSellProducts, { isLoading: sellingLoading }] =
     useMethod("Sales.sellProducts");
 
-  const handleSellClick = useCallback(async () => {
+  const handleSellClick = useEvent(async () => {
     if (!locationSlug) return;
     if (!cart) return;
 
     await crankSound.play();
+    setConfirmOpen(false);
+    onSetCurrentCartId(null);
+
     try {
       await doSellProducts({
         locationSlug,
@@ -188,11 +197,10 @@ export default function CartView({
       }
     }
     setPickedProductIds(cart, emptyArray);
-    setConfirmOpen(false);
     await dingSound.play();
 
     navigator.vibrate?.(500);
-  }, [cart, doSellProducts, locationSlug, setPickedProductIds]);
+  });
 
   const haxTotal = sumBy(cart?.productIds || emptyArray, (id) =>
     Number(products.find(({ _id }) => id == _id)?.salePrice),
@@ -202,56 +210,45 @@ export default function CartView({
     boolean | null
   >("showOnlyBarCodeLessItems", null);
 
-  const handleBarCode = useCallback(
-    async (resultBarCode: string) => {
-      if (badBarCodes.includes(resultBarCode)) {
-        await badbarcodeSound.play();
-        return;
+  const handleBarCode = useEvent(async (resultBarCode: string) => {
+    if (badBarCodes.includes(resultBarCode)) {
+      await badbarcodeSound.play();
+      return;
+    }
+
+    let product = products.find(({ barCode }) => resultBarCode === barCode);
+
+    if (!product) {
+      const stock = stocks.find(({ barCode }) => barCode === resultBarCode);
+
+      if (stock) {
+        product = products.find(
+          ({ components }) =>
+            components?.length == 1 &&
+            components?.some(({ stockId }) => stockId === stock._id),
+        );
       }
+    }
 
-      let product = products.find(({ barCode }) => resultBarCode === barCode);
+    if (!product) return;
 
-      if (!product) {
-        const stock = stocks.find(({ barCode }) => barCode === resultBarCode);
+    setPickedProductIds(cart, [
+      ...(cart?.productIds || emptyArray),
+      product._id,
+    ]);
 
-        if (stock) {
-          product = products.find(
-            ({ components }) =>
-              components?.length == 1 &&
-              components?.some(({ stockId }) => stockId === stock._id),
-          );
-        }
-      }
-
-      if (!product) return;
-
-      setPickedProductIds(cart, [
-        ...(cart?.productIds || emptyArray),
-        product._id,
-      ]);
-
-      if (showOnlyBarCodeLessItems === null) setShowOnlyBarCodeLessItems(true);
-    },
-    [
-      cart,
-      products,
-      setPickedProductIds,
-      setShowOnlyBarCodeLessItems,
-      showOnlyBarCodeLessItems,
-      stocks,
-    ],
-  );
+    if (showOnlyBarCodeLessItems === null) setShowOnlyBarCodeLessItems(true);
+  });
 
   const [isGiven, setIsGiven] = useState(false);
-  const toggleGiven = useCallback(() => setIsGiven((v) => !v), []);
+  const toggleGiven = useEvent(() => setIsGiven((v) => !v));
 
   const [isReceived, setIsReceived] = useState(false);
-  const toggleReceived = useCallback(() => setIsReceived((v) => !v), []);
+  const toggleReceived = useEvent(() => setIsReceived((v) => !v));
 
   const [amountReceived, setAmountReceived] = useState(0);
-  const addReceived = useCallback(
-    (amount: number) => setAmountReceived((v) => v + amount),
-    [],
+  const addReceived = useEvent((amount: number) =>
+    setAmountReceived((v) => v + amount),
   );
   useEffect(() => {
     if (amountReceived && haxTotal && amountReceived >= haxTotal) {
@@ -272,11 +269,11 @@ export default function CartView({
     }
   }, [haxTotal]);
 
-  const handleCartClick = useCallback(() => {
+  const handleCartClick = useEvent(() => {
     if (isActive) return;
 
     if (onSetActive) onSetActive(cart);
-  }, [isActive, cart, onSetActive]);
+  });
 
   return (
     <div
@@ -309,7 +306,17 @@ export default function CartView({
       `}
       onClick={handleCartClick}
     >
-      {cart?.openedAt ? <CartViewOpenedAt cart={cart} /> : null}
+      {sellingLoading ? (
+        <center
+          className={css`
+            border-bottom: 1px solid ${currentCamp && currentCamp?.color};
+          `}
+        >
+          <small>Sale Pending...</small>
+        </center>
+      ) : cart?.openedAt ? (
+        <CartViewOpenedAt cart={cart} />
+      ) : null}
       {cart?.productIds?.length ? (
         <>
           <ul
@@ -326,6 +333,7 @@ export default function CartView({
                 <CartViewProductsItem
                   key={id + i}
                   product={product}
+                  sellingLoading={sellingLoading}
                   onRemoveClick={
                     isActive
                       ? () =>
@@ -350,7 +358,7 @@ export default function CartView({
               padding-bottom: 1em;
             `}
           >
-            {isActive ? (
+            {isActive && !sellingLoading ? (
               <BarcodeScannerComponent onResult={handleBarCode} />
             ) : null}
             <big>
@@ -366,152 +374,184 @@ export default function CartView({
 
             {isActive ? (
               <>
-                <div
-                  className={css`
-                    margin-top: 12px;
-                    padding: 0 8px;
-                    display: flex;
-                    width: 100%;
-                    flex-direction: row;
-                    align-items: center;
-                    justify-content: space-around;
-                    > button {
-                      border-radius: 100%;
-                      width: 15%;
-                      font-size: 14px;
-                      aspect-ratio: 1 / 1;
-                      line-height: 0.9;
-                      > small {
-                        display: block;
-                      }
-                      > code {
-                        font-weight: bold;
-                      }
-
-                      &:nth-child(1) {
-                        background-color: hotpink;
-                      }
-                      &:nth-child(2) {
-                        background-color: #ff8800;
-                      }
-                      &:nth-child(3) {
-                        background-color: greenyellow;
-                      }
-                      &:nth-child(4) {
-                        background-color: aqua;
-                      }
-                      &:nth-child(5) {
-                        background-color: white;
-                      }
-                    }
-                  `}
-                >
-                  <button onClick={() => addReceived(100)}>
-                    <code>100</code>
-                    <small>ʜᴀx</small>
-                  </button>
-                  <button onClick={() => addReceived(50)}>
-                    <code>50</code>
-                    <small>ʜᴀx</small>
-                  </button>
-                  <button onClick={() => addReceived(20)}>
-                    <code>20</code>
-                    <small>ʜᴀx</small>
-                  </button>
-                  <button onClick={() => addReceived(10)}>
-                    <code>10</code>
-                    <small>ʜᴀx</small>
-                  </button>
-                  <button onClick={() => addReceived(5)}>
-                    <code>5</code>
-                    <small>ʜᴀx</small>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAmountReceived(0);
-                      setIsReceived(false);
-                    }}
-                  >
-                    X
-                  </button>
-                </div>
-                <div
-                  className={css`
-                    display: grid;
-                    gap: 0.5vw;
-                    grid-auto-flow: column;
-                    padding: 0 0.5vw;
-                    margin-top: 1em;
-                    > label {
-                      cursor: pointer;
-                      background-color: ${currentCamp?.color || "black"};
-                      color: ${currentCamp
-                        ? getCorrectTextColor(currentCamp.color)
-                        : "white"};
-
-                      padding: 0.5em;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      grid-gap: 0.5em;
-
-                      user-select: none;
-                    }
-                  `}
-                >
-                  <label>
-                    <input
-                      type="checkbox"
-                      onChange={toggleReceived}
-                      checked={isReceived}
-                    />
-                    <span>
-                      {amountReceived ? (
-                        <>
-                          <code>{amountReceived}</code>/
-                        </>
-                      ) : null}
-                      <code>{haxTotal}</code>
-                      <small>ʜᴀx</small>
-                      <br />
-                      Received
-                    </span>
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      onChange={toggleGiven}
-                      checked={isGiven}
-                    />
-                    <span>
-                      <span
-                        className={css`
-                          white-space: nowrap;
-                        `}
-                      >
-                        {cart.productIds.length} items
-                      </span>
-                      <br />
-                      Given
-                    </span>
-                  </label>
-                  <button
+                {!sellingLoading ? (
+                  <div
                     className={css`
-                      background: red;
-                    `}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to cancel this transaction?",
-                        )
-                      ) {
-                        setPickedProductIds(cart, emptyArray);
+                      margin-top: 12px;
+                      padding: 0 8px;
+                      display: flex;
+                      width: 100%;
+                      flex-direction: row;
+                      align-items: center;
+                      justify-content: space-around;
+                      > button {
+                        border-radius: 100%;
+                        width: 15%;
+                        font-size: 14px;
+                        aspect-ratio: 1 / 1;
+                        line-height: 0.9;
+                        > small {
+                          display: block;
+                        }
+                        > code {
+                          font-weight: bold;
+                        }
+
+                        &:nth-child(1) {
+                          background-color: hotpink;
+                        }
+                        &:nth-child(2) {
+                          background-color: #ff8800;
+                        }
+                        &:nth-child(3) {
+                          background-color: greenyellow;
+                        }
+                        &:nth-child(4) {
+                          background-color: aqua;
+                        }
+                        &:nth-child(5) {
+                          background-color: white;
+                        }
                       }
-                    }}
+                    `}
                   >
-                    🗑️
-                  </button>
-                </div>
+                    <button onClick={() => addReceived(100)}>
+                      <code>100</code>
+                      <small>ʜᴀx</small>
+                    </button>
+                    <button onClick={() => addReceived(50)}>
+                      <code>50</code>
+                      <small>ʜᴀx</small>
+                    </button>
+                    <button onClick={() => addReceived(20)}>
+                      <code>20</code>
+                      <small>ʜᴀx</small>
+                    </button>
+                    <button onClick={() => addReceived(10)}>
+                      <code>10</code>
+                      <small>ʜᴀx</small>
+                    </button>
+                    <button onClick={() => addReceived(5)}>
+                      <code>5</code>
+                      <small>ʜᴀx</small>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAmountReceived(0);
+                        setIsReceived(false);
+                      }}
+                    >
+                      X
+                    </button>
+                  </div>
+                ) : null}
+                {sellingLoading ? (
+                  <div
+                    className={css`
+                      display: grid;
+                      gap: 0.5vw;
+                      grid-auto-flow: column;
+                      padding: 0 1vw;
+                      margin-top: 1em;
+                    `}
+                  >
+                    <button
+                      type="button"
+                      className={css`
+                        display: inline-block;
+
+                        background-color: ${currentCamp?.color};
+                        color: ${currentCamp &&
+                        getCorrectTextColor(currentCamp.color)};
+
+                        padding: 1em;
+                        width: 100%;
+                      `}
+                      disabled={sellingLoading}
+                      onClick={handleSellClick}
+                    >
+                      {sellingLoading ? <>Selling...</> : <>yeah i got it</>}
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className={css`
+                      display: grid;
+                      gap: 0.5vw;
+                      grid-auto-flow: column;
+                      padding: 0 0.5vw;
+                      margin-top: 1em;
+                      > label {
+                        cursor: pointer;
+                        background-color: ${currentCamp?.color || "black"};
+                        color: ${currentCamp
+                          ? getCorrectTextColor(currentCamp.color)
+                          : "white"};
+
+                        padding: 0.5em;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        grid-gap: 0.5em;
+
+                        user-select: none;
+                      }
+                    `}
+                  >
+                    <label>
+                      <input
+                        type="checkbox"
+                        onChange={toggleReceived}
+                        checked={isReceived}
+                      />
+                      <span>
+                        {amountReceived ? (
+                          <>
+                            <code>{amountReceived}</code>/
+                          </>
+                        ) : null}
+                        <code>{haxTotal}</code>
+                        <small>ʜᴀx</small>
+                        <br />
+                        Received
+                      </span>
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        onChange={toggleGiven}
+                        checked={isGiven}
+                      />
+                      <span>
+                        <span
+                          className={css`
+                            white-space: nowrap;
+                          `}
+                        >
+                          {cart.productIds.length} items
+                        </span>
+                        <br />
+                        Given
+                      </span>
+                    </label>
+                    <button
+                      className={css`
+                        background: red;
+                      `}
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to cancel this transaction?",
+                          )
+                        ) {
+                          setPickedProductIds(cart, emptyArray);
+                        }
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                )}
                 {amountReceived > haxTotal ? (
                   <div
                     className={css`

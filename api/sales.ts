@@ -64,7 +64,7 @@ export const salesMethods = {
     },
   ) {
     if (this.isSimulation) return;
-    if (!locationSlug || !productIds) throw new Meteor.Error("misisng");
+    if (!locationSlug || !productIds) throw new Meteor.Error("missing");
     const { userId } = this;
     if (!userId) throw new Meteor.Error("log in please");
     const location = await Locations.findOneAsync({ slug: locationSlug });

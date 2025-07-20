@@ -3,12 +3,13 @@ import { format } from "date-fns";
 import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
-import React, { Profiler, useCallback, useMemo, useRef, useState } from "react";
+import React, { Profiler, useMemo, useRef, useState } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import type { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useEvent from "../hooks/useEvent";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
 import {
@@ -95,7 +96,7 @@ export default function PageTend() {
     safeDisplacement: 64, // specify the drag sensitivity
   });
 
-  const onPickerSetPickedProductIds = useCallback(
+  const onPickerSetPickedProductIds = useEvent(
     (newPickedProductIds: ProductID[]) => {
       if (!currentCart) {
         const newCart = {
@@ -115,10 +116,9 @@ export default function PageTend() {
         );
       }
     },
-    [currentCart, setCarts],
   );
 
-  const onCartSetPickedProductIds = useCallback(
+  const onCartSetPickedProductIds = useEvent(
     (cart: Cart | undefined, newPickedProductIds: ProductID[]) => {
       if (cart) {
         if (newPickedProductIds.length) {
@@ -133,7 +133,7 @@ export default function PageTend() {
           setCarts((oldCarts) =>
             oldCarts.filter((oldCart) => oldCart.id !== cart.id),
           );
-          setCurrentCartId(null);
+          if (currentCartId) setCurrentCartId(null);
         }
       } else {
         const newCart = {
@@ -145,20 +145,16 @@ export default function PageTend() {
         setCurrentCartId(newCart.id);
       }
     },
-    [setCarts],
   );
 
-  const onCartSetActive = useCallback(
-    (cart: Cart | undefined) => {
-      if (!cart) return;
+  const onCartSetActive = useEvent((cart: Cart | undefined) => {
+    if (!cart) return;
 
-      setCurrentCartId(cart.id);
-      setCarts((oldCarts) =>
-        oldCarts.filter((oldCart) => oldCart.productIds.length),
-      );
-    },
-    [setCarts],
-  );
+    setCurrentCartId(cart.id);
+    setCarts((oldCarts) =>
+      oldCarts.filter((oldCart) => oldCart.productIds.length),
+    );
+  });
 
   if (error) return error;
 
@@ -201,6 +197,7 @@ export default function PageTend() {
             <CartView
               key={cart.id}
               cart={cart}
+              onSetCurrentCartId={setCurrentCartId}
               setPickedProductIds={onCartSetPickedProductIds}
               onSetActive={onCartSetActive}
               isActive={currentCartId === cart.id}
@@ -225,6 +222,7 @@ export default function PageTend() {
             </button>
           ) : (
             <CartView
+              onSetCurrentCartId={setCurrentCartId}
               setPickedProductIds={onCartSetPickedProductIds}
               isActive
             />

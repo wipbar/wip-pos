@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
-import React, { ReactNode, useCallback, useState } from "react";
+import React, { type ReactNode, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
 import Products, { ProductID } from "../api/products";
@@ -10,6 +10,7 @@ import { IStock } from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
+import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import { units } from "../util";
 import { Modal } from "./PageProducts";
@@ -78,13 +79,10 @@ export default function PageStockItem({
       Pick<IStock, "name" | "packageType" | "sizeUnit" | "unitSize">
   >();
 
-  const handleBarCode = useCallback(
-    (resultBarCode: string) => {
-      setValue("barCode", resultBarCode, { shouldDirty: true });
-      setScanningBarcode(false);
-    },
-    [setValue],
-  );
+  const handleBarCode = useEvent((resultBarCode: string) => {
+    setValue("barCode", resultBarCode, { shouldDirty: true });
+    setScanningBarcode(false);
+  });
 
   const productsUsingStock = products.filter(
     (product) =>

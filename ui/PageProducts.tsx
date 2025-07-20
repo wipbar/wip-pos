@@ -27,6 +27,7 @@ import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
+import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import {
@@ -203,24 +204,20 @@ export default function PageProducts() {
     setShowOnlyProductsWithoutComponents,
   ] = useSession<boolean | null>("showOnlyProductsWithoutComponents", null);
 
-  const toggleOnlyMenuItems = useCallback(
-    () => setShowOnlyMenuItems(!showOnlyMenuItems),
-    [setShowOnlyMenuItems, showOnlyMenuItems],
+  const toggleOnlyMenuItems = useEvent(() =>
+    setShowOnlyMenuItems(!showOnlyMenuItems),
   );
-  const toggleShowOnlyBarCodeLessItems = useCallback(
-    () => setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
-    [setShowOnlyBarCodeLessItems, showOnlyBarCodeLessItems],
+  const toggleShowOnlyBarCodeLessItems = useEvent(() =>
+    setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
   );
   const [activeFilters, setActiveFilters] = useState<string[]>(emptyArray);
 
-  const toggleTag = useCallback(
-    (tag: string) =>
-      setActiveFilters(
-        activeFilters.includes(tag.trim())
-          ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
-          : [...activeFilters, tag.trim()],
-      ),
-    [activeFilters],
+  const toggleTag = useEvent((tag: string) =>
+    setActiveFilters(
+      activeFilters.includes(tag.trim())
+        ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
+        : [...activeFilters, tag.trim()],
+    ),
   );
   const allTags = useMemo(() => {
     const collator = new Intl.Collator("en");
