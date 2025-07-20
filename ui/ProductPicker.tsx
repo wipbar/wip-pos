@@ -316,7 +316,9 @@ export default function ProductPicker({
           (showOnlyMenuItems && location
             ? product.locationIds?.includes(location._id)
             : true) &&
-          (showOnlyBarCodeLessItems ? !product.barCode : true)
+          (showOnlyBarCodeLessItems
+            ? !getProductBarCode(product, stocks)
+            : true)
         ) {
           memo.push(product);
         }
@@ -329,6 +331,7 @@ export default function ProductPicker({
       showOnlyBarCodeLessItems,
       showOnlyMenuItems,
       sortedProducts,
+      stocks,
     ],
   );
 
