@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
-import React, { Profiler, useMemo, useRef, useState } from "react";
+import React, { Profiler, useEffect, useMemo, useRef, useState } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import type { ProductID } from "../api/products";
 import Sales from "../api/sales";
@@ -84,6 +84,21 @@ export default function PageTend() {
 
   const [currentCartId, setCurrentCartId] = useState<null | CartID>(null);
   const [carts, setCarts] = useSession<Cart[]>("carts", emptyArray);
+
+  const onBeforeUnload = useEvent((ev: BeforeUnloadEvent) => {
+    if (carts.length) {
+      ev.preventDefault();
+
+      ev.returnValue = "Anything you wanna put here!";
+      return "Anything here as well, doesn't matter!";
+    }
+  });
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", onBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [onBeforeUnload]);
 
   const currentCart = useMemo(
     () => carts.find(({ id }) => id === currentCartId) || null,
