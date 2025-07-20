@@ -314,9 +314,8 @@ export default function CartView({
         >
           <small>Sale Pending...</small>
         </center>
-      ) : cart?.openedAt ? (
-        <CartViewOpenedAt cart={cart} />
       ) : null}
+      {cart?.openedAt ? <CartViewOpenedAt cart={cart} /> : null}
       {cart?.productIds?.length ? (
         <>
           <ul
