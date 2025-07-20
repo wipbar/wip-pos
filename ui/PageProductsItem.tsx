@@ -336,17 +336,6 @@ export default function PageProductsItem({
             </div>
           )}
         </Label>
-        <Label label="Tap">
-          <select defaultValue={product?.tap || ""} {...register("tap")}>
-            <option value="">---</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-          </select>
-        </Label>
         <Label label="Tags">
           <Controller
             name="tags"
@@ -372,6 +361,19 @@ export default function PageProductsItem({
             )}
           />
         </Label>
+        {watch("tags")?.includes("tap") ? (
+          <Label label="Tap">
+            <select defaultValue={product?.tap || ""} {...register("tap")}>
+              <option value="">---</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </Label>
+        ) : null}
         {isUserResponsible(currentUser) ? (
           <Label label="Unit Cost">
             <input
