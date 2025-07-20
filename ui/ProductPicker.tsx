@@ -4,7 +4,6 @@ import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import React, {
   type HTMLProps,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -15,12 +14,15 @@ import { LongPressCallbackReason, useLongPress } from "use-long-press";
 import Products, {
   type IProduct,
   type ProductID,
+  getProductBarCode,
   getProductSize,
   isAlcoholic,
 } from "../api/products";
+import Stocks from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
+import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import {
@@ -216,17 +218,14 @@ export default function ProductPicker({
   >("showOnlyBarCodeLessItems", null);
   const [showItemDetails, setShowItemDetails] = useState(true);
   const [isEditingProduct, setIsEditingProduct] = useState<null | ProductID>();
-  const toggleOnlyMenuItems = useCallback(
-    () => setShowOnlyMenuItems(!showOnlyMenuItems),
-    [showOnlyMenuItems],
+  const toggleOnlyMenuItems = useEvent(() =>
+    setShowOnlyMenuItems(!showOnlyMenuItems),
   );
-  const toggleShowOnlyBarCodeLessItems = useCallback(
-    () => setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
-    [setShowOnlyBarCodeLessItems, showOnlyBarCodeLessItems],
+  const toggleShowOnlyBarCodeLessItems = useEvent(() =>
+    setShowOnlyBarCodeLessItems(!showOnlyBarCodeLessItems),
   );
-  const toggleItemDetails = useCallback(
-    () => setShowItemDetails(!showItemDetails),
-    [showItemDetails],
+  const toggleItemDetails = useEvent(() =>
+    setShowItemDetails(!showItemDetails),
   );
   const [activeFilters, setActiveFilters] = useState<string[]>(emptyArray);
   const [prevPickedProductIds, setPrevPickedProductIds] =
@@ -241,16 +240,17 @@ export default function ProductPicker({
   const products = useFind(() =>
     Products.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
   );
-
-  const toggleTag = useCallback(
-    (tag: string) =>
-      setActiveFilters(
-        activeFilters.includes(tag.trim())
-          ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
-          : [...activeFilters, tag.trim()],
-      ),
-    [activeFilters],
+  const stocks = useFind(() =>
+    Stocks.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
   );
+
+  const toggleTag = useEvent((tag: string) => {
+    setActiveFilters(
+      activeFilters.includes(tag.trim())
+        ? removeItem(activeFilters, activeFilters.indexOf(tag.trim()))
+        : [...activeFilters, tag.trim()],
+    );
+  });
 
   const allTags = useMemo(
     () =>
@@ -261,7 +261,11 @@ export default function ProductPicker({
               ? locationIds?.includes(location._id)
               : true,
           )
-          .filter(({ barCode }) => (showOnlyBarCodeLessItems ? !barCode : true))
+          .filter((product) =>
+            showOnlyBarCodeLessItems
+              ? !getProductBarCode(product, stocks)
+              : true,
+          )
           .reduce((memo, { tags }) => {
             tags?.forEach((tag) => memo.add(tag.trim()));
 
@@ -274,19 +278,17 @@ export default function ProductPicker({
       products,
       showOnlyBarCodeLessItems,
       showOnlyMenuItems,
+      stocks,
     ],
   );
 
-  const handlePickedProduct = useCallback(
-    (product: IProduct) => {
-      setPickedProductIds([...pickedProductIds, product._id]);
-    },
-    [pickedProductIds, setPickedProductIds],
-  );
+  const handlePickedProduct = useEvent((product: IProduct) => {
+    setPickedProductIds([...pickedProductIds, product._id]);
+  });
 
-  const handleLongPressedProduct = useCallback((product: IProduct) => {
+  const handleLongPressedProduct = useEvent((product: IProduct) => {
     setIsEditingProduct(product._id);
-  }, []);
+  });
 
   const sortedProducts = useMemo(
     () =>
