@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import { Meteor } from "meteor/meteor";
+import { Mongo } from "meteor/mongo";
 import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
@@ -36,10 +37,15 @@ Tracker.autorun(() => {
 });
 
 Meteor.subscribe("camps");
+Meteor.subscribe("connection-count");
 Meteor.subscribe("locations");
 Meteor.subscribe("styles");
 Meteor.subscribe("stocks");
 Meteor.subscribe("products");
+
+new Mongo.Collection("connection-count")
+  .find()
+  .observeChanges({ changed: console.log });
 
 export default function UI() {
   useSubscription("camps");

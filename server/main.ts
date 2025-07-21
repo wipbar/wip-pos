@@ -11,6 +11,40 @@ import Styles from "../api/styles";
 import "./metrics";
 import "./sales";
 
+let connectionCount: number;
+function getConnectionCount() {
+  // @ts-expect-error - untyped secrets
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const newConnectionCount = Meteor.server.stream_server.open_sockets
+    .length as number;
+
+  if (newConnectionCount !== connectionCount) {
+    connectionCount = newConnectionCount;
+    console.log({ connectionCount });
+  }
+
+  return connectionCount;
+}
+
+// Publish the current size of a collection.
+Meteor.publish("connection-count", function (this: Subscription) {
+  const handle = Meteor.onConnection(() => {
+    this.changed("connection-count", "connection-count", {
+      count: getConnectionCount(),
+    });
+  }) as unknown as { stop: () => void };
+
+  this.added("connection-count", "connection-count", {
+    count: getConnectionCount(),
+  });
+  this.ready();
+
+  // Stop observing the cursor when the client unsubscribes. Stopping a
+  // subscription automatically takes care of sending the client any `removed`
+  // messages.
+  this.onStop(() => handle.stop());
+});
+
 Meteor.publish("products", async function (this: Subscription) {
   const user = this.userId && (await Meteor.users.findOneAsync(this.userId));
 
