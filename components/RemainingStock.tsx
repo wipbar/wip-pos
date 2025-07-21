@@ -99,16 +99,25 @@ export function getRemainingServings(
   sales: ISale[],
   stocks: IStock[],
   product: IProduct,
-  timestamp: Date,
+  timestamp?: Date,
 ) {
   let minServings;
   for (const component of product.components || []) {
     const stock = stocks.find((stock) => stock._id === component.stockId);
-    if (!stock) continue;
+    if (
+      !stock ||
+      stock.approxCount === null ||
+      stock.approxCount === undefined
+    ) {
+      continue;
+    }
+
     try {
       const componentServings =
         convert(
-          getStockLevelAtTime(sales, stock, timestamp) * stock.unitSize,
+          (timestamp
+            ? getStockLevelAtTime(sales, stock, timestamp)
+            : stock.approxCount || NaN) * stock.unitSize,
           stock.sizeUnit,
         ).to(component.sizeUnit) / component.unitSize;
 
@@ -133,7 +142,13 @@ export function getApproxRemainingServings(
   let minServings;
   for (const component of product.components || []) {
     const stock = stocks.find((stock) => stock._id === component.stockId);
-    if (!stock) continue;
+    if (
+      !stock ||
+      stock.approxCount === null ||
+      stock.approxCount === undefined
+    ) {
+      continue;
+    }
 
     try {
       const componentServings =
@@ -163,7 +178,13 @@ export function getRemainingServingsEver(
   let minServings;
   for (const component of product.components || []) {
     const stock = stocks.find((stock) => stock._id === component.stockId);
-    if (!stock) continue;
+    if (
+      !stock ||
+      stock.approxCount === null ||
+      stock.approxCount === undefined
+    ) {
+      continue;
+    }
 
     try {
       const componentServings =

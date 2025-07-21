@@ -636,7 +636,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
                 .map((product) => {
                   const remainingServings =
                     product?.components?.[0] &&
-                    getRemainingServings(sales, stocks, product, currentDate);
+                    getRemainingServings(sales, stocks, product);
                   const remainingServingsEver =
                     product?.components?.[0] &&
                     getRemainingServingsEver(currentCamp!, stocks, product);
@@ -790,7 +790,7 @@ async function calculateMostSold() {
 
         const remainingServings =
           product?.components?.[0] &&
-          getRemainingServings(sales, stocks, product, now2);
+          getRemainingServings(sales, stocks, product);
         const remainingServingsEver =
           product?.components?.[0] &&
           getRemainingServingsEver(currentCamp, stocks, product);
