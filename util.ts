@@ -63,7 +63,7 @@ export function removeItem<T>(items: T[], i: number) {
   return items.slice(0, i).concat(items.slice(i + 1, items.length));
 }
 
-const types = ["beer", "soda", "cocktail", "spirit"];
+const types = ["beer", "soda", "cocktail", "spirit", "cider"];
 export const tagsToString = (tags: string[] = emptyArray) =>
   [...tags]
     .sort()

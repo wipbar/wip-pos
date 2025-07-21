@@ -93,7 +93,7 @@ export default function PageTend() {
       return "Anything here as well, doesn't matter!";
     }
   });
-
+  
   useEffect(() => {
     window.addEventListener("beforeunload", onBeforeUnload);
 
