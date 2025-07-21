@@ -98,6 +98,16 @@ function CartViewProductsItem({
               {productSize.sizeUnit})
             </small>
           ) : null}
+          {product.tap ? (
+            <span
+              className={css`
+                line-height: 0.5;
+                white-space: nowrap;
+              `}
+            >
+              <small>🚰 {product.tap}</small>
+            </span>
+          ) : null}
           {product.components && product.components?.length > 1 ? (
             <small>
               <small>
