@@ -510,7 +510,7 @@ export default function PageMenu() {
       >
         <pre>Rendered: {new Date().toLocaleString()}</pre>
       </center>
-      {flow ? (
+      {flow && location?.slug === "bar" ? (
         <p
           className={css`
             font-weight: 600;
