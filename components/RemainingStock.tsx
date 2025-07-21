@@ -117,7 +117,7 @@ export function getRemainingServings(
         convert(
           (timestamp
             ? getStockLevelAtTime(sales, stock, timestamp)
-            : stock.approxCount || NaN) * stock.unitSize,
+            : stock.approxCount) * stock.unitSize,
           stock.sizeUnit,
         ).to(component.sizeUnit) / component.unitSize;
 

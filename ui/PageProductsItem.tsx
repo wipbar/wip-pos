@@ -528,7 +528,7 @@ export default function PageProductsItem({
                     <small>Remove</small>
                   </button>
                 </div>
-                {stock.approxCount ? (
+                {stock.approxCount !== null ? (
                   <>
                     (~
                     {(
