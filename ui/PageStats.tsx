@@ -12,6 +12,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import { emptyArray, emptyObject } from "../util";
+import { ProductsItem } from "./PageMenu";
 
 export default function PageStats() {
   const currentCamp = useCurrentCamp();
@@ -125,32 +126,20 @@ export default function PageStats() {
                     className={css`
                       width: 2.5em;
                       text-align: right;
-                      margin-right: 0.5em;
+                      margin-right: 0.25em;
                       flex-shrink: 0;
                     `}
                   >
                     <b>{count}</b>
                     <small>x</small>
                   </div>
-                  <div>
-                    {product.brandName ? <>{product.brandName} - </> : null}
-                    {product.name}{" "}
-                    {stockPercentage ? (
-                      <small
-                        className={css`
-                          white-space: nowrap;
-                          line-height: 0.5;
-                        `}
-                      >
-                        <small>
-                          {(stockPercentage * 100).toLocaleString("en-DK", {
-                            maximumFractionDigits: 1,
-                          })}
-                          % sold
-                        </small>
-                      </small>
-                    ) : null}
-                  </div>
+                  <ProductsItem
+                    key={product._id}
+                    product={product}
+                    soldOutRatio={stockPercentage}
+                    showBrandName
+                    hidePrice
+                  />
                 </li>
               );
             })

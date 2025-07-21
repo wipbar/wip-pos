@@ -9,7 +9,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { getProductSize } from "../api/products";
+import { getProductSize, type IProduct } from "../api/products";
 import Styles, { type IStyle } from "../api/styles";
 import {
   blackulaFlow,
@@ -86,6 +86,167 @@ function SparkLine({
         <path d={pathD} stroke={stroke} strokeWidth={strokeWidth} fill={fill} />
       )}
     </svg>
+  );
+}
+
+export function ProductsItem({
+  product,
+  nextProduct,
+  productSpark,
+  soldOutRatio,
+  showBrandName,
+  hidePrice,
+}: {
+  product: IProduct;
+  nextProduct?: IProduct | undefined;
+  productSpark?: (readonly [number, number])[];
+  soldOutRatio?: number | null;
+  showBrandName?: boolean;
+  hidePrice?: boolean;
+}) {
+  const currentCamp = useCurrentCamp();
+
+  const productSize = getProductSize(product);
+  const subTexts = [
+    product.description || null,
+    (typeof product.abv === "number" && !Number.isNaN(product.abv)) ||
+    (typeof product.abv === "string" && product.abv)
+      ? `${product.abv}%`
+      : null,
+
+    productSize ? `${productSize.unitSize}${productSize.sizeUnit}` : null,
+  ].filter(Boolean);
+
+  return (
+    <div
+      key={product._id}
+      className={css`
+        padding: 0.125em 0.5em 0px;
+        position: relative;
+        break-inside: avoid;
+        line-height: 1.2;
+        ${product.salePrice == 0
+          ? `
+                          box-shadow: 0 0 20px black, 0 0 40px black;
+                          color: black;
+                          background: turquoise;
+                          padding: 0 4px;
+                          animation-name: wobble;
+                          animation-iteration-count: infinite;
+                          animation-duration: 2s;
+                          transform-origin: 50% 50%;
+                          z-index: 50;
+                      `
+          : ""}
+      `}
+    >
+      {/*<ProductTrend
+                            product={product}
+                            className={css`
+                              position: absolute !important;
+                              bottom: 0;
+                              width: 100%;
+                              z-index: 0;
+                            `}
+                          />*/}
+      {soldOutRatio !== undefined &&
+      soldOutRatio !== null &&
+      !Number.isNaN(soldOutRatio) ? (
+        <div
+          className={css`
+            background: red;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 4px;
+          `}
+        >
+          <div
+            className={css`
+              background: rgb(0, 255, 0);
+              position: absolute;
+              right: 0;
+              left: 0;
+              bottom: 0;
+              height: ${(1 - soldOutRatio) * 100}%;
+            `}
+          ></div>
+        </div>
+      ) : null}
+      <div
+        className={css`
+          flex: 1;
+          display: flex;
+          justify-content: space-between;
+        `}
+      >
+        <span>
+          <div
+            className={css`
+              margin-top: 2px;
+              font-weight: bold;
+              line-height: 0.8;
+            `}
+          >
+            {product.name}{" "}
+            <small
+              style={{
+                fontWeight: "normal",
+                lineHeight: 1,
+                display: "inline-block",
+                ...(product.name.startsWith("Purple") &&
+                nextProduct?.name.startsWith("Purple")
+                  ? { display: "none" }
+                  : {}),
+              }}
+            >
+              {showBrandName
+                ? product.brandName
+                : subTexts.map((thing, i) => (
+                    <Fragment key={thing}>
+                      {i > 0 ? ", " : null}
+                      <small key={thing}>{thing}</small>
+                    </Fragment>
+                  ))}
+            </small>
+          </div>
+        </span>
+        {hidePrice ? null : (
+          <div
+            className={css`
+              text-align: right;
+            `}
+          >
+            <b>{Number(product.salePrice) || "00"}</b>
+            {product.tap ? (
+              <div
+                className={css`
+                  line-height: 0.5;
+                  white-space: nowrap;
+                `}
+              >
+                <small>🚰 {product.tap}</small>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+      {productSpark ? (
+        <SparkLine
+          className={css`
+            margin-top: -2px;
+            /* compensate for padding and health bar */
+            margin-left: calc(-0.5em + 4px);
+            width: calc(100% + 1em - 4px);
+            display: block;
+            border-bottom: ${currentCamp?.color} 1px solid;
+          `}
+          fill={currentCamp?.color}
+          data={productSpark}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -381,150 +542,15 @@ export default function PageMenu() {
                         `}
                       >
                         {products.map(
-                          ([product, productSpark, soldOutRatio], i, list) => {
-                            const nextProduct = list[i + 1]?.[0];
-                            const productSize = getProductSize(product);
-                            const subTexts = [
-                              product.description || null,
-                              (typeof product.abv === "number" &&
-                                !Number.isNaN(product.abv)) ||
-                              (typeof product.abv === "string" && product.abv)
-                                ? `${product.abv}%`
-                                : null,
-
-                              productSize
-                                ? `${productSize.unitSize}${productSize.sizeUnit}`
-                                : null,
-                            ].filter(Boolean);
-
-                            return (
-                              <div
-                                key={product._id}
-                                className={css`
-                                  padding: 0.125em 0.5em 0px;
-                                  position: relative;
-                                  break-inside: avoid;
-                                  line-height: 1.2;
-                                  ${product.salePrice == 0
-                                    ? `
-                          box-shadow: 0 0 20px black, 0 0 40px black;
-                          color: black;
-                          background: turquoise;
-                          padding: 0 4px;
-                          animation-name: wobble;
-                          animation-iteration-count: infinite;
-                          animation-duration: 2s;
-                          transform-origin: 50% 50%;
-                          z-index: 50;
-                      `
-                                    : ""}
-                                `}
-                              >
-                                {/*<ProductTrend
-                            product={product}
-                            className={css`
-                              position: absolute !important;
-                              bottom: 0;
-                              width: 100%;
-                              z-index: 0;
-                            `}
-                          />*/}
-                                {soldOutRatio !== null &&
-                                !Number.isNaN(soldOutRatio) ? (
-                                  <div
-                                    className={css`
-                                      background: red;
-                                      position: absolute;
-                                      top: 0;
-                                      left: 0;
-                                      bottom: 0;
-                                      width: 4px;
-                                    `}
-                                  >
-                                    <div
-                                      className={css`
-                                        background: rgb(0, 255, 0);
-                                        position: absolute;
-                                        right: 0;
-                                        left: 0;
-                                        bottom: 0;
-                                        height: ${(1 - soldOutRatio) * 100}%;
-                                      `}
-                                    ></div>
-                                  </div>
-                                ) : null}
-                                <div
-                                  className={css`
-                                    flex: 1;
-                                    display: flex;
-                                    justify-content: space-between;
-                                  `}
-                                >
-                                  <span>
-                                    <div
-                                      className={css`
-                                        margin-top: 2px;
-                                        font-weight: bold;
-                                        line-height: 0.8;
-                                      `}
-                                    >
-                                      {product.name}{" "}
-                                      <small
-                                        style={{
-                                          fontWeight: "normal",
-                                          lineHeight: 1,
-                                          display: "inline-block",
-                                          ...(product.name.startsWith(
-                                            "Purple",
-                                          ) &&
-                                          nextProduct?.name.startsWith("Purple")
-                                            ? { display: "none" }
-                                            : {}),
-                                        }}
-                                      >
-                                        {subTexts.map((thing, i) => (
-                                          <Fragment key={thing}>
-                                            {i > 0 ? ", " : null}
-                                            <small key={thing}>{thing}</small>
-                                          </Fragment>
-                                        ))}
-                                      </small>
-                                    </div>
-                                  </span>
-                                  <div
-                                    className={css`
-                                      text-align: right;
-                                    `}
-                                  >
-                                    <b>{Number(product.salePrice) || "00"}</b>
-                                    {product.tap ? (
-                                      <div
-                                        className={css`
-                                          line-height: 0.5;
-                                          white-space: nowrap;
-                                        `}
-                                      >
-                                        <small>🚰 {product.tap}</small>
-                                      </div>
-                                    ) : null}
-                                  </div>
-                                </div>
-                                <SparkLine
-                                  className={css`
-                                    margin-top: -2px;
-                                    /* compensate for padding and health bar */
-                                    margin-left: calc(-0.5em + 4px); 
-                                    width: calc(100% + 1em - 4px);
-                                    display: block;
-                                    border-bottom: ${currentCamp?.color} 1px
-                                      solid;
-                                  `}
-                                  fill={currentCamp?.color}
-                                  data={productSpark}
-                                />
-                              </div>
-                            );
-                          },
+                          ([product, productSpark, soldOutRatio], i, list) => (
+                            <ProductsItem
+                              key={product._id}
+                              product={product}
+                              nextProduct={list[i + 1]?.[0]}
+                              productSpark={productSpark}
+                              soldOutRatio={soldOutRatio}
+                            />
+                          ),
                         )}
                       </div>
                     </li>
