@@ -209,7 +209,7 @@ export default function PageMenu() {
         padding: 0.5em;
         column-width: 15em;
         @media (min-width: 1400px) {
-          column-width: ${Math.floor(25 - totalProductsLength / 10)}vw;
+          column-width: ${Math.floor(25 - totalProductsLength / 0.95)}vw;
         }
         column-fill: balance;
         column-gap: 0.5em;
