@@ -598,7 +598,9 @@ const sparklineDays = 24;
 async function calculateMenuDataForLocation(location: ILocation) {
   const currentDate = new Date();
   const from = subHours(currentDate, sparklineDays);
+  const currentCamp = await Camps.findOneAsync({}, { sort: { end: -1 } });
   const sales = await Sales.find({ timestamp: { $gte: from } }).fetchAsync();
+  const stocks = await Stocks.find().fetchAsync();
   const products = await Products.find(
     {
       removedAt: { $exists: false },
@@ -631,37 +633,48 @@ async function calculateMenuDataForLocation(location: ILocation) {
               products
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
-                .map(
-                  (product) =>
-                    [
-                      product,
-                      Array.from(
-                        { length: sparklineDays },
-                        (_, i) =>
-                          [
-                            sparklineDays - 1 - i,
-                            sales.reduce((memo, sale) => {
-                              if (
-                                isWithinRange(
-                                  sale.timestamp,
-                                  addHours(currentDate, -i - 1),
-                                  addHours(currentDate, -i),
-                                )
-                              ) {
-                                return (
-                                  memo +
-                                  sale.products.filter(
-                                    (saleProduct) =>
-                                      saleProduct._id === product._id,
-                                  ).length
-                                );
-                              }
-                              return memo;
-                            }, 0),
-                          ] as const,
-                      ),
-                    ] as const,
-                ),
+                .map((product) => {
+                  const remainingServings =
+                    product?.components?.[0] &&
+                    getRemainingServings(sales, stocks, product, currentDate);
+                  const remainingServingsEver =
+                    product?.components?.[0] &&
+                    getRemainingServingsEver(currentCamp!, stocks, product);
+                  return [
+                    product,
+                    Array.from(
+                      { length: sparklineDays },
+                      (_, i) =>
+                        [
+                          sparklineDays - 1 - i,
+                          sales.reduce((memo, sale) => {
+                            if (
+                              isWithinRange(
+                                sale.timestamp,
+                                addHours(currentDate, -i - 1),
+                                addHours(currentDate, -i),
+                              )
+                            ) {
+                              return (
+                                memo +
+                                sale.products.filter(
+                                  (saleProduct) =>
+                                    saleProduct._id === product._id,
+                                ).length
+                              );
+                            }
+                            return memo;
+                          }, 0),
+                        ] as const,
+                    ),
+                    remainingServingsEver
+                      ? Math.min(
+                          1,
+                          1 - remainingServings! / remainingServingsEver,
+                        )
+                      : null,
+                  ] as const;
+                }),
             ] as const,
         )
         .sort(
