@@ -140,7 +140,9 @@ export default function CampByCamp() {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="hour"
-            tickFormatter={(hour) => "D" + String(Math.ceil((hour + 6) / 24))}
+            tickFormatter={(hour) =>
+              "D" + String(Math.ceil((hour + 6) / 24) - 1)
+            }
             interval={23}
           />
           <YAxis
@@ -157,7 +159,7 @@ export default function CampByCamp() {
           <Tooltip
             labelFormatter={(hour) =>
               `H${String((hour + 6) % 24).padStart(2, "0")}D${String(
-                Math.ceil(hour / 24),
+                Math.ceil(hour / 24) - 1,
               ).padStart(2, "0")}`
             }
             contentStyle={{

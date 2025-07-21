@@ -85,7 +85,7 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
               y={Math.max(...data.map((d) => d?.[i] || 0))}
               key={i + "dot"}
               label={{
-                value: `D${i + 1}`,
+                value: `D${i}`,
                 position:
                   Math.max(...data.map((d) => (d?.[i] ? d.x : 0))) > 21
                     ? "left"
@@ -105,7 +105,7 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
               type="monotone"
               key={i}
               dataKey={i}
-              name={`ΣD${i + 1}`}
+              name={`ΣD${i}`}
               strokeDasharray={
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }

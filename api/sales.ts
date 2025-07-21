@@ -640,6 +640,11 @@ async function calculateMenuDataForLocation(location: ILocation) {
                   const remainingServingsEver =
                     product?.components?.[0] &&
                     getRemainingServingsEver(currentCamp!, stocks, product);
+
+                  if (product.name.includes("Cannibal")) {
+                    console.log({ remainingServings, remainingServingsEver });
+                  }
+
                   return [
                     product,
                     Array.from(
