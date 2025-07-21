@@ -193,6 +193,11 @@ export default function PageMenu() {
   const getOijProductsLength = (o: NonNullable<typeof oij>[number]): number =>
     o[1]?.reduce((m, b) => m + b[1].length, 0) || NaN;
 
+  const totalProductsLength = oij.reduce(
+    (m, b) => m + getOijProductsLength(b),
+    0,
+  );
+
   const list = oij.sort(
     (a, b) => getOijProductsLength(b) - getOijProductsLength(a),
   );
@@ -204,7 +209,7 @@ export default function PageMenu() {
         padding: 0.5em;
         column-width: 15em;
         @media (min-width: 1400px) {
-          column-width: 17vw;
+          column-width: ${Math.floor(25 - totalProductsLength / 10)}vw;
         }
         column-fill: balance;
         column-gap: 0.5em;
