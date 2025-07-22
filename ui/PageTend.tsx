@@ -93,7 +93,7 @@ export default function PageTend() {
       return "Anything here as well, doesn't matter!";
     }
   });
-  
+
   useEffect(() => {
     window.addEventListener("beforeunload", onBeforeUnload);
 
@@ -218,7 +218,7 @@ export default function PageTend() {
               isActive={currentCartId === cart.id}
             />
           ))}
-          {currentCartId ? (
+          {currentCartId && carts.length ? (
             <button
               className={css`
                 margin: 0.5em 1em;

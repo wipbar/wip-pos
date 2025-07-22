@@ -175,10 +175,15 @@ export default function CartView({
 
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const products = useFind(() =>
-    Products.find({ removedAt: { $exists: false } }),
+  const products = useFind(
+    () =>
+      Products.find({
+        removedAt: { $exists: false },
+        _id: { $in: cart?.productIds ?? [] },
+      }),
+    [cart?.productIds],
   );
-  const stocks = useFind(() => Stocks.find());
+  const stocks = useFind(() => Stocks.find({ removedAt: { $exists: false } }));
   const [doSellProducts, { isLoading: sellingLoading }] =
     useMethod("Sales.sellProducts");
 
