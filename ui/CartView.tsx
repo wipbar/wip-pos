@@ -191,6 +191,8 @@ export default function CartView({
     if (!locationSlug) return;
     if (!cart) return;
 
+    const now = new Date();
+
     await crankSound.play();
     setConfirmOpen(false);
     onSetCurrentCartId(null);
@@ -199,6 +201,8 @@ export default function CartView({
       await doSellProducts({
         locationSlug,
         cartId: cart.id,
+        cartOpenedAt: cart.openedAt,
+        cartSoldAt: now,
         productIds: cart.productIds,
       });
     } catch (sellError) {

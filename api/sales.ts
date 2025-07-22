@@ -21,6 +21,7 @@ import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
 import Products, {
+  getProductAverageOrderDuration,
   getProductSize,
   isAlcoholic,
   isMate,
@@ -35,6 +36,8 @@ export interface ISale {
   _id: SaleID;
   userId?: string;
   cartId?: string;
+  cartOpenedAt?: Date;
+  cartSoldAt?: Date;
   locationId: string;
   currency?: string;
   country?: string;
@@ -56,10 +59,14 @@ export const salesMethods = {
     {
       locationSlug,
       cartId,
+      cartOpenedAt,
+      cartSoldAt,
       productIds,
     }: {
       locationSlug: ILocation["slug"];
       cartId: CartID;
+      cartOpenedAt: Date;
+      cartSoldAt: Date;
       productIds: ProductID[];
     },
   ) {
@@ -95,6 +102,8 @@ export const salesMethods = {
       userId: userId,
       locationId: location._id,
       cartId,
+      cartOpenedAt,
+      cartSoldAt,
       currency: "HAX",
       country: "DK",
       amount: amountTotal,
@@ -687,6 +696,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
                           1 - remainingServings! / remainingServingsEver,
                         )
                       : null,
+                    getProductAverageOrderDuration(product, sales),
                   ] as const;
                 }),
             ] as const,
