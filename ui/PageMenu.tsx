@@ -96,11 +96,13 @@ export function ProductsItem({
   soldOutRatio,
   showBrandName,
   hidePrice,
+  servingTime,
 }: {
   product: IProduct;
   nextProduct?: IProduct | undefined;
   productSpark?: (readonly [number, number])[];
   soldOutRatio?: number | null;
+  servingTime?: number;
   showBrandName?: boolean;
   hidePrice?: boolean;
 }) {
@@ -209,6 +211,18 @@ export function ProductsItem({
                       <small key={thing}>{thing}</small>
                     </Fragment>
                   ))}
+              {servingTime ? (
+                <>
+                  ,{" "}
+                  <small>
+                    ⏳{" "}
+                    {(servingTime / 1000).toLocaleString("en", {
+                      maximumSignificantDigits: 2,
+                    })}
+                    s
+                  </small>
+                </>
+              ) : null}
             </small>
           </div>
         </span>
@@ -542,12 +556,17 @@ export default function PageMenu() {
                         `}
                       >
                         {products.map(
-                          ([product, productSpark, soldOutRatio], i, list) => (
+                          (
+                            [product, productSpark, soldOutRatio, servingTime],
+                            i,
+                            list,
+                          ) => (
                             <ProductsItem
                               key={product._id}
                               product={product}
                               nextProduct={list[i + 1]?.[0]}
                               productSpark={productSpark}
+                              servingTime={servingTime}
                               soldOutRatio={soldOutRatio}
                             />
                           ),

@@ -3,7 +3,7 @@ import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { catchNaN, emptyArray, Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
-import { productsRemainingPercent } from "./sales";
+import { type ISale, productsRemainingPercent } from "./sales";
 import { type IStock, type StockID } from "./stocks";
 
 export type ProductID = Flavor<string, "ProductID">;
@@ -213,4 +213,25 @@ export function getProductBarCode(product: IProduct, stocks: IStock[]) {
     stocks.find(({ _id }) => _id === singleComponent.stockId);
 
   return componentStock ? componentStock?.barCode : product?.barCode;
+}
+
+export function getProductAverageOrderDuration(
+  product: IProduct,
+  sales: ISale[],
+) {
+  const salesOfOnlyThisProductWithTiming = sales.filter(
+    (sale) =>
+      sale.cartOpenedAt &&
+      sale.cartSoldAt &&
+      sale.products.length === 1 &&
+      sale.products.filter((p) => p._id === product._id).length === 1,
+  );
+
+  if (!salesOfOnlyThisProductWithTiming.length) return NaN;
+
+  const deltas = salesOfOnlyThisProductWithTiming.map(
+    (sale) => sale.cartSoldAt!.valueOf() - sale.cartOpenedAt!.valueOf(),
+  );
+
+  return deltas.reduce((memo, delta) => memo + delta, 0) / deltas.length;
 }
