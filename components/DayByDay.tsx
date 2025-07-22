@@ -81,23 +81,29 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
           <Legend />
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
             <ReferenceDot
+              isFront
               x={Math.max(...data.map((d) => (d?.[i] ? d.x : 0)))}
               y={Math.max(...data.map((d) => d?.[i] || 0))}
               key={i + "dot"}
               label={{
                 value: `D${i}`,
-                position:
-                  Math.max(...data.map((d) => (d?.[i] ? d.x : 0))) > 21
-                    ? "left"
-                    : "insideBottomRight",
+                position: "insideBottomRight",
                 offset: 8,
                 style: {
-                  fill: currentCamp && getCorrectTextColor(currentCamp.color),
+                  fill:
+                    currentCamp && getCorrectTextColor(currentCamp.color, true),
+                  stroke:
+                    currentCamp &&
+                    getCorrectTextColor(currentCamp.color, false),
+                  strokeWidth: 0.5,
+                  fontWeight: 800,
                 },
               }}
-              fill={currentCamp && getCorrectTextColor(currentCamp.color)}
               r={4}
-              stroke={currentCamp && getCorrectTextColor(currentCamp.color)}
+              fill={currentCamp && getCorrectTextColor(currentCamp.color, true)}
+              stroke={
+                currentCamp && getCorrectTextColor(currentCamp.color, true)
+              }
             />
           ))}
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (

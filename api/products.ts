@@ -1,15 +1,10 @@
 import convert from "convert";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import {
-  getRemainingServings,
-  getRemainingServingsEver,
-} from "../components/RemainingStock";
 import { catchNaN, emptyArray, Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
-import Camps from "./camps";
-import Sales from "./sales";
-import Stocks, { type IStock, type StockID } from "./stocks";
+import { productsRemainingPercent } from "./sales";
+import { type IStock, type StockID } from "./stocks";
 
 export type ProductID = Flavor<string, "ProductID">;
 
@@ -135,32 +130,14 @@ export const productsMethods = {
         $set: { removedAt: new Date() },
       });
   },
-  async "Products.getRemainingPercent"(
+  "Products.getRemainingPercent"(
     this: Meteor.MethodThisType,
     { productId }: { productId: ProductID },
   ) {
     this.unblock();
-    return NaN;
     if (this.isSimulation) return NaN;
 
-    const currentCamp = (await Camps.findOneAsync({}, { sort: { end: -1 } }))!;
-    if (productId) {
-      const product = await Products.findOneAsync(productId);
-
-      if (!product) throw new Meteor.Error("Product not found");
-
-      const stocks = await Stocks.find().fetchAsync();
-
-      const sales = await Sales.find({
-        timestamp: { $gte: currentCamp.start, $lte: currentCamp.end },
-      }).fetchAsync();
-
-      const servings =
-        getRemainingServings(sales, stocks, product, new Date()) /
-        getRemainingServingsEver(currentCamp, stocks, product);
-
-      return servings;
-    }
+    if (productId) return productsRemainingPercent?.data.get(productId);
 
     throw new Meteor.Error("productId is required");
   },

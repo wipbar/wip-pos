@@ -180,12 +180,20 @@ export default function CampByCamp() {
                 position: "insideBottomRight",
                 offset: 8,
                 style: {
-                  fill: "#ffffff",
+                  fill:
+                    currentCamp && getCorrectTextColor(currentCamp.color, true),
+                  stroke:
+                    currentCamp &&
+                    getCorrectTextColor(currentCamp.color, false),
+                  strokeWidth: 0.5,
+                  fontWeight: 800,
                 },
               }}
-              fill={"#ffffff"}
               r={4}
-              stroke={"#ffffff"}
+              fill={currentCamp && getCorrectTextColor(currentCamp.color, true)}
+              stroke={
+                currentCamp && getCorrectTextColor(currentCamp.color, true)
+              }
             />
           ) : null}
           {camps.map((camp) => (

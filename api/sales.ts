@@ -268,6 +268,9 @@ let locationMenuData: Awaited<ReturnType<typeof calculateMenuData>> | null =
 let statsDayByDay: Awaited<ReturnType<typeof calculateDayByDayStats>> | null =
   null;
 let statsMostSold: Awaited<ReturnType<typeof calculateMostSold>> | null = null;
+export let productsRemainingPercent: Awaited<
+  ReturnType<typeof calculateProductRemainingPercent>
+> | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
     console.log("Startup statsing");
@@ -278,6 +281,9 @@ if (Meteor.isServer) {
       calculateDayByDayStats().then((data) => (statsDayByDay = data)),
       calculateMenuData().then((data) => (locationMenuData = data)),
       calculateMostSold().then((data) => (statsMostSold = data)),
+      calculateProductRemainingPercent().then(
+        (data) => (productsRemainingPercent = data),
+      ),
     ]);
     console.timeEnd("Startup statsing");
 
@@ -286,6 +292,9 @@ if (Meteor.isServer) {
       void calculateSalesSankeyData().then((data) => (statsSalesSankey = data));
       void calculateDayByDayStats().then((data) => (statsDayByDay = data));
       void calculateMostSold().then((data) => (statsMostSold = data));
+      void calculateProductRemainingPercent().then(
+        (data) => (productsRemainingPercent = data),
+      );
     }, 240_000);
 
     setInterval(() => {
@@ -832,6 +841,47 @@ async function calculateMostSold() {
     `Sales.stats.MostSold: ${(now3.getTime() - now.getTime()) / 1000}s,(${
       (now2.getTime() - now.getTime()) / 1000
     }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
+  );
+
+  return { data, asOf: now3 };
+}
+
+async function calculateProductRemainingPercent() {
+  const now = new Date();
+
+  const [camps] = await Promise.all([
+    Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
+  ]);
+  const products = await Products.find().fetchAsync();
+  const stocks = await Stocks.find().fetchAsync();
+  const sales = await Sales.find().fetchAsync();
+
+  const now2 = new Date();
+
+  const data = new Map<string, number | null>();
+  for (const product of products) {
+    const remainingServings =
+      product?.components?.[0] && getRemainingServings(sales, stocks, product);
+    const remainingServingsEver =
+      product?.components?.[0] &&
+      getRemainingServingsEver(camps[0]!, stocks, product);
+
+    data.set(
+      product._id.toString(),
+      remainingServingsEver
+        ? Math.min(1, 1 - remainingServings! / remainingServingsEver)
+        : null,
+    );
+  }
+
+  const now3 = new Date();
+
+  console.log(
+    `Products.stats.RemainingPercent: ${
+      (now3.getTime() - now.getTime()) / 1000
+    }s,(${(now2.getTime() - now.getTime()) / 1000}s fetch, ${
+      (now3.getTime() - now2.getTime()) / 1000
+    }s calc)`,
   );
 
   return { data, asOf: now3 };

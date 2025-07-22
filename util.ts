@@ -64,11 +64,12 @@ export function removeItem<T>(items: T[], i: number) {
 }
 
 const types = ["beer", "soda", "cocktail", "spirit", "cider"];
-export const tagsToString = (tags: string[] = emptyArray) =>
+export const sortTags = (tags: string[] = emptyArray) =>
   [...tags]
     .sort()
-    .sort((a, b) => Number(types.includes(b)) - Number(types.includes(a)))
-    .join(",");
+    .sort((a, b) => Number(types.includes(b)) - Number(types.includes(a)));
+export const tagsToString = (tags: string[] = emptyArray) =>
+  sortTags(tags).join(",");
 
 export const onProfilerRenderCallback: React.ProfilerOnRenderCallback = (
   id,

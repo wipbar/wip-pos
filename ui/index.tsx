@@ -1,5 +1,4 @@
 import { css } from "@emotion/css";
-import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
@@ -22,6 +21,7 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useSession from "../hooks/useSession";
 import useSubscription from "../hooks/useSubscription";
+import SubsManager from "../SubsManager";
 import { getCorrectTextColor, onProfilerRenderCallback } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
 import PageMenu from "./PageMenu";
@@ -36,12 +36,12 @@ Tracker.autorun(() => {
   document.title = Session.get("DocumentTitle") as string;
 });
 
-Meteor.subscribe("camps");
-Meteor.subscribe("connection-count");
-Meteor.subscribe("locations");
-Meteor.subscribe("styles");
-Meteor.subscribe("stocks");
-Meteor.subscribe("products");
+SubsManager.subscribe("camps");
+SubsManager.subscribe("connection-count");
+SubsManager.subscribe("locations");
+SubsManager.subscribe("styles");
+SubsManager.subscribe("stocks");
+SubsManager.subscribe("products");
 
 new Mongo.Collection("connection-count")
   .find()

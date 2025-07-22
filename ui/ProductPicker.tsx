@@ -29,6 +29,7 @@ import {
   emptyArray,
   getCorrectTextColor,
   removeItem,
+  sortTags,
   stringToColour,
   stringToColours,
   tagsToString,
@@ -49,18 +50,31 @@ function ProductPickerProductStock({ product }: { product: IProduct }) {
   useInterval(() => call({ productId: product._id }), 30000);
 
   return typeof result.data === "number" ? (
-    <small
+    <div
       className={css`
         white-space: nowrap;
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 8px;
+        background: red;
+        border-top-left-radius: 3px;
+        border-bottom-left-radius: 3px;
+        overflow: hidden;
       `}
     >
-      (~
-      {((1 - Math.max(0, Math.min(1, result.data))) * 100).toLocaleString(
-        "en-DK",
-        { maximumFractionDigits: 1 },
-      )}
-      % sold)
-    </small>
+      <div
+        className={css`
+          background: rgb(0, 255, 0);
+          position: absolute;
+          right: 0;
+          left: 0;
+          bottom: 0;
+          height: ${(1 - result.data) * 100}%;
+        `}
+      ></div>
+    </div>
   ) : null;
 }
 
@@ -86,7 +100,7 @@ function ProductPickerProduct({
   });
 
   const sortedTags = useMemo(
-    () => Array.from(product.tags || emptyArray).sort(),
+    () => sortTags(product.tags || emptyArray),
     [product],
   );
 
@@ -120,8 +134,10 @@ function ProductPickerProduct({
         justify-content: space-between;
         border-radius: 5px;
         align-items: center;
+        position: relative;
       `}
     >
+      <ProductPickerProductStock product={product} />
       <div
         className={css`
           flex: 1;
@@ -172,9 +188,6 @@ function ProductPickerProduct({
                       {tag.trim()}
                     </span>
                   ))}{" "}
-                  {Math.random() + 1 ? null : (
-                    <ProductPickerProductStock product={product} />
-                  )}
                 </small>
               </small>
             </>
@@ -254,24 +267,26 @@ export default function ProductPicker({
 
   const allTags = useMemo(
     () =>
-      [
-        ...products
-          .filter(({ locationIds }) =>
-            showOnlyMenuItems && location
-              ? locationIds?.includes(location._id)
-              : true,
-          )
-          .filter((product) =>
-            showOnlyBarCodeLessItems
-              ? !getProductBarCode(product, stocks)
-              : true,
-          )
-          .reduce((memo, { tags }) => {
-            tags?.forEach((tag) => memo.add(tag.trim()));
+      sortTags(
+        [
+          ...products
+            .filter(({ locationIds }) =>
+              showOnlyMenuItems && location
+                ? locationIds?.includes(location._id)
+                : true,
+            )
+            .filter((product) =>
+              showOnlyBarCodeLessItems
+                ? !getProductBarCode(product, stocks)
+                : true,
+            )
+            .reduce((memo, { tags }) => {
+              tags?.forEach((tag) => memo.add(tag.trim()));
 
-            return memo;
-          }, new Set<string>(activeFilters)),
-      ].sort(collator.compare.bind(collator)),
+              return memo;
+            }, new Set<string>(activeFilters)),
+        ].sort(collator.compare.bind(collator)),
+      ),
     [
       activeFilters,
       location,
@@ -292,13 +307,12 @@ export default function ProductPicker({
 
   const sortedProducts = useMemo(
     () =>
-      Array.from(products).sort(
-        (a, b) =>
-          a.name.localeCompare(b.name) +
-          a.brandName.localeCompare(b.brandName) * 10 +
-          (a.tap?.localeCompare(b.tap || "") || 0) * 100 +
-          tagsToString(a.tags).localeCompare(tagsToString(b.tags)) * 1000,
-      ),
+      Array.from(products)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .sort((a, b) => Number(a.tap || 0) - Number(b.tap || 0))
+        .sort((a, b) =>
+          tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
+        ),
     [products],
   );
 
