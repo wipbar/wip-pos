@@ -42,6 +42,8 @@ const fac = new FastAverageColor();
 const collator = new Intl.Collator("en");
 
 function ProductPickerProductStock({ product }: { product: IProduct }) {
+  return null;
+
   const [call, result] = useMethod("Products.getRemainingPercent");
 
   useEffect(() => {
