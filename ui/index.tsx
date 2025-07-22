@@ -48,7 +48,7 @@ new Mongo.Collection("connection-count")
   .observeChanges({ changed: console.log });
 
 export default function UI() {
-  const campsLoading = useSubscription("camps");
+  useSubscription("camps");
 
   const navigate = useNavigate();
   const GALAXY_APP_VERSION_ID = useTracker(
@@ -102,10 +102,6 @@ export default function UI() {
     "currentCampSlug",
     null,
   );
-
-  if (campsLoading) {
-    return null;
-  }
 
   return (
     <div
