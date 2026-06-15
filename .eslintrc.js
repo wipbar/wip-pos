@@ -39,5 +39,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ["**/vendor/**/*.js", ".eslintrc.js", "rspack.config.js"],
+  ignorePatterns: ["**/vendor/**/*.js", ".eslintrc.js", "rspack.config.js", "**/build-chunks/**", "**/_build/**"],
 };

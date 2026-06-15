@@ -535,7 +535,7 @@ export default function PageProductsItem({
                       (stock.approxCount * stock.unitSize) /
                       catchNaN(() =>
                         convert(
-                          watch(`components.${index}.unitSize`),
+                          watch(`components.${index}.unitSize`)!, // ong
                           field.sizeUnit,
                         ).to(stock.sizeUnit),
                       )

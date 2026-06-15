@@ -86,7 +86,7 @@ export default function UI() {
   useEffect(() => {
     const firstUserLocation = userLocations[0];
     if (firstUserLocation && !locationSlug) {
-      navigate("/" + firstUserLocation.slug + "/");
+      void navigate("/" + firstUserLocation.slug + "/");
     }
   }, [navigate, locationSlug, userLocations]);
   const [, setTitle] = useSession("DocumentTitle");
@@ -244,7 +244,7 @@ export default function UI() {
                 user && userLocations && userLocations.length > 1 ? (
                   <select
                     onChange={(event) => {
-                      navigate("/" + event.target.value + "/" + pageSlug);
+                      void navigate("/" + event.target.value + "/" + pageSlug);
                     }}
                     value={locationSlug}
                   >

@@ -299,8 +299,8 @@ export default function RemainingStock() {
               color:
                 currentCamp?.color && getCorrectTextColor(currentCamp?.color),
             }}
-            formatter={(amount: number) =>
-              (amount * 100).toLocaleString("en-DK", {
+            formatter={(amount) =>
+              (Number(amount) * 100).toLocaleString("en-DK", {
                 maximumFractionDigits: 0,
               }) + "%"
             }
