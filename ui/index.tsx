@@ -4,7 +4,7 @@ import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
 import { opacify } from "polished";
-import React, { Profiler, useEffect } from "react";
+import React, { lazy, Profiler, useEffect } from "react";
 import {
   Link,
   Navigate,
@@ -24,13 +24,15 @@ import useSubscription from "../hooks/useSubscription";
 import SubsManager from "../SubsManager";
 import { getCorrectTextColor, onProfilerRenderCallback } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
-import PageMenu from "./PageMenu";
-import PageProducts from "./PageProducts";
-import PageQR from "./PageQR";
-import PageSales from "./PageSales";
-import PageStats from "./PageStats";
-import PageStock from "./PageStock";
-import PageTend from "./PageTend";
+
+// Lazy load pages
+const PageStats = lazy(() => import("./PageStats"));
+const PageTend = lazy(() => import("./PageTend"));
+const PageProducts = lazy(() => import("./PageProducts"));
+const PageStock = lazy(() => import("./PageStock"));
+const PageSales = lazy(() => import("./PageSales"));
+const PageMenu = lazy(() => import("./PageMenu"));
+const PageQR = lazy(() => import("./PageQR"));
 
 Tracker.autorun(() => {
   document.title = Session.get("DocumentTitle") as string;
