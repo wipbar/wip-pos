@@ -596,12 +596,8 @@ export default function PageMenu() {
             font-weight: 600;
             text-align: center;
             font-size: 0.9em;
-            color: ${currentCamp &&
-            getCorrectTextColor(
-              getCorrectTextColor(currentCamp?.color) === "white"
-                ? lighten(4 / 5, currentCamp?.color)
-                : darken(4 / 5, currentCamp?.color),
-            )};
+            color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
+            opacity: 0.5;
           `}
         >
           {`"${flow}"`}
