@@ -1,8 +1,8 @@
 import { css } from "@emotion/css";
-import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { format } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
-import React, { type ReactNode, useState } from "react";
+import React, { lazy, type ReactNode, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
 import Products, { ProductID } from "../api/products";
@@ -14,7 +14,8 @@ import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import { units } from "../util";
 import { Modal } from "./PageProducts";
-import PageProductsItem from "./PageProductsItem";
+
+const PageProductsItem = lazy(() => import("./PageProductsItem"));
 
 const Label = ({
   label,

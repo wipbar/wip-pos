@@ -8,12 +8,13 @@ import {
   startOfDay,
   subHours,
 } from "date-fns";
-import { groupBy, sumBy } from "lodash";
+import groupBy from "lodash/groupBy";
+import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useMemo } from "react";
 import { isUserResponsible } from "../api/accounts";
-import Products, { IProduct } from "../api/products";
-import Sales, { ISale } from "../api/sales";
+import Products, { type IProduct } from "../api/products";
+import Sales, { type ISale } from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";

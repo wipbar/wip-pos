@@ -4,10 +4,10 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
 import type { Mongo } from "meteor/mongo";
 import { useFind } from "meteor/react-meteor-data";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, lazy, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Products from "../api/products";
-import Stocks, { IStock, StockID } from "../api/stocks";
+import Stocks, { type IStock, type StockID } from "../api/stocks";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -15,8 +15,9 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
-import PageProductsItem from "./PageProductsItem";
-import PageStockItem from "./PageStockItem";
+
+const PageStockItem = lazy(() => import("./PageStockItem"));
+const PageProductsItem = lazy(() => import("./PageProductsItem"));
 
 const NEW = Symbol("New");
 export default function PageStock() {

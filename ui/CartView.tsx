@@ -1,5 +1,5 @@
 import { css } from "@emotion/css";
-import { sumBy } from "lodash";
+import sumBy from "lodash/sumBy";
 import { Meteor } from "meteor/meteor";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useEffect, useState } from "react";

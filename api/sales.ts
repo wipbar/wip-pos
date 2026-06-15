@@ -8,7 +8,8 @@ import {
   min,
   subHours,
 } from "date-fns";
-import { groupBy, sumBy } from "lodash";
+import groupBy from "lodash/groupBy";
+import sumBy from "lodash/sumBy";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import {

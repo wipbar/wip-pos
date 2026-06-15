@@ -1,4 +1,4 @@
-import { sumBy } from "lodash";
+import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
 import React, { useCallback, useEffect, useMemo } from "react";
 import {

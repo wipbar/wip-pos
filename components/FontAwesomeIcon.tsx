@@ -1,5 +1,5 @@
-import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import React, { SVGProps } from "react";
+import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
+import React, { type SVGProps } from "react";
 
 const FontAwesomeIcon = ({
   icon,

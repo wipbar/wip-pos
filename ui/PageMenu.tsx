@@ -1,10 +1,11 @@
 import { css } from "@emotion/css";
-import { sample, zip } from "lodash";
+import sample from "lodash/sample";
+import zip from "lodash/zip";
 import { useFind } from "meteor/react-meteor-data";
 import { darken, lighten, transparentize } from "polished";
 import React, {
   Fragment,
-  SVGProps,
+  type SVGProps,
   useCallback,
   useEffect,
   useMemo,

@@ -4,6 +4,7 @@ import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import React, {
   type HTMLProps,
+  lazy,
   useEffect,
   useMemo,
   useRef,
@@ -35,7 +36,8 @@ import {
   tagsToString,
 } from "../util";
 import { Modal } from "./PageProducts";
-import PageProductsItem from "./PageProductsItem";
+
+const PageProductsItem = lazy(() => import("./PageProductsItem"));
 
 const fac = new FastAverageColor();
 

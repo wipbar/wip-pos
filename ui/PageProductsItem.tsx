@@ -1,13 +1,11 @@
 import { css } from "@emotion/css";
-import {
-  faBan,
-  faFolderMinus,
-  faFolderPlus,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
+import { faFolderMinus } from "@fortawesome/free-solid-svg-icons/faFolderMinus";
+import { faFolderPlus } from "@fortawesome/free-solid-svg-icons/faFolderPlus";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import convert from "convert";
 import { useFind } from "meteor/react-meteor-data";
-import React, { ReactNode, useMemo, useState } from "react";
+import React, { lazy, type ReactNode, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";
@@ -15,7 +13,7 @@ import { isUserResponsible } from "../api/accounts";
 import Locations, { ILocation } from "../api/locations";
 import Products, {
   getProductBarCode,
-  IProduct,
+  type IProduct,
   isAlcoholic,
 } from "../api/products";
 import Stocks, { type StockID } from "../api/stocks";
@@ -26,7 +24,8 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { catchNaN, emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
-import PageStockItem from "./PageStockItem";
+
+const PageStockItem = lazy(() => import("./PageStockItem"));
 
 const toOptions = (items: string[]) =>
   items.map((item) => ({ label: item, value: item }));
@@ -126,8 +125,8 @@ export default function PageProductsItem({
     name: "components",
   });
 
-  const stocks = useFind(() =>
-    Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
+  const stocks = useFind(
+    () => Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
     [],
   );
   const isOnMenu = location && product?.locationIds?.includes(location?._id);

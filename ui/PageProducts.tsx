@@ -1,24 +1,28 @@
 import { css } from "@emotion/css";
-import {
-  faBan,
-  faFolderMinus,
-  faFolderPlus,
-  faPencilAlt,
-  faPlus,
-  faSort,
-  faSortDown,
-  faSortUp,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
+import { faFolderMinus } from "@fortawesome/free-solid-svg-icons/faFolderMinus";
+import { faFolderPlus } from "@fortawesome/free-solid-svg-icons/faFolderPlus";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
+import { faPlus } from "@fortawesome/free-solid-svg-icons/faPlus";
+import { faSort } from "@fortawesome/free-solid-svg-icons/faSort";
+import { faSortDown } from "@fortawesome/free-solid-svg-icons/faSortDown";
+import { faSortUp } from "@fortawesome/free-solid-svg-icons/faSortUp";
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify, transparentize } from "polished";
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
+import React, {
+  type ReactNode,
+  lazy,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { isUserAdmin, isUserResponsible } from "../api/accounts";
 import type { ILocation } from "../api/locations";
 import Products, {
-  IProduct,
-  ProductID,
+  type IProduct,
+  type ProductID,
   getProductSize,
   isAlcoholic,
 } from "../api/products";
@@ -36,7 +40,8 @@ import {
   removeItem,
   stringToColour,
 } from "../util";
-import PageProductsItem from "./PageProductsItem";
+
+const PageProductsItem = lazy(() => import("./PageProductsItem"));
 
 export const Modal = ({
   children,

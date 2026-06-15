@@ -1,7 +1,7 @@
 import { isWithinRange, min, subHours } from "date-fns";
-import { sumBy } from "lodash";
+import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
-import React, { ComponentProps, useMemo } from "react";
+import React, { type ComponentProps, useMemo } from "react";
 import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -21,10 +21,10 @@ export default function ProductTrend({
 
   useSubscription(
     currentCamp && "sales",
-      currentCamp && {
-        from: currentCamp.buildup,
-        to: currentCamp.teardown,
-      },
+    currentCamp && {
+      from: currentCamp.buildup,
+      to: currentCamp.teardown,
+    },
     [currentCamp],
   );
   const data = useFind(

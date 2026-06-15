@@ -1,4 +1,4 @@
-import { sumBy } from "lodash";
+import sumBy from "lodash/sumBy";
 import Locations from "../api/locations";
 import Products from "../api/products";
 import Sales from "../api/sales";
