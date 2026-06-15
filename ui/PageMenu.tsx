@@ -459,7 +459,7 @@ export default function PageMenu() {
             <div
               className={css`
                 background: ${currentCamp &&
-                transparentize(4 / 5, getCorrectTextColor(currentCamp?.color))};
+                transparentize(5 / 6, getCorrectTextColor(currentCamp?.color))};
                 color: ${currentCamp &&
                 getCorrectTextColor(
                   getCorrectTextColor(currentCamp?.color) === "white"
@@ -496,6 +496,8 @@ export default function PageMenu() {
                           flex: 1;
                           text-align: center;
                           font-weight: 600;
+                          color: ${currentCamp &&
+                          getCorrectTextColor(currentCamp?.color)};
                         `}
                       >
                         {brandName}
