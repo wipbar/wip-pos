@@ -77,13 +77,13 @@ export default function PageSales() {
     () =>
       Object.entries(
         groupBy(sales, ({ timestamp }) =>
-          min(
-            max(
+          min([
+            max([
               startOfDay(subHours(timestamp, rolloverOffset)),
               startOfDay(subHours(selectedCamp!.start, rolloverOffset)),
-            ),
+            ]),
             startOfDay(subHours(selectedCamp!.end, rolloverOffset)),
-          ).toISOString(),
+          ]).toISOString(),
         ),
       )
         .map(([date, data]) => [new Date(date), data] as const)
@@ -117,12 +117,12 @@ export default function PageSales() {
                 `}
               >
                 {format(
-                  min(...salesOfDay.map(({ timestamp }) => timestamp)),
+                  min(salesOfDay.map(({ timestamp }) => timestamp)),
                   "DD/MM/YYYY",
                 )}
                 -
                 {format(
-                  max(...salesOfDay.map(({ timestamp }) => timestamp)),
+                  max(salesOfDay.map(({ timestamp }) => timestamp)),
                   "DD/MM/YYYY",
                 )}{" "}
                 <code>

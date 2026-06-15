@@ -1,4 +1,4 @@
-import { isWithinRange, min, subHours } from "date-fns";
+import { isWithinInterval, min, subHours } from "date-fns";
 import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
 import React, { type ComponentProps, useMemo } from "react";
@@ -57,7 +57,7 @@ export default function ProductTrend({
     () =>
       currentCamp && firstSale
         ? sumBy(productSales, (sale) => sale.products.length) /
-          ((Number(min(currentCamp.teardown, currentDate)) -
+          ((Number(min([currentCamp.teardown, currentDate])) -
             Number(firstSale.timestamp || currentCamp.buildup)) /
             3600000)
         : 0,
@@ -67,7 +67,10 @@ export default function ProductTrend({
     () =>
       sumBy(
         productSales.filter((sale) =>
-          isWithinRange(sale.timestamp, subHours(currentDate, 2), currentDate),
+          isWithinInterval(sale.timestamp, {
+            start: subHours(currentDate, 2),
+            end: currentDate,
+          }),
         ),
         (sale) => sale.products.length,
       ),

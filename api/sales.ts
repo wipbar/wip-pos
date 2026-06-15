@@ -4,7 +4,7 @@ import {
   differenceInHours,
   endOfHour,
   isFuture,
-  isWithinRange,
+  isWithinInterval,
   min,
   subHours,
 } from "date-fns";
@@ -401,7 +401,7 @@ async function calculateDayByDayStats() {
   > = {};
   for (const currentCamp of camps) {
     const numberOfDaysInCurrentCamp = Math.ceil(
-      differenceInHours(min(now2, currentCamp.end), currentCamp.start) / 24,
+      differenceInHours(min([now2, currentCamp.end]), currentCamp.start) / 24,
     );
 
     data[currentCamp.slug] = Array.from({ length: 24 });
@@ -437,7 +437,10 @@ async function calculateDayByDayStats() {
           ...data[currentCamp.slug]![hourIndex],
           [dayIndex]: sumBy(
             sales.filter((sale) =>
-              isWithinRange(sale.timestamp, startOfCampHour, endOfCampHour),
+              isWithinInterval(sale.timestamp, {
+                start: startOfCampHour,
+                end: endOfCampHour,
+              }),
             ),
             "amount",
           ),
@@ -673,11 +676,10 @@ async function calculateMenuDataForLocation(location: ILocation) {
                           sparklineDays - 1 - i,
                           sales.reduce((memo, sale) => {
                             if (
-                              isWithinRange(
-                                sale.timestamp,
-                                addHours(currentDate, -i - 1),
-                                addHours(currentDate, -i),
-                              )
+                              isWithinInterval(sale.timestamp, {
+                                start: addHours(currentDate, -i - 1),
+                                end: addHours(currentDate, -i),
+                              })
                             ) {
                               return (
                                 memo +
@@ -718,11 +720,10 @@ async function calculateMenuDataForLocation(location: ILocation) {
               sparklineDays - 1 - i,
               sales.reduce((memo, sale) => {
                 if (
-                  isWithinRange(
-                    sale.timestamp,
-                    addHours(currentDate, -i - 1),
-                    addHours(currentDate, -i),
-                  )
+                  isWithinInterval(sale.timestamp, {
+                    start: addHours(currentDate, -i - 1),
+                    end: addHours(currentDate, -i),
+                  })
                 ) {
                   return (
                     memo +

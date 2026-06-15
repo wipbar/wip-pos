@@ -40,8 +40,10 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
 
   const numberOfDaysInCurrentCamp = currentCamp
     ? Math.ceil(
-        differenceInHours(min(new Date(), currentCamp.end), currentCamp.start) /
-          24,
+        differenceInHours(
+          min([new Date(), currentCamp.end]),
+          currentCamp.start,
+        ) / 24,
       )
     : 0;
 
