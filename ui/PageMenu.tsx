@@ -270,7 +270,7 @@ export default function PageMenu() {
   const { location, error } = useCurrentLocation();
 
   const style =
-    useFind(() => Styles.find({ page: "menu" }))?.[0]?.style ||
+    useFind(() => Styles.find({ page: "menu" }), [])?.[0]?.style ||
     (emptyObject as IStyle["style"]);
 
   const [getData, { data: oij }] = useMethod("Products.menu.Menu");

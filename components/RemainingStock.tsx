@@ -222,7 +222,7 @@ export default function RemainingStock() {
         }),
       [currentCamp],
     ) || emptyArray;
-  const products = useFind(() => Products.find()) || emptyArray;
+  const products = useFind(() => Products.find(), []) || emptyArray;
   const stocks = useFind(
     () =>
       Stocks.find({

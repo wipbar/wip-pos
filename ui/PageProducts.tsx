@@ -189,7 +189,10 @@ export default function PageProducts() {
       ),
     [sortBy],
   );
-  const stocks = useFind(() => Stocks.find({ removedAt: { $exists: false } }));
+  const stocks = useFind(
+    () => Stocks.find({ removedAt: { $exists: false } }),
+    [],
+  );
 
   const currentUser = useCurrentUser();
   const currentCamp = useCurrentCamp();

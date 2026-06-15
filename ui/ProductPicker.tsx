@@ -73,7 +73,7 @@ function ProductPickerProductStock({ product }: { product: IProduct }) {
           right: 0;
           left: 0;
           bottom: 0;
-          height: ${(1 - result.data) * 100}%;
+          height: ${(1 - (result.data ?? NaN)) * 100}%;
         `}
       ></div>
     </div>
@@ -252,11 +252,14 @@ export default function ProductPicker({
     setPrevPickedProductIds(pickedProductIds);
   }, [pickedProductIds, prevPickedProductIds]);
 
-  const products = useFind(() =>
-    Products.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
+  const products = useFind(
+    () =>
+      Products.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
+    [],
   );
-  const stocks = useFind(() =>
-    Stocks.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
+  const stocks = useFind(
+    () => Stocks.find({ removedAt: { $exists: false } }, { sort: { name: 1 } }),
+    [],
   );
 
   const toggleTag = useEvent((tag: string) => {

@@ -80,12 +80,12 @@ export default function PageProductsItem({
   defaultValues?: Partial<IProduct>;
 }) {
   const currentUser = useCurrentUser();
-  const locations = useFind(() => Locations.find());
+  const locations = useFind(() => Locations.find(), []);
   const { location } = useCurrentLocation();
   const [addProduct] = useMethod("Products.addProduct");
   const [editProduct] = useMethod("Products.editProduct");
   const [isEditingStock, setIsEditingStock] = useState<null | StockID>(null);
-  const products = useFind(() => Products.find());
+  const products = useFind(() => Products.find(), []);
   const allTags = useMemo(
     () =>
       Array.from(
@@ -128,6 +128,7 @@ export default function PageProductsItem({
 
   const stocks = useFind(() =>
     Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
+    [],
   );
   const isOnMenu = location && product?.locationIds?.includes(location?._id);
 

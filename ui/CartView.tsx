@@ -30,8 +30,9 @@ function CartViewProductsItem({
 }) {
   const currentCamp = useCurrentCamp();
 
-  const stocks = useFind(() =>
-    Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
+  const stocks = useFind(
+    () => Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
+    [],
   );
 
   if (!product) null;
@@ -183,7 +184,9 @@ export default function CartView({
       }),
     [cart?.productIds],
   );
-  const stocks = useFind(() => Stocks.find({ removedAt: { $exists: false } }));
+  const stocks = useFind(() =>
+    Stocks.find({ removedAt: { $exists: false } }, []),
+  );
   const [doSellProducts, { isLoading: sellingLoading }] =
     useMethod("Sales.sellProducts");
 

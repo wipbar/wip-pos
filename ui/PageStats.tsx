@@ -21,8 +21,9 @@ export default function PageStats() {
     () => Session.get("GALAXY_APP_VERSION_ID") as string | undefined,
   );
 
-  const products = useFind(() =>
-    Products.find({ removedAt: { $exists: false } }),
+  const products = useFind(
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
 
   const [getMostSoldData, result] = useMethod("Sales.stats.MostSold");
@@ -45,7 +46,7 @@ export default function PageStats() {
   }, [currentCamp, getGoodbyeWorld]);
 
   const style =
-    useFind(() => Styles.find({ page: "stats" }))?.[0]?.style ||
+    useFind(() => Styles.find({ page: "stats" }), [])?.[0]?.style ||
     (emptyObject as IStyle["style"]);
 
   return (

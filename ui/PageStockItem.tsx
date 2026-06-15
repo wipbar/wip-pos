@@ -63,8 +63,9 @@ export default function PageStockItem({
   const [editStock] = useMethod("Stock.editStock");
   const [takeStock] = useMethod("Stock.takeStock");
   const [isEditingProduct, setIsEditingProduct] = useState<null | ProductID>();
-  const products = useFind(() =>
-    Products.find({ removedAt: { $exists: false } }),
+  const products = useFind(
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
 
   const {

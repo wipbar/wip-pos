@@ -68,8 +68,9 @@ export default function PageSales() {
       ),
     [location?._id, selectedCamp],
   );
-  const products = useFind(() =>
-    Products.find({ removedAt: { $exists: false } }),
+  const products = useFind(
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
   const salesByDay = useMemo(
     () =>

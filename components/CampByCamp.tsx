@@ -59,7 +59,7 @@ function createTrend<XK extends string, YK extends string>(
 const XYAxisDomain = ["dataMin", "dataMax"];
 const emptyData = { data: emptyArray };
 export default function CampByCamp() {
-  const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }));
+  const camps = useFind(() => Camps.find({}, { sort: { start: 1 } }), []);
   const currentCamp = useCurrentCamp();
   const nextCamp = useMemo(
     () => camps.find((camp) => camp.start > new Date()) || null,

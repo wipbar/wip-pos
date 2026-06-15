@@ -29,7 +29,7 @@ export default function PageStock() {
   const [onlyShowStockWithoutProducts, setOnlyShowStockWithoutProducts] =
     useState(false);
 
-  const stocks: IStock[] = useFind(
+  const stocks = useFind(
     () =>
       Stocks.find(
         { removedAt: { $exists: false } },
@@ -49,8 +49,9 @@ export default function PageStock() {
     ({ _id }) => _id === isCreatingProductFromStock,
   );
 
-  const products = useFind(() =>
-    Products.find({ removedAt: { $exists: false } }),
+  const products = useFind(
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
 
   return (
