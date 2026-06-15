@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
 import React from "react";
-import { useMatch } from "react-router-dom";
+import { useMatch } from "react-router";
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
 import AccountsUIWrapper from "../ui/AccountsUIWrapper";

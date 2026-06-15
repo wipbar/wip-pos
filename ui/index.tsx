@@ -12,7 +12,7 @@ import {
   Routes,
   useMatch,
   useNavigate,
-} from "react-router-dom";
+} from "react-router";
 import { isUserInTeam } from "../api/accounts";
 import Camps from "../api/camps";
 import Locations from "../api/locations";
