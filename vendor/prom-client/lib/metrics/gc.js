@@ -25,27 +25,31 @@ module.exports = (registry, config = {}) => {
   }
 
   const namePrefix = config.prefix ? config.prefix : "";
+  const labels = config.labels ? config.labels : {};
+  const labelNames = Object.keys(labels);
   const buckets = config.gcDurationBuckets
     ? config.gcDurationBuckets
     : DEFAULT_GC_DURATION_BUCKETS;
   const gcHistogram = new Histogram({
     name: namePrefix + NODEJS_GC_DURATION_SECONDS,
     help: "Garbage collection duration by kind, one of major, minor, incremental or weakcb.",
-    labelNames: ["kind"],
+    labelNames: ["kind", ...labelNames],
     buckets,
     registers: registry ? [registry] : undefined,
   });
 
   const obs = new perf_hooks.PerformanceObserver((list) => {
     const entry = list.getEntries()[0];
-    const labels = { kind: kinds[entry.kind] };
+    // Node < 16 uses entry.kind
+    // Node >= 16 uses entry.detail.kind
+    // See: https://nodejs.org/docs/latest-v16.x/api/deprecations.html#deprecations_dep0152_extension_performanceentry_properties
+    const kind = entry.detail ? kinds[entry.detail.kind] : kinds[entry.kind];
 
     // Convert duration from milliseconds to seconds
-    gcHistogram.observe(labels, entry.duration / 1000);
+    gcHistogram.observe(Object.assign({ kind }, labels), entry.duration / 1000);
   });
 
-  // We do not expect too many gc events per second, so we do not use buffering
-  obs.observe({ entryTypes: ["gc"], buffered: false });
+  obs.observe({ entryTypes: ["gc"] });
 };
 
 module.exports.metricNames = [NODEJS_GC_DURATION_SECONDS];
