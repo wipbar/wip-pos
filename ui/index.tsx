@@ -160,9 +160,6 @@ export default function UI() {
         a {
           color: ${(currentCamp || nextCamp)?.color};
         }
-        .my-masonry-grid > div {
-          border-color: ${(currentCamp || nextCamp)?.color};
-        }
 
         #login-buttons-bornhack,
         #login-buttons-logout {
