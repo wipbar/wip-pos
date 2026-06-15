@@ -20,8 +20,8 @@ const XYAxisDomain = ["dataMin", "dataMax"];
 const YAxisTickFormatter = (amount: number) => String(~~amount);
 const XAxisTickFormatter = (hour: number) =>
   String((hour + 6) % 24).padStart(2, "0");
-const tooltipLabelFormatter = (hour: number) =>
-  `H${String((hour + 6) % 24).padStart(2, "0")}`;
+const tooltipLabelFormatter = (hour: unknown) =>
+  `H${String((Number(hour) + 6) % 24).padStart(2, "0")}`;
 
 export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
   const [getDayByDayData, result] = useMethod("Sales.stats.DayByDay");
@@ -46,13 +46,14 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
     : 0;
 
   const YAxisLabel = useMemo(
-    () => ({
-      value: "Revenue (ʜᴀx)",
-      angle: -90,
-      offset: 70,
-      position: "insideLeft",
-      style: { fill: currentCamp?.color },
-    }),
+    () =>
+      ({
+        value: "Revenue (ʜᴀx)",
+        angle: -90,
+        offset: 70,
+        position: "insideLeft",
+        style: { fill: currentCamp?.color },
+      }) as const,
     [currentCamp],
   );
 
@@ -81,7 +82,6 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
           <Legend />
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
             <ReferenceDot
-              isFront
               x={Math.max(...data.map((d) => (d?.[i] ? d.x : 0)))}
               y={Math.max(...data.map((d) => d?.[i] || 0))}
               key={i + "dot"}
