@@ -23,7 +23,7 @@ interface ShareData {
 declare global {
   var __DEV__: boolean;
   var SERVER: boolean;
-  var VIZSLA_VERSION: string;
+
   namespace JSX {
     type React = import("react");
     interface IntrinsicElements {

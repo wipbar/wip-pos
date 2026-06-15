@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "allowJs": true,
     "checkJs": false,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "incremental": true,
     "noEmit": true,
 
