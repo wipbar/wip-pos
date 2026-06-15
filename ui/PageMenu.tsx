@@ -345,7 +345,7 @@ export default function PageMenu() {
           </center>
         </big>
         <center>
-          <pre>Rendered: {new Date().toLocaleString()}</pre>
+          <pre>Rendered: {new Date().toLocaleString("en-DK")}</pre>
         </center>
         {/* @ts-ignore */}
       </marquee>
@@ -590,7 +590,7 @@ export default function PageMenu() {
           font-size: 0.6em;
         `}
       >
-        <pre>Rendered: {new Date().toLocaleString()}</pre>
+        <pre>Rendered: {new Date().toLocaleString("en-DK")}</pre>
       </center>
       {flow && location?.slug === "bar" ? (
         <p
