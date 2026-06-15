@@ -16,6 +16,7 @@
     "@babel/runtime": "^7.27.6",
     "@emotion/css": "^11.13.5",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@swc/helpers": "^0.5.17",
     "bcrypt": "^6.0.0",
     "convert": "^5.12.0",
     "convert-units": "^2.3.4",
@@ -48,6 +49,11 @@
     "modern": true
   },
   "devDependencies": {
+    "@meteorjs/rspack": "^2.0.1",
+    "@rsdoctor/rspack-plugin": "^1.5.7",
+    "@rspack/cli": "^1.7.1",
+    "@rspack/core": "^1.7.1",
+    "@rspack/plugin-react-refresh": "^1.4.3",
     "@types/fibers": "^3.1.4",
     "@types/lodash": "^4.17.19",
     "@types/meteor": "^2.9.9",
@@ -63,6 +69,7 @@
     "eslint-plugin-prettier": "^5.4.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "react-refresh": "^0.17.0",
     "typescript": "^5.8.3"
   }
 }
