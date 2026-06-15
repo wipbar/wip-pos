@@ -7,7 +7,7 @@ import { Session } from "meteor/session";
 import Camps, { ICamp } from "./camps";
 import Locations from "./locations";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 (require("tls") as typeof import("tls")).DEFAULT_ECDH_CURVE = "auto";
 
 Accounts.config({ forbidClientAccountCreation: true });
@@ -68,6 +68,7 @@ if (!Meteor.isClient) {
       ) {
         throw new Error(
           `Failed to complete OAuth handshake with Bornhack, received an error when requesting token: ${String(
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             response.error,
           )}`,
         );

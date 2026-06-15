@@ -35,8 +35,6 @@ function CartViewProductsItem({
     [],
   );
 
-  if (!product) null;
-
   const productSize = getProductSize(product);
 
   return (

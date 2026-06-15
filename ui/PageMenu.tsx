@@ -11,7 +11,7 @@ import React, {
   useMemo,
 } from "react";
 import { getProductSize, type IProduct } from "../api/products";
-import Styles, { type IStyle } from "../api/styles";
+import Styles from "../api/styles";
 import {
   blackulaFlow,
   draculaFlow,
@@ -22,7 +22,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
-import { emptyObject, getCorrectTextColor } from "../util";
+import { getCorrectTextColor } from "../util";
 
 const flows = [
   ...draculaFlow,
@@ -271,9 +271,7 @@ export default function PageMenu() {
   const currentDate = useCurrentDate(30000);
   const { location, error } = useCurrentLocation();
 
-  const style =
-    useFind(() => Styles.find({ page: "menu" }), [])?.[0]?.style ||
-    (emptyObject as IStyle["style"]);
+  const style = useFind(() => Styles.find({ page: "menu" }), [])?.[0]?.style;
 
   const [getData, { data: oij }] = useMethod("Products.menu.Menu");
 

@@ -149,6 +149,7 @@ class SubsManager {
       const originalOnError = lastElement.onError;
       lastElement.onError = (err: any) => {
         errorHandlingLogic(err);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         originalOnError(err);
       };
     } else if (

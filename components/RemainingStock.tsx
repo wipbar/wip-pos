@@ -71,7 +71,7 @@ export const getStockLevelAtTime = (
                       ) /
                         stock.unitSize
                     );
-                  } catch (e) {
+                  } catch {
                     /*
                       console.error(e);
                       console.log({

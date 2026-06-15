@@ -2,7 +2,6 @@ import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
-import type { Mongo } from "meteor/mongo";
 import { useFind } from "meteor/react-meteor-data";
 import React, { Fragment, lazy, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
@@ -36,9 +35,7 @@ export default function PageStock() {
         { removedAt: { $exists: false } },
         {
           sort: sortBy
-            ? ({
-                [sortBy.split(".")[0]!]: sortBy.split(".")[1]!,
-              } as Mongo.SortSpecifier)
+            ? { [sortBy.split(".")[0]!]: sortBy.split(".")[1]! }
             : { updatedAt: -1, createdAt: -1 },
         },
       ),

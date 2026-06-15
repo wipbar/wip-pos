@@ -3,7 +3,7 @@ import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import React, { useCallback, useEffect } from "react";
 import Products from "../api/products";
-import Styles, { type IStyle } from "../api/styles";
+import Styles from "../api/styles";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
 import RemainingStock from "../components/RemainingStock";
@@ -11,7 +11,7 @@ import SalesSankey from "../components/SalesSankey";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
-import { emptyArray, emptyObject } from "../util";
+import { emptyArray } from "../util";
 import { ProductsItem } from "./PageMenu";
 
 export default function PageStats() {
@@ -45,9 +45,7 @@ export default function PageStats() {
     }
   }, [currentCamp, getGoodbyeWorld]);
 
-  const style =
-    useFind(() => Styles.find({ page: "stats" }), [])?.[0]?.style ||
-    (emptyObject as IStyle["style"]);
+  const style = useFind(() => Styles.find({ page: "stats" }), [])?.[0]?.style;
 
   return (
     <div
