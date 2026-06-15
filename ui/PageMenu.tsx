@@ -429,6 +429,7 @@ export default function PageMenu() {
                 margin: 0;
                 font-size: 2.25em;
                 text-align: center;
+                color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
               `}
             >
               {tags}
