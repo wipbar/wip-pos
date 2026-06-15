@@ -280,7 +280,7 @@ export default function PageStockItem({
                     margin-bottom: 4px;
                   `}
                 >
-                  {format(level.timestamp, "YYYY/MM/DD HH:mm")} -{" "}
+                  {format(level.timestamp, "yyyy/MM/dd HH:mm")} -{" "}
                   {String(level.count)} x {stock.unitSize}
                   {stock.sizeUnit}
                 </div>

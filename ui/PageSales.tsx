@@ -118,12 +118,12 @@ export default function PageSales() {
               >
                 {format(
                   min(salesOfDay.map(({ timestamp }) => timestamp)),
-                  "DD/MM/YYYY",
+                  "dd/MM/yyyy",
                 )}
                 -
                 {format(
                   max(salesOfDay.map(({ timestamp }) => timestamp)),
-                  "DD/MM/YYYY",
+                  "dd/MM/yyyy",
                 )}{" "}
                 <code>
                   <b>{sumBy(salesOfDay, "amount")}</b>
@@ -158,7 +158,7 @@ export default function PageSales() {
                       saveAs(
                         JSON.stringify(statements),
                         "application/json;charset=utf-8;",
-                        `${location?.slug}-${format(day, "YYYY-MM-DD")}.json`,
+                        `${location?.slug}-${format(day, "yyyy-MM-dd")}.json`,
                       );
                     }}
                   >
