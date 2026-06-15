@@ -25,7 +25,6 @@ declare global {
   var SERVER: boolean;
 
   namespace JSX {
-    type React = import("react");
     interface IntrinsicElements {
       center: React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement>,

@@ -11,13 +11,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify, transparentize } from "polished";
-import React, {
-  type ReactNode,
-  lazy,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, lazy, useCallback, useMemo, useState } from "react";
 import { isUserAdmin, isUserResponsible } from "../api/accounts";
 import type { ILocation } from "../api/locations";
 import Products, {

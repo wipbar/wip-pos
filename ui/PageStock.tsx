@@ -3,7 +3,7 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
-import React, { Fragment, lazy, useState } from "react";
+import { Fragment, lazy, useState } from "react";
 import { isUserAdmin } from "../api/accounts";
 import Products from "../api/products";
 import Stocks, { type IStock, type StockID } from "../api/stocks";

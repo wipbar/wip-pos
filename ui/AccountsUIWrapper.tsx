@@ -1,7 +1,7 @@
 import { Blaze } from "meteor/blaze";
 import { Meteor } from "meteor/meteor";
 import { Template } from "meteor/templating";
-import React, { LegacyRef, useEffect, useRef } from "react";
+import { type Ref, useEffect, useRef } from "react";
 
 // Patch accounts-ui lol
 (
@@ -39,5 +39,5 @@ export default function AccountsUIWrapper() {
     };
   });
 
-  return <div ref={containerRef as LegacyRef<HTMLDivElement> | undefined} />;
+  return <div ref={containerRef as Ref<HTMLDivElement> | undefined} />;
 }

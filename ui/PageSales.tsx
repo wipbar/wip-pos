@@ -11,7 +11,7 @@ import {
 import groupBy from "lodash/groupBy";
 import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { isUserResponsible } from "../api/accounts";
 import Products, { type IProduct } from "../api/products";
 import Sales, { type ISale } from "../api/sales";

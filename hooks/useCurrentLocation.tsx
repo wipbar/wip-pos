@@ -1,13 +1,12 @@
 import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
-import React from "react";
 import { useMatch } from "react-router";
 import { isUserInTeam } from "../api/accounts";
 import Locations from "../api/locations";
 import AccountsUIWrapper from "../ui/AccountsUIWrapper";
+import useCurrentCamp from "./useCurrentCamp";
 import useCurrentUser from "./useCurrentUser";
 import useSubscription from "./useSubscription";
-import useCurrentCamp from "./useCurrentCamp";
 
 export default function useCurrentLocation(authorized?: boolean) {
   const match = useMatch("/:locationSlug/*");

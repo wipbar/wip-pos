@@ -11,11 +11,7 @@ import {
 import groupBy from "lodash/groupBy";
 import sumBy from "lodash/sumBy";
 import { Meteor } from "meteor/meteor";
-import { Mongo } from "meteor/mongo";
-import {
-  getRemainingServings,
-  getRemainingServingsEver,
-} from "../components/RemainingStock";
+import { Mongo } from "meteor/mongo"; 
 import type { CartID } from "../ui/PageTend";
 import { tagsToString, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
@@ -29,7 +25,7 @@ import Products, {
   type IProduct,
   type ProductID,
 } from "./products";
-import Stocks from "./stocks";
+import Stocks, { getRemainingServings, getRemainingServingsEver } from "./stocks";
 
 export type SaleID = Flavor<string, "SaleID">;
 

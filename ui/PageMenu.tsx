@@ -3,7 +3,7 @@ import sample from "lodash/sample";
 import zip from "lodash/zip";
 import { useFind } from "meteor/react-meteor-data";
 import { darken, lighten, transparentize } from "polished";
-import React, {
+import {
   Fragment,
   type SVGProps,
   useCallback,

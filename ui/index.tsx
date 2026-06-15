@@ -4,7 +4,7 @@ import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
 import { opacify } from "polished";
-import React, { lazy, Profiler, useEffect } from "react";
+import { lazy, Profiler, useEffect } from "react";
 import {
   Link,
   Navigate,

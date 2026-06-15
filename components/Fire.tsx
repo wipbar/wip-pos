@@ -1,4 +1,4 @@
-import React, { HTMLProps } from "react";
+import type { HTMLProps } from "react";
 
 export default function Fire(props: HTMLProps<HTMLDivElement>) {
   return (

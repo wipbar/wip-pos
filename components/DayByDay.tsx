@@ -1,5 +1,5 @@
 import { differenceInHours, min } from "date-fns";
-import React, { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
   CartesianGrid,
   ComposedChart,

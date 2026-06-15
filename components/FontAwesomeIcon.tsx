@@ -1,5 +1,5 @@
 import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
-import React, { type SVGProps } from "react";
+import type { SVGProps } from "react";
 
 const FontAwesomeIcon = ({
   icon,

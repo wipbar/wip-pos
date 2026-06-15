@@ -5,7 +5,7 @@ import { faFolderPlus } from "@fortawesome/free-solid-svg-icons/faFolderPlus";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import convert from "convert";
 import { useFind } from "meteor/react-meteor-data";
-import React, { lazy, type ReactNode, useMemo, useState } from "react";
+import { lazy, type ReactNode, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";

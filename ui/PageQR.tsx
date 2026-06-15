@@ -1,5 +1,4 @@
 import { css } from "@emotion/css";
-import React from "react";
 import QRCode from "react-qr-code";
 
 export default function PageQR() {

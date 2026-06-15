@@ -1,6 +1,5 @@
 import { css } from "@emotion/css";
 import { differenceInSeconds } from "date-fns";
-import React from "react";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
 import type { Cart } from "./PageTend";

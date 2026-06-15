@@ -1,8 +1,13 @@
+import { convert } from "convert";
+import { isBefore, subDays } from "date-fns";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { PackageTypeCode } from "../data";
 import { Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
+import type { ICamp } from "./camps";
+import type { IProduct } from "./products";
+import type { ISale } from "./sales";
 
 export type StockID = Flavor<string, "StockID">;
 
@@ -105,3 +110,193 @@ Meteor.methods(stocksMethods);
 
 // @ts-expect-error
 if (Meteor.isClient) window.Stocks = Stocks;
+
+export const getStockLevelAtStartOfCamp = (camp: ICamp, stock: IStock) => {
+  return (
+    Array.from(stock.levels || [])
+      .sort(
+        (a, b) =>
+          Math.abs(camp.start.valueOf() - a.timestamp.valueOf()) -
+          Math.abs(camp.start.valueOf() - b.timestamp.valueOf()),
+      )
+      .at(0)?.count || NaN
+  );
+};
+
+export const getMaxStockLevelEver = (stock: IStock) => {
+  const levels = stock.levels?.map((level) => level.count) || [];
+  return Math.max(...levels);
+};
+
+export const getStockLevelAtTime = (
+  sales: ISale[],
+  stock: IStock,
+  timestamp: Date,
+) => {
+  if (isBefore(new Date(), timestamp)) return NaN;
+  const precedingLevel = stock.levels
+    ?.filter(
+      (level) =>
+        level.timestamp <= timestamp &&
+        isBefore(subDays(new Date(), 14), new Date(level.timestamp)),
+    )
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];
+
+  if (!precedingLevel) {
+    return NaN;
+  }
+
+  const amountSoldSinceMostRecentLevel = sales.reduce(
+    (memo, sale) =>
+      sale.timestamp > precedingLevel.timestamp && sale.timestamp <= timestamp
+        ? memo +
+          sale.products.reduce(
+            (productMemo, product) =>
+              productMemo +
+              (product.components
+                ?.filter((c) => c.stockId === stock._id)
+                .reduce((compMemo, component) => {
+                  try {
+                    return (
+                      compMemo +
+                      convert(component.unitSize, component.sizeUnit).to(
+                        stock.sizeUnit,
+                      ) /
+                        stock.unitSize
+                    );
+                  } catch {
+                    /* 
+                      console.error(e);
+                      console.log({
+                        component,
+                        stock,
+                      });
+                      */
+                  }
+                  return compMemo;
+                }, 0) || 0),
+            0,
+          )
+        : memo,
+    0,
+  );
+
+  const amountAtMostRecentLevel = precedingLevel.count;
+  const remainingStock =
+    amountAtMostRecentLevel - amountSoldSinceMostRecentLevel;
+
+  return remainingStock;
+};
+
+export function getRemainingServings(
+  sales: ISale[],
+  stocks: IStock[],
+  product: IProduct,
+  timestamp?: Date,
+) {
+  let minServings;
+  for (const component of product.components || []) {
+    const stock = stocks.find((stock) => stock._id === component.stockId);
+    if (
+      !stock ||
+      stock.approxCount === null ||
+      stock.approxCount === undefined
+    ) {
+      continue;
+    }
+
+    try {
+      const componentServings =
+        convert(
+          (timestamp
+            ? getStockLevelAtTime(sales, stock, timestamp)
+            : stock.approxCount) * stock.unitSize,
+          stock.sizeUnit,
+        ).to(component.sizeUnit) / component.unitSize;
+
+      if (minServings === undefined || componentServings < minServings) {
+        minServings = componentServings;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  if (minServings === undefined) {
+    return NaN;
+  }
+
+  return minServings;
+}
+export function getApproxRemainingServings(
+  stocks: IStock[],
+  product: IProduct,
+) {
+  let minServings;
+  for (const component of product.components || []) {
+    const stock = stocks.find((stock) => stock._id === component.stockId);
+    if (
+      !stock ||
+      stock.approxCount === null ||
+      stock.approxCount === undefined
+    ) {
+      continue;
+    }
+
+    try {
+      const componentServings =
+        convert(stock.approxCount ?? NaN, stock.sizeUnit).to(
+          component.sizeUnit,
+        ) / component.unitSize;
+
+      if (minServings === undefined || componentServings < minServings) {
+        minServings = componentServings;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  if (minServings === undefined) {
+    return NaN;
+  }
+
+  return minServings;
+}
+export function getRemainingServingsEver(
+  camp: ICamp,
+  stocks: IStock[],
+  product: IProduct,
+) {
+  let minServings;
+  for (const component of product.components || []) {
+    const stock = stocks.find((stock) => stock._id === component.stockId);
+    if (
+      !stock ||
+      stock.approxCount === null ||
+      stock.approxCount === undefined
+    ) {
+      continue;
+    }
+
+    try {
+      const componentServings =
+        convert(
+          getStockLevelAtStartOfCamp(camp, stock) * stock.unitSize,
+          stock.sizeUnit,
+        ).to(component.sizeUnit) / component.unitSize;
+
+      if (minServings === undefined || componentServings < minServings) {
+        minServings = componentServings;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  if (minServings === undefined) {
+    return NaN;
+  }
+
+  return Math.max(0, minServings);
+}

@@ -1,6 +1,6 @@
 import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
-import React, { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
   CartesianGrid,
   ComposedChart,

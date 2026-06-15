@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import { FastAverageColor } from "fast-average-color";
 import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
-import React, {
+import {
   type HTMLProps,
   lazy,
   useEffect,

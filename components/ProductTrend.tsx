@@ -1,7 +1,7 @@
 import { isWithinInterval, min, subHours } from "date-fns";
 import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
-import React, { type ComponentProps, useMemo } from "react";
+import { type ComponentProps, useMemo } from "react";
 import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";

@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
-import React, { Profiler, useEffect, useMemo, useRef, useState } from "react";
+import { Profiler, useEffect, useMemo, useRef, useState } from "react";
 import { useDraggable } from "react-use-draggable-scroll-safe";
 import type { ProductID } from "../api/products";
 import Sales from "../api/sales";

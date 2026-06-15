@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { useFind, useTracker } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
-import React, { useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import Products from "../api/products";
 import Styles from "../api/styles";
 import CampByCamp from "../components/CampByCamp";
