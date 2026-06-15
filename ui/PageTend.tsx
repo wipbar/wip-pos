@@ -4,7 +4,7 @@ import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import React, { Profiler, useEffect, useMemo, useRef, useState } from "react";
-import { useDraggable } from "react-use-draggable-scroll";
+import { useDraggable } from "react-use-draggable-scroll-safe";
 import type { ProductID } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -106,7 +106,6 @@ export default function PageTend() {
   );
 
   const ref = useRef<HTMLDivElement | null>(null);
-  // @ts-expect-error - ref value can be null
   const { events } = useDraggable(ref, {
     safeDisplacement: 64, // specify the drag sensitivity
   });

@@ -10,7 +10,7 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import ReactSelect, { createFilter } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { isUserResponsible } from "../api/accounts";
-import Locations, { ILocation } from "../api/locations";
+import Locations, { type ILocation } from "../api/locations";
 import Products, {
   getProductBarCode,
   type IProduct,

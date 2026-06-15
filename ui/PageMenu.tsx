@@ -63,6 +63,7 @@ function SparkLine({
     const XDelta = maxX! - minX!;
     const YDelta = maxY! - minY!;
     const dataPoints = data
+      .filter(() => YDelta !== 0)
       .map(([x, y]) =>
         [
           "L",
@@ -328,7 +329,7 @@ export default function PageMenu() {
     return (
       // @ts-ignore
       // eslint-disable-next-line react/no-unknown-property
-      <marquee scrollAmount="20">
+      <marquee scrollamount="20">
         <big
           className={css`
             font-size: 6em;
@@ -484,7 +485,7 @@ export default function PageMenu() {
                 `}
               >
                 {productsByBrandName.map(([brandName, products]) => (
-                  <>
+                  <Fragment key={brandName}>
                     <small
                       className={css`
                         flex: 1;
@@ -577,7 +578,7 @@ export default function PageMenu() {
                         )}
                       </div>
                     </li>
-                  </>
+                  </Fragment>
                 ))}
               </ul>
             </div>
@@ -604,13 +605,14 @@ export default function PageMenu() {
           `}
         >
           {`"${flow}"`}
-          <p
+          <span
             className={css`
+              display: block;
               font-size: 0.55em;
             `}
           >
             - {flowSource}
-          </p>
+          </span>
         </p>
       ) : null}
     </div>

@@ -10,7 +10,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useDraggable } from "react-use-draggable-scroll";
+import { useDraggable } from "react-use-draggable-scroll-safe";
 import { LongPressCallbackReason, useLongPress } from "use-long-press";
 import Products, {
   type IProduct,
@@ -222,7 +222,6 @@ export default function ProductPicker({
   setPickedProductIds: (value: ProductID[]) => void;
 } & HTMLProps<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement | null>(null);
-  // @ts-expect-error - ref value can be null
   const { events } = useDraggable(ref, {
     safeDisplacement: 64, // specify the drag sensitivity
   });

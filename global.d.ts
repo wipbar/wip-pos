@@ -36,6 +36,7 @@ declare global {
         HTMLElement
       > & {
         scrollAmount: string;
+        scrollamount: string;
       };
     }
   }
