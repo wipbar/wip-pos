@@ -17,6 +17,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import { emptyArray, getCorrectTextColor } from "../util";
+import { isFuture } from "date-fns";
 
 const getAvg = (arr: number[]) =>
   arr.reduce((acc, c) => acc + c, 0) / arr.length;
@@ -127,7 +128,11 @@ export default function CampByCamp() {
       <ResponsiveContainer width="100%" height={currentCamp ? 350 : 700}>
         <ComposedChart
           data={data
-            .filter(currentCamp ? (d) => d.hour <= trendData[1].hour : (d) => d)
+            .filter(
+              currentCamp && isFuture(currentCamp.teardown)
+                ? (d) => d.hour <= trendData[1].hour
+                : (d) => d,
+            )
             .map((d) =>
               d.hour === trendData[0].hour
                 ? { ...d, ...trendData[0] }
