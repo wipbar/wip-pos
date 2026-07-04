@@ -63,7 +63,7 @@ interface PosProductCost {
 (
   WebApp as unknown as typeof WebApp & { handlers: express.IRouter }
 ).handlers.use(
-  "/django-economy-export",
+  "/api/django-economy-export",
   wrapRoute(async (_req, res) => {
     const url = new URL(_req.url, `http://${_req.headers.host}`);
     const campSlug = url.searchParams.get("campSlug");
