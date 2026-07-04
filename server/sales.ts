@@ -70,26 +70,31 @@ interface PosProductCost {
     if (!campSlug) {
       const camps = await Camps.find({}, { fields: { slug: 1 } }).fetchAsync();
 
-      throw new Error(
-        `Missing campSlug query parameter, available camp slugs: ${camps
-          .map((c) => c.slug)
-          .sort()
-          .join(", ")}`,
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.write(
+        JSON.stringify({
+          error: "Missing campSlug query parameter",
+          available_camp_slugs: camps.map((c) => c.slug).sort(),
+        }),
       );
+      res.end();
+      return;
     }
 
     const camp = await Camps.findOneAsync({ slug: campSlug });
     if (!camp) {
       const camps = await Camps.find({}, { fields: { slug: 1 } }).fetchAsync();
-      throw new Error(
-        `Camp with slug ${campSlug} not found, available camp slugs: ${camps
-          .map((c) => c.slug)
-          .sort()
-          .join(", ")}`,
-      );
-    }
 
-    res.writeHead(200, { "Content-Type": "application/json" });
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.write(
+        JSON.stringify({
+          error: `Camp with slug ${campSlug} not found`,
+          available_camp_slugs: camps.map((c) => c.slug).sort(),
+        }),
+      );
+      res.end();
+      return;
+    }
 
     const campSales = await Sales.find({
       timestamp: { $gte: camp.buildup, $lte: camp.teardown },
@@ -149,6 +154,7 @@ interface PosProductCost {
       }
     }
 
+    res.writeHead(200, { "Content-Type": "application/json" });
     res.write(
       JSON.stringify({
         pos_transaction,
