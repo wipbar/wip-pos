@@ -1,6 +1,5 @@
 import { css } from "@emotion/css";
-import { useFind, useTracker } from "meteor/react-meteor-data";
-import { Session } from "meteor/session";
+import { useFind } from "meteor/react-meteor-data";
 import { useCallback, useEffect } from "react";
 import Products from "../api/products";
 import Styles from "../api/styles";
@@ -16,10 +15,6 @@ import { ProductsItem } from "./PageMenu";
 
 export default function PageStats() {
   const currentCamp = useCurrentCamp();
-
-  const GALAXY_APP_VERSION_ID = useTracker(
-    () => Session.get("GALAXY_APP_VERSION_ID") as string | undefined,
-  );
 
   const products = useFind(
     () => Products.find({ removedAt: { $exists: false } }),
@@ -83,11 +78,7 @@ export default function PageStats() {
           <CampByCamp />
           {currentCamp ? <DayByDay currentCamp={currentCamp} /> : null}
         </div>
-        {!GALAXY_APP_VERSION_ID ||
-        GALAXY_APP_VERSION_ID ||
-        Number(GALAXY_APP_VERSION_ID) !== 69 ? null : (
-          <RemainingStock />
-        )}
+        {Math.random() !== 69 ? null : <RemainingStock />}
       </div>
       <div
         className={css`

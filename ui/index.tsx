@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
+import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
-import { useFind, useTracker } from "meteor/react-meteor-data";
+import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Tracker } from "meteor/tracker";
 import { opacify } from "polished";
@@ -24,7 +25,6 @@ import useSubscription from "../hooks/useSubscription";
 import SubsManager from "../SubsManager";
 import { getCorrectTextColor, onProfilerRenderCallback } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
-import PageStockSold from "./PageStockSold";
 
 // Lazy load pages
 const PageStats = lazy(() => import("./PageStats"));
@@ -34,6 +34,7 @@ const PageStock = lazy(() => import("./PageStock"));
 const PageSales = lazy(() => import("./PageSales"));
 const PageMenu = lazy(() => import("./PageMenu"));
 const PageQR = lazy(() => import("./PageQR"));
+const PageStockSold = lazy(() => import("./PageStockSold"));
 
 Tracker.autorun(() => {
   document.title = Session.get("DocumentTitle") as string;
@@ -54,9 +55,6 @@ export default function UI() {
   useSubscription("camps");
 
   const navigate = useNavigate();
-  const GALAXY_APP_VERSION_ID = useTracker(
-    () => (Session.get("GALAXY_APP_VERSION_ID") as string | undefined) || "420",
-  );
   const match = useMatch("/:locationSlug/*");
   const locationSlug = match?.params.locationSlug;
   const pageSlug = match?.params?.["*"];
@@ -188,7 +186,9 @@ export default function UI() {
           pointer-events: none;
         `}
       >
-        {GALAXY_APP_VERSION_ID}
+        {typeof Meteor.settings.public.COMMIT_SHA === "string"
+          ? Meteor.settings.public.COMMIT_SHA?.slice(0, 3) || "dev"
+          : "dev"}
       </div>
       <div
         className={css`

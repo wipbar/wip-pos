@@ -12,7 +12,10 @@ jobs:
       - run: |
           echo "{
             \"BH_CLIENT_ID\": \"${{ secrets.BH_CLIENT_ID }}\",
-            \"BH_CLIENT_SECRET\": \"${{ secrets.BH_CLIENT_SECRET }}\"
+            \"BH_CLIENT_SECRET\": \"${{ secrets.BH_CLIENT_SECRET }}\",
+            \"public\": {
+              \"COMMIT_SHA\": \"${{ github.sha }}\"
+            }
           }" > .deploy/settings.json
 
       # Do the actual deploy

@@ -1,4 +1,5 @@
 {
   "BH_CLIENT_ID": "",
-  "BH_CLIENT_SECRET": ""
+  "BH_CLIENT_SECRET": "",
+  "COMMIT_SHA": ""
 }

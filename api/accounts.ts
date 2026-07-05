@@ -3,7 +3,6 @@ import { Meteor } from "meteor/meteor";
 import { OAuth } from "meteor/oauth";
 import { Random } from "meteor/random";
 import { ServiceConfiguration } from "meteor/service-configuration";
-import { Session } from "meteor/session";
 import Camps, { ICamp } from "./camps";
 import Locations from "./locations";
 
@@ -236,18 +235,3 @@ export const assertUserInAnyTeam = async (user: Meteor.User | null) => {
 
   throw new Meteor.Error(`You are not a member of an active team`);
 };
-
-//In the client side
-if (Meteor.isClient) {
-  Meteor.call(
-    "GALAXY_APP_VERSION_ID",
-    (_: unknown, GALAXY_APP_VERSION_ID: number) =>
-      Session.set("GALAXY_APP_VERSION_ID", GALAXY_APP_VERSION_ID),
-  );
-}
-
-if (Meteor.isServer) {
-  Meteor.methods({
-    GALAXY_APP_VERSION_ID: () => process.env.GALAXY_APP_VERSION_ID || 69,
-  });
-}
