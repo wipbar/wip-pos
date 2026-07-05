@@ -11,7 +11,7 @@ import {
 import groupBy from "lodash/groupBy";
 import sumBy from "lodash/sumBy";
 import { Meteor } from "meteor/meteor";
-import { Mongo } from "meteor/mongo"; 
+import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
 import { tagsToString, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
@@ -25,7 +25,12 @@ import Products, {
   type IProduct,
   type ProductID,
 } from "./products";
-import Stocks, { getRemainingServings, getRemainingServingsEver } from "./stocks";
+import Stocks, {
+  getRemainingServings,
+  getRemainingServingsEver,
+  getServingsSold,
+  StockID,
+} from "./stocks";
 
 export type SaleID = Flavor<string, "SaleID">;
 
@@ -196,6 +201,18 @@ export const salesMethods = {
     return statsMostSold?.data[campSlug];
   },
 
+  "Sales.stats.MostSoldStock"(
+    this: Meteor.MethodThisType,
+    { campSlug }: { campSlug?: ICamp["slug"] },
+  ) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    if (!campSlug) return statsMostSoldStock?.data["all"];
+
+    return statsMostSoldStock?.data[campSlug];
+  },
+
   "Products.menu.Menu"(
     this: Meteor.MethodThisType,
     { locationSlug }: { locationSlug: ILocation["slug"] },
@@ -274,6 +291,9 @@ let locationMenuData: Awaited<ReturnType<typeof calculateMenuData>> | null =
 let statsDayByDay: Awaited<ReturnType<typeof calculateDayByDayStats>> | null =
   null;
 let statsMostSold: Awaited<ReturnType<typeof calculateMostSold>> | null = null;
+let statsMostSoldStock: Awaited<
+  ReturnType<typeof calculateMostSoldStock>
+> | null = null;
 export let productsRemainingPercent: Awaited<
   ReturnType<typeof calculateProductRemainingPercent>
 > | null = null;
@@ -287,6 +307,7 @@ if (Meteor.isServer) {
       calculateDayByDayStats().then((data) => (statsDayByDay = data)),
       calculateMenuData().then((data) => (locationMenuData = data)),
       calculateMostSold().then((data) => (statsMostSold = data)),
+      calculateMostSoldStock().then((data) => (statsMostSoldStock = data)),
       calculateProductRemainingPercent().then(
         (data) => (productsRemainingPercent = data),
       ),
@@ -298,6 +319,7 @@ if (Meteor.isServer) {
       void calculateSalesSankeyData().then((data) => (statsSalesSankey = data));
       void calculateDayByDayStats().then((data) => (statsDayByDay = data));
       void calculateMostSold().then((data) => (statsMostSold = data));
+      void calculateMostSoldStock().then((data) => (statsMostSoldStock = data));
       void calculateProductRemainingPercent().then(
         (data) => (productsRemainingPercent = data),
       );
@@ -854,12 +876,49 @@ async function calculateMostSold() {
   return { data, asOf: now3 };
 }
 
+async function calculateMostSoldStock() {
+  const now = new Date();
+
+  const camps = await Camps.find({}, { sort: { end: -1 } }).fetchAsync();
+  const stocks = await Stocks.find().fetchAsync();
+  const sales = await Sales.find().fetchAsync();
+
+  const now2 = new Date();
+
+  const data: Record<ICamp["slug"], [StockID, number, number | null][]> = {};
+  for (const currentCamp of camps) {
+    const campSales = sales.filter(
+      ({ timestamp }) =>
+        timestamp >= currentCamp.buildup && timestamp <= currentCamp.teardown,
+    );
+
+    data[currentCamp.slug] = stocks
+      .map(
+        (stock) =>
+          [stock._id, getServingsSold(campSales, stock), null] satisfies [
+            StockID,
+            number,
+            number | null,
+          ],
+      )
+      .filter(([, count]) => count > 0);
+  }
+
+  const now3 = new Date();
+
+  console.log(
+    `Sales.stats.MostSoldStock: ${(now3.getTime() - now.getTime()) / 1000}s,(${
+      (now2.getTime() - now.getTime()) / 1000
+    }s fetch, ${(now3.getTime() - now2.getTime()) / 1000}s calc)`,
+  );
+
+  return { data, asOf: now3 };
+}
+
 async function calculateProductRemainingPercent() {
   const now = new Date();
 
-  const [camps] = await Promise.all([
-    Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
-  ]);
+  const camps = await Camps.find({}, { sort: { end: -1 } }).fetchAsync();
   const products = await Products.find().fetchAsync();
   const stocks = await Stocks.find().fetchAsync();
   const sales = await Sales.find().fetchAsync();

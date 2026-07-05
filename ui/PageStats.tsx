@@ -28,15 +28,12 @@ export default function PageStats() {
 
   const [getMostSoldData, result] = useMethod("Sales.stats.MostSold");
   const mostSoldData = result?.data || emptyArray;
-
-  const updateDayByDayData = useCallback(async () => {
-    await getMostSoldData({ campSlug: currentCamp?.slug });
-  }, [currentCamp?.slug, getMostSoldData]);
-
-  useEffect(() => {
-    void updateDayByDayData();
-  }, [updateDayByDayData]);
-  useInterval(() => updateDayByDayData(), 30000);
+  const updateMostSoldData = useCallback(
+    () => getMostSoldData({ campSlug: currentCamp?.slug }),
+    [currentCamp?.slug, getMostSoldData],
+  );
+  useEffect(() => void updateMostSoldData(), [updateMostSoldData]);
+  useInterval(() => void updateMostSoldData(), 30000);
 
   const [getGoodbyeWorld] = useMethod("Sales.stats.GoodbyeWorld");
   useEffect(() => {

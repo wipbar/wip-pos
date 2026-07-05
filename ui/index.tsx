@@ -24,6 +24,7 @@ import useSubscription from "../hooks/useSubscription";
 import SubsManager from "../SubsManager";
 import { getCorrectTextColor, onProfilerRenderCallback } from "../util";
 import AccountsUIWrapper from "./AccountsUIWrapper";
+import PageStockSold from "./PageStockSold";
 
 // Lazy load pages
 const PageStats = lazy(() => import("./PageStats"));
@@ -363,6 +364,7 @@ export default function UI() {
           />
           <Route path="/:locationSlug/products" element={<PageProducts />} />
           <Route path="/:locationSlug/stock" element={<PageStock />} />
+          <Route path="/:locationSlug/stock/sold" element={<PageStockSold />} />
           <Route path="/:locationSlug/sales" element={<PageSales />} />
           <Route
             path="/:locationSlug/menu"

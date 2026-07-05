@@ -10,7 +10,8 @@ import {
   useEffect,
   useMemo,
 } from "react";
-import { getProductSize, type IProduct } from "../api/products";
+import { getProductSize, getStockSize, type IProduct } from "../api/products";
+import { IStock } from "../api/stocks";
 import Styles from "../api/styles";
 import {
   blackulaFlow,
@@ -266,6 +267,59 @@ export function ProductsItem({
   );
 }
 
+export function StockItem({ stock }: { stock: IStock }) {
+  const stockSize = getStockSize(stock);
+  const subTexts = [
+    stockSize ? `${stockSize.unitSize}${stockSize.sizeUnit}` : null,
+  ].filter(Boolean);
+
+  return (
+    <div
+      key={stock._id}
+      className={css`
+        padding: 0.125em 0.5em 0px;
+        position: relative;
+        break-inside: avoid;
+        line-height: 1.2;
+      `}
+    >
+      <div
+        className={css`
+          flex: 1;
+          display: flex;
+          justify-content: space-between;
+        `}
+      >
+        <span>
+          <div
+            className={css`
+              margin-top: 2px;
+              font-weight: bold;
+              line-height: 0.8;
+            `}
+          >
+            {stock.name}{" "}
+            <small
+              style={{
+                fontWeight: "normal",
+                lineHeight: 1,
+                display: "inline-block",
+              }}
+            >
+              {subTexts.map((thing, i) => (
+                <Fragment key={thing}>
+                  {i > 0 ? ", " : null}
+                  <small key={thing}>{thing}</small>
+                </Fragment>
+              ))}
+            </small>
+          </div>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function PageMenu() {
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(30000);
@@ -394,195 +448,185 @@ export default function PageMenu() {
       `}
       style={style}
     >
-      {
-        /*oij
-        .sort((a, b) => getOijProductsLength(b) - getOijProductsLength(a))
-        .map((_, i, list) =>
-          zip(
-            list.slice(0, list.length / 2),
-            list.slice(list.length / 2, list.length).reverse(),
-          ).flat(),
-        )*/
-        (
-          zip(
-            list.slice(0, Math.ceil(list.length / 2)),
-            list.slice(Math.ceil(list.length / 2), list.length).reverse(),
-          )
-            .flat()
-            .filter(Boolean) as typeof list
-        ).map(([tags, productsByBrandName, tagsSpark]) => (
-          <div
-            key={tags}
+      {(
+        zip(
+          list.slice(0, Math.ceil(list.length / 2)),
+          list.slice(Math.ceil(list.length / 2), list.length).reverse(),
+        )
+          .flat()
+          .filter(Boolean) as typeof list
+      ).map(([tags, productsByBrandName, tagsSpark]) => (
+        <div
+          key={tags}
+          className={css`
+            color: ${currentCamp &&
+            getCorrectTextColor(
+              getCorrectTextColor(currentCamp.color) === "white"
+                ? lighten(4 / 5, currentCamp.color)
+                : darken(4 / 5, currentCamp.color),
+            )};
+
+            break-inside: avoid;
+          `}
+        >
+          <h1
             className={css`
+              margin: 0;
+              font-size: 2.25em;
+              text-align: center;
+              color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
+            `}
+          >
+            {tags}
+          </h1>
+          <SparkLine
+            className={css`
+              margin-top: -8px;
+              display: block;
+              border-bottom: ${currentCamp &&
+                getCorrectTextColor(
+                  getCorrectTextColor(currentCamp?.color) === "white"
+                    ? lighten(4 / 5, currentCamp?.color)
+                    : darken(4 / 5, currentCamp?.color),
+                )}
+                1px solid;
+            `}
+            fill={
+              currentCamp &&
+              getCorrectTextColor(
+                getCorrectTextColor(currentCamp?.color) === "white"
+                  ? lighten(4 / 5, currentCamp?.color)
+                  : darken(4 / 5, currentCamp?.color),
+              )
+            }
+            data={tagsSpark}
+          />
+          <div
+            className={css`
+              background: ${currentCamp &&
+              transparentize(5 / 6, getCorrectTextColor(currentCamp?.color))};
               color: ${currentCamp &&
               getCorrectTextColor(
-                getCorrectTextColor(currentCamp.color) === "white"
-                  ? lighten(4 / 5, currentCamp.color)
-                  : darken(4 / 5, currentCamp.color),
+                getCorrectTextColor(currentCamp?.color) === "white"
+                  ? lighten(4 / 5, currentCamp?.color)
+                  : darken(4 / 5, currentCamp?.color),
               )};
 
               break-inside: avoid;
+              padding: 0.25em;
+              margin-bottom: 0.5em;
             `}
           >
-            <h1
+            <ul
               className={css`
                 margin: 0;
-                font-size: 2.25em;
-                text-align: center;
-                color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
+                padding: 0;
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25em;
               `}
             >
-              {tags}
-            </h1>
-            <SparkLine
-              className={css`
-                margin-top: -8px;
-                display: block;
-                border-bottom: ${currentCamp &&
-                  getCorrectTextColor(
-                    getCorrectTextColor(currentCamp?.color) === "white"
-                      ? lighten(4 / 5, currentCamp?.color)
-                      : darken(4 / 5, currentCamp?.color),
-                  )}
-                  1px solid;
-              `}
-              fill={
-                currentCamp &&
-                getCorrectTextColor(
-                  getCorrectTextColor(currentCamp?.color) === "white"
-                    ? lighten(4 / 5, currentCamp?.color)
-                    : darken(4 / 5, currentCamp?.color),
-                )
-              }
-              data={tagsSpark}
-            />
-            <div
-              className={css`
-                background: ${currentCamp &&
-                transparentize(5 / 6, getCorrectTextColor(currentCamp?.color))};
-                color: ${currentCamp &&
-                getCorrectTextColor(
-                  getCorrectTextColor(currentCamp?.color) === "white"
-                    ? lighten(4 / 5, currentCamp?.color)
-                    : darken(4 / 5, currentCamp?.color),
-                )};
-
-                break-inside: avoid;
-                padding: 0.25em;
-                margin-bottom: 0.5em;
-              `}
-            >
-              <ul
-                className={css`
-                  margin: 0;
-                  padding: 0;
-                  list-style: none;
-                  display: flex;
-                  flex-direction: column;
-                  gap: 0.25em;
-                `}
-              >
-                {productsByBrandName.map(([brandName, products]) => (
-                  <Fragment key={brandName}>
-                    <small
+              {productsByBrandName.map(([brandName, products]) => (
+                <Fragment key={brandName}>
+                  <small
+                    className={css`
+                      flex: 1;
+                      display: flex;
+                      justify-content: space-around;
+                    `}
+                  >
+                    <div
                       className={css`
                         flex: 1;
-                        display: flex;
-                        justify-content: space-around;
+                        text-align: center;
+                        font-weight: 600;
+                        color: ${currentCamp &&
+                        getCorrectTextColor(currentCamp?.color)};
                       `}
                     >
-                      <div
-                        className={css`
-                          flex: 1;
-                          text-align: center;
-                          font-weight: 600;
-                          color: ${currentCamp &&
-                          getCorrectTextColor(currentCamp?.color)};
-                        `}
-                      >
-                        {brandName}
-                      </div>
-                      <small
-                        className={css`
-                          padding: 0.25em 0.9em 0px;
-                        `}
-                      >
-                        ʜᴀx
-                      </small>
-                    </small>
-                    <li
-                      key={brandName}
+                      {brandName}
+                    </div>
+                    <small
                       className={css`
-                        margin: 0;
-                        display: flex;
-                        flex-direction: column;
-                        background: ${currentCamp &&
+                        padding: 0.25em 0.9em 0px;
+                      `}
+                    >
+                      ʜᴀx
+                    </small>
+                  </small>
+                  <li
+                    key={brandName}
+                    className={css`
+                      margin: 0;
+                      display: flex;
+                      flex-direction: column;
+                      background: ${currentCamp &&
+                      transparentize(
+                        4 / 5,
+                        getCorrectTextColor(currentCamp?.color),
+                      )};
+                      align-items: stretch;
+                      break-inside: avoid;
+
+                      border: 1px solid
+                        ${currentCamp &&
                         transparentize(
-                          4 / 5,
+                          1 / 5,
                           getCorrectTextColor(currentCamp?.color),
                         )};
-                        align-items: stretch;
-                        break-inside: avoid;
-
-                        border: 1px solid
-                          ${currentCamp &&
-                          transparentize(
-                            1 / 5,
-                            getCorrectTextColor(currentCamp?.color),
-                          )};
-                        position: relative;
+                      position: relative;
+                    `}
+                  >
+                    {brandName === "BornHack" &&
+                    tags.includes("spirit") &&
+                    tags.includes("bottle") ? (
+                      <img
+                        src="/img/logo_square_white_on_transparent_500_RGB.png"
+                        className={css`
+                          object-fit: contain;
+                          position: absolute;
+                          height: 100%;
+                          width: auto;
+                          top: 50%;
+                          left: 50%;
+                          transform: translate(-50%, -50%);
+                          opacity: 0.75;
+                          z-index: 0;
+                        `}
+                      />
+                    ) : null}
+                    <div
+                      className={css`
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.125em;
                       `}
                     >
-                      {brandName === "BornHack" &&
-                      tags.includes("spirit") &&
-                      tags.includes("bottle") ? (
-                        <img
-                          src="/img/logo_square_white_on_transparent_500_RGB.png"
-                          className={css`
-                            object-fit: contain;
-                            position: absolute;
-                            height: 100%;
-                            width: auto;
-                            top: 50%;
-                            left: 50%;
-                            transform: translate(-50%, -50%);
-                            opacity: 0.75;
-                            z-index: 0;
-                          `}
-                        />
-                      ) : null}
-                      <div
-                        className={css`
-                          display: flex;
-                          flex-direction: column;
-                          gap: 0.125em;
-                        `}
-                      >
-                        {products.map(
-                          (
-                            [product, productSpark, soldOutRatio, servingTime],
-                            i,
-                            list,
-                          ) => (
-                            <ProductsItem
-                              key={product._id}
-                              product={product}
-                              nextProduct={list[i + 1]?.[0]}
-                              productSpark={productSpark}
-                              servingTime={servingTime}
-                              soldOutRatio={soldOutRatio}
-                            />
-                          ),
-                        )}
-                      </div>
-                    </li>
-                  </Fragment>
-                ))}
-              </ul>
-            </div>
+                      {products.map(
+                        (
+                          [product, productSpark, soldOutRatio, servingTime],
+                          i,
+                          list,
+                        ) => (
+                          <ProductsItem
+                            key={product._id}
+                            product={product}
+                            nextProduct={list[i + 1]?.[0]}
+                            productSpark={productSpark}
+                            servingTime={servingTime}
+                            soldOutRatio={soldOutRatio}
+                          />
+                        ),
+                      )}
+                    </div>
+                  </li>
+                </Fragment>
+              ))}
+            </ul>
           </div>
-        ))
-      }
+        </div>
+      ))}
       <center
         className={css`
           margin-top: -0.5em;

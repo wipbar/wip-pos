@@ -201,6 +201,25 @@ export function getProductSize(product: IProduct): {
   return { unitSize, sizeUnit };
 }
 
+export function getStockSize(stock: IStock): {
+  unitSize: number;
+  sizeUnit: SizeUnit;
+} | null {
+  if (
+    stock.unitSize &&
+    stock.sizeUnit &&
+    stock.unitSize !== null &&
+    stock.unitSize !== undefined &&
+    !Number.isNaN(Number(stock.unitSize))
+  ) {
+    return {
+      unitSize: Number(stock.unitSize),
+      sizeUnit: stock.sizeUnit,
+    };
+  }
+  return null;
+}
+
 export function getProductBarCode(product: IProduct, stocks: IStock[]) {
   const singleComponent =
     product?.components?.length === 1 &&

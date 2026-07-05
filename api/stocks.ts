@@ -300,3 +300,32 @@ export function getRemainingServingsEver(
 
   return Math.max(0, minServings);
 }
+export function getServingsSold(
+  sales: ISale[],
+  stock: IStock,
+  // products: IProduct[],
+) {
+  let totalServingsSold = 0;
+
+  for (const sale of sales) {
+    for (const product of sale.products) {
+      // TODO/OPTIONAL: Get the product from the products list instead of the sale, so that we can get the components from the product in the database, not the one in the sale (which may be outdated)
+      // on the other hand, this may be a good thing, because it reflects the product at the time of the sale, not the current product (which may have changed since then)
+      for (const component of product.components || []) {
+        if (component.stockId === stock._id) {
+          try {
+            const servingsSold =
+              convert(component.unitSize, component.sizeUnit).to(
+                stock.sizeUnit,
+              ) / stock.unitSize;
+            totalServingsSold += servingsSold;
+          } catch {
+            continue;
+          }
+        }
+      }
+    }
+  }
+
+  return totalServingsSold;
+}

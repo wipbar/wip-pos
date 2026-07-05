@@ -14,12 +14,14 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
+import { useParams } from "react-router";
 
 const PageStockItem = lazy(() => import("./PageStockItem"));
 const PageProductsItem = lazy(() => import("./PageProductsItem"));
 
 const NEW = Symbol("New");
 export default function PageStock() {
+  const { locationSlug } = useParams();
   const user = useCurrentUser();
   const camp = useCurrentCamp();
   const [removeStock] = useMethod("Stock.removeStock");
@@ -147,6 +149,15 @@ export default function PageStock() {
           />
           show only stock without products
         </label>
+        <a
+          href={`/${locationSlug}/stock/sold`}
+          className={css`
+            margin-left: 1vw;
+            color: ${camp && getCorrectTextColor(camp.color)};
+          `}
+        >
+          View Used Stock
+        </a>
       </div>
       <hr />
       <div
