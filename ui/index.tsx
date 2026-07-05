@@ -187,7 +187,7 @@ export default function UI() {
         `}
       >
         {typeof Meteor.settings.public.COMMIT_SHA === "string"
-          ? Meteor.settings.public.COMMIT_SHA?.slice(0, 3) || "dev"
+          ? Meteor.settings.public.COMMIT_SHA?.slice(0, 4) || "dev"
           : "dev"}
       </div>
       <div
