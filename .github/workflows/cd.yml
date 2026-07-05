@@ -1,4 +1,7 @@
 on: [push]
+concurrency:
+  group: production
+  cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
