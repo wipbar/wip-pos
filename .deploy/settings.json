@@ -1,5 +1,7 @@
 {
   "BH_CLIENT_ID": "",
   "BH_CLIENT_SECRET": "",
-  "COMMIT_SHA": ""
+  "public": {
+    "COMMIT_SHA": ""
+  }
 }
