@@ -3,7 +3,7 @@ node_modules/
 production-settings.json
 token.json
 mongodump/
-.deploy/mup.js
+.deploy/mup2.js
 .deploy/settings.json
 .dist
 
