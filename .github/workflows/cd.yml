@@ -5,4 +5,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: meteor-actions/install@v6
+      - run: npm install -g mup
       - run: npm run deploy
