@@ -8,6 +8,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: meteor-actions/install@v6
       - run: npm install -g mup
+      # Write environment variables that Meteor needs to a settings file
+      - run: |
+          echo "{
+            \"BH_CLIENT_ID\": \"${{ secrets.BH_CLIENT_ID }}\",
+            \"BH_CLIENT_SECRET\": \"${{ secrets.BH_CLIENT_SECRET }}\"
+          }" > .deploy/settings.json
+
+      # Do the actual deploy
       - name: Deploy to server
         env:
           DEPLOY_SERVER_HOST: ${{ secrets.DEPLOY_SERVER_HOST }}

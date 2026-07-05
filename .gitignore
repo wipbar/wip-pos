@@ -4,7 +4,7 @@ production-settings.json
 token.json
 mongodump/
 .deploy/mup2.js
-.deploy/settings.json
+.deploy/settings2.json
 .dist
 
 # Meteor Modern-Tools build context directories
