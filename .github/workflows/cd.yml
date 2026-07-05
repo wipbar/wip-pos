@@ -2,8 +2,20 @@ on: [push]
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: l # can't rename it lol but this is the production environment
     steps:
       - uses: actions/checkout@v4
       - uses: meteor-actions/install@v6
       - run: npm install -g mup
-      - run: npm run deploy
+      - name: Deploy to server
+        env:
+          DEPLOY_SERVER_HOST: ${{ secrets.DEPLOY_SERVER_HOST }}
+          DEPLOY_SERVER_USERNAME: ${{ secrets.DEPLOY_SERVER_USERNAME }}
+          DEPLOY_SERVER_PASSWORD: ${{ secrets.DEPLOY_SERVER_PASSWORD }}
+          DEPLOY_ROOT_URL: ${{ secrets.DEPLOY_ROOT_URL }}
+          DEPLOY_MONGO_URL: ${{ secrets.DEPLOY_MONGO_URL }}
+          DEPLOY_MONGO_OPLOG_URL: ${{ secrets.DEPLOY_MONGO_OPLOG_URL }}
+          DEPLOY_PROXY_DOMAINS: ${{ secrets.DEPLOY_PROXY_DOMAINS }}
+          DEPLOY_LETSENCRYPT_EMAIL: ${{ secrets.DEPLOY_LETSENCRYPT_EMAIL }}
+        run: npm run deploy
