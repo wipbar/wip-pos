@@ -18,7 +18,6 @@ module.exports = {
       MONGO_OPLOG_URL: "",
       BH_CLIENT_ID: "",
       BH_CLIENT_SECRET: "",
-      ADMINPASS: "",
     },
     docker: { image: "zodern/meteor:root" },
 
