@@ -119,7 +119,7 @@ export const getStockLevelAtStartOfCamp = (camp: ICamp, stock: IStock) => {
           Math.abs(camp.start.valueOf() - a.timestamp.valueOf()) -
           Math.abs(camp.start.valueOf() - b.timestamp.valueOf()),
       )
-      .at(0)?.count || NaN
+      .at(0)?.count ?? NaN
   );
 };
 

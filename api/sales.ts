@@ -681,10 +681,6 @@ async function calculateMenuDataForLocation(location: ILocation) {
                     product?.components?.[0] &&
                     getRemainingServingsEver(currentCamp!, stocks, product);
 
-                  if (product.name.includes("Cannibal")) {
-                    console.log({ remainingServings, remainingServingsEver });
-                  }
-
                   return [
                     product,
                     Array.from(
@@ -711,10 +707,13 @@ async function calculateMenuDataForLocation(location: ILocation) {
                           }, 0),
                         ] as const,
                     ),
-                    remainingServingsEver
+                    remainingServingsEver !== undefined &&
+                    remainingServings !== undefined
                       ? Math.min(
                           1,
-                          1 - remainingServings! / remainingServingsEver,
+                          remainingServingsEver > 0
+                            ? 1 - remainingServings / remainingServingsEver
+                            : 1,
                         )
                       : null,
                     getProductAverageOrderDuration(product, sales),
