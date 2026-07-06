@@ -19,7 +19,7 @@ export interface IProduct {
   salePrice?: number;
   unitSize?: number | string | null; // null means based on components
   sizeUnit?: SizeUnit | null; // null means based on components
-  abv?: number;
+  abv?: number | null;
   ibu?: number;
   tags?: string[];
   shopPrices?: { buyPrice: number; timestamp: Date }[];
@@ -201,23 +201,44 @@ export function getProductSize(product: IProduct): {
   return { unitSize, sizeUnit };
 }
 
-export function getStockSize(stock: IStock): {
-  unitSize: number;
-  sizeUnit: SizeUnit;
-} | null {
-  if (
-    stock.unitSize &&
-    stock.sizeUnit &&
-    stock.unitSize !== null &&
-    stock.unitSize !== undefined &&
-    !Number.isNaN(Number(stock.unitSize))
-  ) {
-    return {
-      unitSize: Number(stock.unitSize),
-      sizeUnit: stock.sizeUnit,
-    };
-  }
-  return null;
+export function getProductABV(
+  product: IProduct,
+  componentStocks?: IStock[],
+): number | null {
+  if (!isNaN(Number(product.abv))) return Number(product.abv);
+
+  const components = product.components;
+  if (!components?.length) return null;
+
+  const sizeUnit = components[0]?.sizeUnit;
+
+  if (!sizeUnit) return null;
+  const totalVolume = components.reduce(
+    (acc, component) =>
+      acc +
+      catchNaN(() =>
+        convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+      ),
+    0,
+  );
+
+  const totalAlcohol = components.reduce((acc, component) => {
+    const componentStock = componentStocks?.find(
+      ({ _id }) => _id === component.stockId,
+    );
+    if (!componentStock || Number.isNaN(componentStock.abv)) return NaN;
+    return (
+      acc +
+      catchNaN(
+        () =>
+          (convert(component.unitSize, component.sizeUnit).to(sizeUnit) *
+            (componentStock.abv ?? NaN)) /
+          100,
+      )
+    );
+  }, 0);
+
+  return totalVolume > 0 ? (totalAlcohol / totalVolume) * 100 : null;
 }
 
 export function getProductBarCode(product: IProduct, stocks: IStock[]) {

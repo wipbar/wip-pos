@@ -21,6 +21,7 @@ export interface IStock {
   packageType: PackageTypeCode | null;
   unitSize: number;
   sizeUnit: SizeUnit;
+  abv?: number;
   approxCount: null | number;
   levels?: {
     count: number;

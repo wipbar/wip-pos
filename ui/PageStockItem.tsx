@@ -203,6 +203,14 @@ export default function PageStockItem({
             />
           </div>
         </Label>
+        <Label label="Alcohol %">
+          <input
+            type="number"
+            step="any"
+            defaultValue={stock?.abv ?? ""}
+            {...register("abv", { valueAsNumber: true })}
+          />
+        </Label>
         <Label label="Bar Code">
           <div
             className={css`

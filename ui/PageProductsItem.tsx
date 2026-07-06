@@ -4,6 +4,7 @@ import { faFolderMinus } from "@fortawesome/free-solid-svg-icons/faFolderMinus";
 import { faFolderPlus } from "@fortawesome/free-solid-svg-icons/faFolderPlus";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import convert from "convert";
+import omit from "lodash/omit";
 import { useFind } from "meteor/react-meteor-data";
 import { lazy, type ReactNode, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -150,6 +151,40 @@ export default function PageProductsItem({
 
     return { unitSize, sizeUnit };
   }, [components]);
+
+  const abvDerivedFromComponents = useMemo(() => {
+    if (!components?.length) return null;
+
+    const sizeUnit = components[0]?.sizeUnit;
+
+    if (!sizeUnit) return null;
+    const totalVolume = components.reduce(
+      (acc, component) =>
+        acc +
+        catchNaN(() =>
+          convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+        ),
+      0,
+    );
+
+    const totalAlcohol = components.reduce((acc, component) => {
+      const componentStock = stocks.find(
+        ({ _id }) => _id === component.stockId,
+      );
+      if (!componentStock || Number.isNaN(componentStock.abv)) return acc;
+      return (
+        acc +
+        catchNaN(
+          () =>
+            (convert(component.unitSize, component.sizeUnit).to(sizeUnit) *
+              (componentStock.abv ?? NaN)) /
+            100,
+        )
+      );
+    }, 0);
+
+    return totalVolume > 0 ? (totalAlcohol / totalVolume) * 100 : null;
+  }, [components, stocks]);
 
   return (
     <>
@@ -298,12 +333,47 @@ export default function PageProductsItem({
           )}
         </Label>
         <Label label="Alcohol %">
-          <input
-            type="number"
-            step="any"
-            defaultValue={product?.abv ?? ""}
-            {...register("abv", { valueAsNumber: true })}
-          />
+          {abvDerivedFromComponents &&
+          (watch("abv") === null || Number.isNaN(watch("abv"))) ? (
+            <div>
+              <code>
+                {abvDerivedFromComponents.toLocaleString("en-DK", {
+                  maximumFractionDigits: 2,
+                })}
+                %
+              </code>
+              <small> (via components)</small>{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setValue("abv", abvDerivedFromComponents, {
+                    shouldDirty: true,
+                  });
+                }}
+              >
+                <FontAwesomeIcon icon={faPencilAlt} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <input
+                type="number"
+                step="any"
+                defaultValue={product?.abv ?? ""}
+                {...register("abv", { valueAsNumber: true })}
+              />
+              {abvDerivedFromComponents ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue("abv", null, { shouldDirty: true });
+                  }}
+                >
+                  auto
+                </button>
+              ) : null}
+            </>
+          )}
         </Label>
         <Label label="Description">
           <input
@@ -600,50 +670,69 @@ export default function PageProductsItem({
             {product ? "Update Product" : "Create Product"}{" "}
             {isSubmitting ? "..." : ""}
           </button>
-          {product ? (
-            <button
-              onClick={async () => {
-                if (!location) return;
 
-                await editProduct({
-                  productId: product._id,
-                  data: isOnMenu
-                    ? {
-                        locationIds: product.locationIds?.filter(
-                          (id) => id !== location._id,
-                        ),
-                      }
-                    : {
-                        locationIds: [
-                          ...(product.locationIds || emptyArray),
-                          location._id,
-                        ],
-                      },
-                });
-              }}
-              type="button"
-              disabled={location?.curfew && isAlcoholic(product)}
-              style={{
-                background:
-                  location?.curfew && isAlcoholic(product)
-                    ? "gray"
-                    : isOnMenu
-                    ? "red"
-                    : "limegreen",
-                color: "white",
-              }}
-            >
-              <FontAwesomeIcon
-                icon={
-                  location?.curfew && isAlcoholic(product)
-                    ? faBan
-                    : isOnMenu
-                    ? faFolderMinus
-                    : faFolderPlus
-                }
-              />{" "}
-              Menu
-            </button>
+          {product ? (
+            <>
+              <button
+                onClick={async () => {
+                  if (!product) return;
+                  if (
+                    !confirm(`Are you sure you want to clone ${product.name}?`)
+                  )
+                    return;
+                  await addProduct({ data: { ...omit(product, ["_id"]) } });
+                }}
+                type="button"
+                className={css`
+                  width: 200px;
+                `}
+              >
+                Clone Product
+              </button>
+              <button
+                onClick={async () => {
+                  if (!location) return;
+
+                  await editProduct({
+                    productId: product._id,
+                    data: isOnMenu
+                      ? {
+                          locationIds: product.locationIds?.filter(
+                            (id) => id !== location._id,
+                          ),
+                        }
+                      : {
+                          locationIds: [
+                            ...(product.locationIds || emptyArray),
+                            location._id,
+                          ],
+                        },
+                  });
+                }}
+                type="button"
+                disabled={location?.curfew && isAlcoholic(product)}
+                style={{
+                  background:
+                    location?.curfew && isAlcoholic(product)
+                      ? "gray"
+                      : isOnMenu
+                      ? "red"
+                      : "limegreen",
+                  color: "white",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={
+                    location?.curfew && isAlcoholic(product)
+                      ? faBan
+                      : isOnMenu
+                      ? faFolderMinus
+                      : faFolderPlus
+                  }
+                />{" "}
+                Menu
+              </button>
+            </>
           ) : null}
           <button type="button" onClick={onCancel}>
             Cancel

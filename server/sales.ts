@@ -135,9 +135,10 @@ interface PosProductCost {
         name: product.name,
         description: product.description ?? "",
         sales_price: product.salePrice ?? 0,
+        // TODO: Use derived unit size and unit type from product.components if available ?
         unit_size: isNaN(Number(product.unitSize))
-          ? 0
-          : Number(product.unitSize),
+        ? 0
+        : Number(product.unitSize),
         size_unit: product.sizeUnit ?? "",
         abv: product.abv ?? 0,
         tags: product.tags ?? [],

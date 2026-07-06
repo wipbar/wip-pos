@@ -17,6 +17,7 @@ import type { ILocation } from "../api/locations";
 import Products, {
   type IProduct,
   type ProductID,
+  getProductABV,
   getProductSize,
   isAlcoholic,
 } from "../api/products";
@@ -543,6 +544,9 @@ export default function PageProducts() {
               .map((product) => {
                 const isOnMenu =
                   location && product.locationIds?.includes(location?._id);
+
+                const productAbv = getProductABV(product, stocks);
+
                 return (
                   <tr key={product._id}>
                     <td
@@ -652,7 +656,14 @@ export default function PageProducts() {
                       ))}
                     </td>
                     <td>{product.description}</td>
-                    <td>{product.abv ? `${product.abv}%` : null}</td>
+                    <td>
+                      {typeof productAbv === "number" &&
+                      !Number.isNaN(productAbv)
+                        ? `${productAbv.toLocaleString("da", {
+                            maximumSignificantDigits: 2,
+                          })}%`
+                        : ""}
+                    </td>
                     <td>{product.tap}</td>
                     {isUserAdmin(user) && (
                       <td>

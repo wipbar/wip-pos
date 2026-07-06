@@ -1,4 +1,5 @@
 import { css } from "@emotion/css";
+import { convert } from "convert";
 import sample from "lodash/sample";
 import zip from "lodash/zip";
 import { useFind } from "meteor/react-meteor-data";
@@ -10,8 +11,8 @@ import {
   useEffect,
   useMemo,
 } from "react";
-import { getProductSize, getStockSize, type IProduct } from "../api/products";
-import { IStock } from "../api/stocks";
+import { getProductABV, getProductSize, type IProduct } from "../api/products";
+import Stocks, { type IStock } from "../api/stocks";
 import Styles from "../api/styles";
 import {
   blackulaFlow,
@@ -23,7 +24,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
-import { getCorrectTextColor } from "../util";
+import { getCorrectTextColor, SizeUnit } from "../util";
 
 const flows = [
   ...draculaFlow,
@@ -92,9 +93,16 @@ function SparkLine({
   );
 }
 
+const genstandInCl = 1.5;
+const sizeAndAbvToUnit = (size: number, sizeUnit: SizeUnit, abv: number) => {
+  const sizeInCl = convert(size, sizeUnit).to("cl");
+  const alcoholInCl = (sizeInCl * abv) / 100;
+  return alcoholInCl / genstandInCl;
+};
+
 export function ProductsItem({
   product,
-  nextProduct,
+  componentStocks,
   productSpark,
   soldOutRatio,
   showBrandName,
@@ -102,7 +110,7 @@ export function ProductsItem({
   servingTime,
 }: {
   product: IProduct;
-  nextProduct?: IProduct | undefined;
+  componentStocks?: IStock[];
   productSpark?: (readonly [number, number])[];
   soldOutRatio?: number | null;
   servingTime?: number;
@@ -112,14 +120,26 @@ export function ProductsItem({
   const currentCamp = useCurrentCamp();
 
   const productSize = getProductSize(product);
+  const productAbv = getProductABV(product, componentStocks);
   const subTexts = [
     product.description || null,
-    (typeof product.abv === "number" && !Number.isNaN(product.abv)) ||
-    (typeof product.abv === "string" && product.abv)
-      ? `${product.abv}%`
+    productAbv
+      ? `${
+          product.components && product.components.length > 1 ? "~" : ""
+        }${productAbv.toLocaleString("da", {
+          maximumSignificantDigits: 2,
+        })}%`
       : null,
-
-    productSize ? `${productSize.unitSize}${productSize.sizeUnit}` : null,
+    productSize && productAbv
+      ? sizeAndAbvToUnit(
+          productSize?.unitSize,
+          productSize?.sizeUnit,
+          productAbv,
+        ).toLocaleString("da", { maximumSignificantDigits: 2 }) + " genstande"
+      : null,
+    productSize && hidePrice
+      ? `${productSize.unitSize}${productSize.sizeUnit}`
+      : null,
   ].filter(Boolean);
 
   return (
@@ -200,10 +220,6 @@ export function ProductsItem({
                 fontWeight: "normal",
                 lineHeight: 1,
                 display: "inline-block",
-                ...(product.name.startsWith("Purple") &&
-                nextProduct?.name.startsWith("Purple")
-                  ? { display: "none" }
-                  : {}),
               }}
             >
               {showBrandName
@@ -235,6 +251,16 @@ export function ProductsItem({
               text-align: right;
             `}
           >
+            {productSize ? (
+              <span
+                className={css`
+                  font-size: 0.5em;
+                  vertical-align: top;
+                  margin-right: 0.25em;
+                  line-height: 1.75;
+                `}
+              >{`${productSize.unitSize}${productSize.sizeUnit}`}</span>
+            ) : null}
             <b>{Number(product.salePrice) || "00"}</b>
             {product.tap ? (
               <div
@@ -268,10 +294,7 @@ export function ProductsItem({
 }
 
 export function StockItem({ stock }: { stock: IStock }) {
-  const stockSize = getStockSize(stock);
-  const subTexts = [
-    stockSize ? `${stockSize.unitSize}${stockSize.sizeUnit}` : null,
-  ].filter(Boolean);
+  const subTexts = [`${stock.unitSize}${stock.sizeUnit}`].filter(Boolean);
 
   return (
     <div
@@ -328,6 +351,11 @@ export default function PageMenu() {
   const style = useFind(() => Styles.find({ page: "menu" }), [])?.[0]?.style;
 
   const [getData, { data: oij }] = useMethod("Products.menu.Menu");
+
+  const stocks = useFind(
+    () => Stocks.find({ removedAt: { $exists: false } }),
+    [],
+  );
 
   const updateData = useCallback(async () => {
     if (currentCamp) await getData({ locationSlug: location!.slug });
@@ -604,15 +632,22 @@ export default function PageMenu() {
                       `}
                     >
                       {products.map(
-                        (
-                          [product, productSpark, soldOutRatio, servingTime],
-                          i,
-                          list,
-                        ) => (
+                        ([
+                          product,
+                          productSpark,
+                          soldOutRatio,
+                          servingTime,
+                        ]) => (
                           <ProductsItem
                             key={product._id}
                             product={product}
-                            nextProduct={list[i + 1]?.[0]}
+                            componentStocks={product.components
+                              ?.map((component) =>
+                                stocks.find(
+                                  (stock) => stock._id === component.stockId,
+                                ),
+                              )
+                              .filter((s): s is IStock => Boolean(s))}
                             productSpark={productSpark}
                             servingTime={servingTime}
                             soldOutRatio={soldOutRatio}
