@@ -164,7 +164,9 @@ export function isMate(product: IProduct) {
   );
 }
 
-export function getProductSize(product: IProduct): {
+export function getProductSize(
+  product: Pick<IProduct, "unitSize" | "sizeUnit" | "components">,
+): {
   unitSize: number;
   sizeUnit: SizeUnit;
 } | null {
@@ -202,8 +204,8 @@ export function getProductSize(product: IProduct): {
 }
 
 export function getProductABV(
-  product: IProduct,
-  componentStocks?: IStock[],
+  product: Pick<IProduct, "abv" | "components">,
+  componentStocks?: Pick<IStock, "abv" | "_id">[],
 ): number | null {
   if (product.abv !== null && !isNaN(Number(product.abv))) {
     return Number(product.abv);
@@ -218,8 +220,9 @@ export function getProductABV(
   const totalVolume = components.reduce(
     (acc, component) =>
       acc +
-      catchNaN(() =>
-        convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+      catchNaN(
+        () => convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+        0,
       ),
     0,
   );
@@ -231,12 +234,12 @@ export function getProductABV(
     if (!componentStock || Number.isNaN(componentStock.abv)) return 0;
     return (
       acc +
-      catchNaN(
-        () =>
-          (convert(component.unitSize, component.sizeUnit).to(sizeUnit) *
-            (componentStock.abv ?? 0)) /
-          100,
-      )
+      (catchNaN(
+        () => convert(component.unitSize, component.sizeUnit).to(sizeUnit),
+        0,
+      ) *
+        (componentStock.abv ?? 0)) /
+        100
     );
   }, 0);
 

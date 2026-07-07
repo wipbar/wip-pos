@@ -13,7 +13,9 @@ import CreatableSelect from "react-select/creatable";
 import { isUserResponsible } from "../api/accounts";
 import Locations, { type ILocation } from "../api/locations";
 import Products, {
+  getProductABV,
   getProductBarCode,
+  getProductSize,
   type IProduct,
   isAlcoholic,
 } from "../api/products";
@@ -133,58 +135,23 @@ export default function PageProductsItem({
   const isOnMenu = location && product?.locationIds?.includes(location?._id);
 
   const components = watch("components");
+  const abv = watch("abv");
+  const unitSize = watch("unitSize");
+  const sizeUnit = watch("sizeUnit");
 
-  const sizeDerivedFromComponents = useMemo(() => {
-    if (!components?.length) return null;
+  const sizeDerivedFromComponents = useMemo(
+    () => getProductSize({ components, unitSize, sizeUnit }),
+    [components, unitSize, sizeUnit],
+  );
 
-    const sizeUnit = components[0]?.sizeUnit;
-
-    if (!sizeUnit) return null;
-    const unitSize = components.reduce(
-      (acc, component) =>
-        acc +
-        catchNaN(() =>
-          convert(component.unitSize, component.sizeUnit).to(sizeUnit),
-        ),
-      0,
-    );
-
-    return { unitSize, sizeUnit };
-  }, [components]);
-
-  const abvDerivedFromComponents = useMemo(() => {
-    if (!components?.length) return null;
-
-    const sizeUnit = components[0]?.sizeUnit;
-
-    if (!sizeUnit) return null;
-    const totalVolume = components.reduce(
-      (acc, component) =>
-        acc +
-        catchNaN(() =>
-          convert(component.unitSize, component.sizeUnit).to(sizeUnit),
-        ),
-      0,
-    );
-
-    const totalAlcohol = components.reduce((acc, component) => {
-      const componentStock = stocks.find(
-        ({ _id }) => _id === component.stockId,
-      );
-      if (!componentStock || Number.isNaN(componentStock.abv)) return acc;
-      return (
-        acc +
-        catchNaN(
-          () =>
-            (convert(component.unitSize, component.sizeUnit).to(sizeUnit) *
-              (componentStock.abv ?? 0)) /
-            100,
-        )
-      );
-    }, 0);
-
-    return totalVolume > 0 ? (totalAlcohol / totalVolume) * 100 : null;
-  }, [components, stocks]);
+  const abvDerivedFromComponents = useMemo(
+    () =>
+      getProductABV(
+        { abv, components },
+        stocks.map(({ _id, abv }) => ({ _id, abv })),
+      ),
+    [abv, components, stocks],
+  );
 
   return (
     <>
@@ -337,7 +304,7 @@ export default function PageProductsItem({
             <div>
               <code>
                 {(abvDerivedFromComponents || 0).toLocaleString("en-DK", {
-                  maximumFractionDigits: 2,
+                  maximumSignificantDigits: 2,
                 })}
                 %
               </code>
