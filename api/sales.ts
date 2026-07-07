@@ -10,6 +10,7 @@ import {
 } from "date-fns";
 import groupBy from "lodash/groupBy";
 import sumBy from "lodash/sumBy";
+import uniq from "lodash/uniq";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
@@ -19,6 +20,8 @@ import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
 import Products, {
   getProductAverageOrderDuration,
+  getProductBrandName,
+  getProductName,
   getProductSize,
   isAlcoholic,
   isMate,
@@ -29,7 +32,8 @@ import Stocks, {
   getRemainingServings,
   getRemainingServingsEver,
   getServingsSold,
-  StockID,
+  type IStock,
+  type StockID,
 } from "./stocks";
 
 export type SaleID = Flavor<string, "SaleID">;
@@ -46,6 +50,7 @@ export interface ISale {
   amount: number;
   timestamp: Date;
   products: IProduct[];
+  stocks?: IStock[];
 }
 
 const Sales = new Mongo.Collection<ISale>("sales");
@@ -100,6 +105,20 @@ export const salesMethods = {
     }
 
     const timestamp = new Date();
+    const products = (
+      await Promise.all(productIds.map((_id) => Products.findOneAsync({ _id })))
+    ).filter((p): p is NonNullable<typeof p> => Boolean(p));
+    const stocks = (
+      await Promise.all(
+        uniq(
+          products
+            .map((product) => product.components?.map((c) => c.stockId))
+            .flat()
+            .filter((stockId): stockId is StockID => Boolean(stockId)),
+        ).map((stockId) => Stocks.findOneAsync({ _id: stockId })),
+      )
+    ).filter((stock): stock is NonNullable<typeof stock> => Boolean(stock));
+
     const insertResult = await Sales.insertAsync({
       userId: userId,
       locationId: location._id,
@@ -110,9 +129,8 @@ export const salesMethods = {
       country: "DK",
       amount: amountTotal,
       timestamp,
-      products: await Promise.all(
-        productIds.map(async (_id) => (await Products.findOneAsync({ _id }))!),
-      ),
+      products,
+      stocks,
     });
 
     try {
@@ -275,7 +293,7 @@ export const salesMethods = {
      productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
    } cocktails
     ${
-      productsSold.filter(({ name }) => name.includes("Tsunami")).length
+      productsSold.filter(({ name }) => name?.includes("Tsunami")).length
     } tsunamis`;
   },
 } as const;
@@ -299,6 +317,79 @@ export let productsRemainingPercent: Awaited<
 > | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
+    await Promise.all(
+      (await Products.find().fetchAsync()).map(async (product) => {
+        if (product.components?.length === 1) {
+          const component = product.components[0]!;
+          const stock = await Stocks.findOneAsync({ _id: component.stockId });
+          if (!stock) return;
+          if (!product.brandName || stock.brandName) {
+            return;
+          }
+          await Stocks.updateAsync(component.stockId, {
+            $set: { brandName: product.brandName },
+          });
+          await Products.updateAsync(product._id, {
+            $set: { brandName: null },
+          });
+        }
+      }),
+    );
+    await Promise.all(
+      (await Products.find().fetchAsync()).map(async (product) => {
+        if (product.components?.length === 1) {
+          const component = product.components[0]!;
+          const stock = await Stocks.findOneAsync({ _id: component.stockId });
+          if (!stock) return;
+          if (!product.description || stock.description) {
+            if (product.description === stock.description) {
+              await Products.updateAsync(product._id, {
+                $set: { description: null },
+              });
+            }
+            return;
+          }
+          await Stocks.updateAsync(component.stockId, {
+            $set: { description: product.description },
+          });
+          await Products.updateAsync(product._id, {
+            $set: { description: null },
+          });
+        }
+      }),
+    );
+    await Promise.all(
+      (await Stocks.find().fetchAsync()).map(async (stock) => {
+        if (stock.brandName && stock.name.startsWith(stock.brandName)) {
+          const nameWithoutBrandName = stock.name
+            .replace(stock.brandName, "")
+            .trim();
+          if (nameWithoutBrandName) {
+            await Stocks.updateAsync(stock._id, {
+              $set: { name: nameWithoutBrandName },
+            });
+          }
+        }
+      }),
+    );
+    await Promise.all(
+      (await Products.find().fetchAsync()).map(async (product) => {
+        if (product.components?.length === 1) {
+          const component = product.components[0]!;
+          const stock = await Stocks.findOneAsync({ _id: component.stockId });
+          if (!stock) return;
+          if (!product.name || stock.name) {
+            if (product.name === stock.name) {
+              await Products.updateAsync(product._id, {
+                $set: { name: null },
+              });
+            }
+            return;
+          }
+        }
+      }),
+    );
+
     console.log("Startup statsing");
     console.time("Startup statsing");
     await Promise.all([
@@ -481,9 +572,10 @@ async function calculateDayByDayStats() {
 async function calculateSalesSankeyData() {
   const now = new Date();
 
-  const [camps, allProducts] = await Promise.all([
+  const [camps, allProducts, allStocks] = await Promise.all([
     Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
     Products.find().fetchAsync(),
+    Stocks.find().fetchAsync(),
   ]);
 
   const now2 = new Date();
@@ -603,14 +695,18 @@ async function calculateSalesSankeyData() {
         source: getNode("Non-Alcoholic"),
         target: getNode("Mate"),
         value: productsSold.filter(
-          (product) => !isAlcoholic(product) && isMate(product),
+          (product) =>
+            !isAlcoholic(product) &&
+            isMate(getProductBrandName(product, allStocks) ?? undefined),
         ).length,
       },
       {
         source: getNode("Non-Alcoholic"),
         target: getNode("Non-Mate"),
         value: productsSold.filter(
-          (product) => !isAlcoholic(product) && !isMate(product),
+          (product) =>
+            !isAlcoholic(product) &&
+            !isMate(getProductBrandName(product, allStocks) ?? undefined),
         ).length,
       },
     ]
@@ -663,7 +759,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
     .sort((a, b) => b[1].length - a[1].length)
     .map(([tags, products]) => {
       const productsByBrandName = Object.entries(
-        groupBy(products, ({ brandName }) => brandName),
+        groupBy(products, (product) => getProductBrandName(product, stocks)),
       )
         .sort(([, a], [, b]) => b.length - a.length)
         .map(
@@ -671,7 +767,11 @@ async function calculateMenuDataForLocation(location: ILocation) {
             [
               brand,
               products
-                .sort((a, b) => a.name.localeCompare(b.name))
+                .sort((a, b) =>
+                  getProductName(a, stocks).localeCompare(
+                    getProductName(b, stocks),
+                  ),
+                )
                 .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
                 .map((product) => {
                   const remainingServings =

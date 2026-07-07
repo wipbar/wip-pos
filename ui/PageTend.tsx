@@ -5,8 +5,13 @@ import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Profiler, useEffect, useMemo, useRef, useState } from "react";
 import { useDraggable } from "react-use-draggable-scroll-safe";
-import type { ProductID } from "../api/products";
+import {
+  getProductBrandName,
+  getProductName,
+  type ProductID,
+} from "../api/products";
 import Sales from "../api/sales";
+import Stocks from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useEvent from "../hooks/useEvent";
@@ -24,6 +29,7 @@ import ProductPicker from "./ProductPicker";
 function MostRecentSale() {
   const currentCamp = useCurrentCamp();
   const { location } = useCurrentLocation(true);
+  const stocks = useFind(() => Stocks.find(), []);
   const [sale] = useFind(
     () =>
       Sales.find(
@@ -58,12 +64,15 @@ function MostRecentSale() {
           padding-bottom: 20px;
         `}
       >
-        {sale.products.map((product, i) => (
-          <li key={sale._id + i + product._id}>
-            {product.brandName ? <>{product.brandName} - </> : null}{" "}
-            {product.name}
-          </li>
-        ))}
+        {sale.products.map((product, i) => {
+          const name = getProductName(product, stocks);
+          const brandName = getProductBrandName(product, stocks);
+          return (
+            <li key={sale._id + i + product._id}>
+              {brandName ? <>{brandName} - </> : null} {name}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

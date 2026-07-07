@@ -5,6 +5,8 @@ import { useFind } from "meteor/react-meteor-data";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import Products, {
+  getProductBrandName,
+  getProductName,
   getProductSize,
   type IProduct,
   type ProductID,
@@ -36,6 +38,8 @@ function CartViewProductsItem({
   );
 
   const productSize = getProductSize(product);
+  const productName = getProductName(product, stocks);
+  const productBrandName = getProductBrandName(product, stocks);
 
   return (
     <li
@@ -83,13 +87,13 @@ function CartViewProductsItem({
             line-height: 1;
           `}
         >
-          {product.brandName ? (
+          {productBrandName ? (
             <>
-              <small>{product.brandName}</small>
+              <small>{productBrandName}</small>
               <br />
             </>
           ) : null}
-          {product.name}
+          {productName}
           {productSize ? (
             <small>
               {" "}
@@ -639,12 +643,19 @@ export default function CartView({
             </small>{" "}
             for
             <ul>
-              {cart?.productIds.map((id, i) => (
-                <li key={i + id}>
-                  {products.find(({ _id }) => _id === id)?.brandName}{" "}
-                  {products.find(({ _id }) => _id === id)?.name}
-                </li>
-              ))}
+              {cart?.productIds.map((id, i) => {
+                const product = products.find(({ _id }) => _id === id);
+                if (!product) {
+                  console.warn("Product not found for id", id);
+                  return null;
+                }
+                return (
+                  <li key={i + id}>
+                    {getProductBrandName(product, stocks)}{" "}
+                    {getProductName(product, stocks)}
+                  </li>
+                );
+              })}
             </ul>
             <br />
             <button

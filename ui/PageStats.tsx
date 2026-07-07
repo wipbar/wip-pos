@@ -132,8 +132,8 @@ export default function PageStats() {
                     key={product._id}
                     product={product}
                     soldOutRatio={stockPercentage}
-                    componentStocks={product.components
-                      ?.map((component) =>
+                    componentStocks={(product.components ?? [])
+                      .map((component) =>
                         stocks.find((stock) => stock._id === component.stockId),
                       )
                       .filter((s): s is IStock => Boolean(s))}

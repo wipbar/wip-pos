@@ -17,7 +17,9 @@ export interface IStock {
   updatedAt?: Date;
   removedAt?: Date;
   barCode?: string;
+  brandName?: string;
   name: string;
+  description?: string;
   packageType: PackageTypeCode | null;
   unitSize: number;
   sizeUnit: SizeUnit;
@@ -41,7 +43,14 @@ export const stocksMethods = {
     }: {
       data: Pick<
         IStock,
-        "barCode" | "name" | "packageType" | "sizeUnit" | "unitSize"
+        | "barCode"
+        | "brandName"
+        | "name"
+        | "description"
+        | "packageType"
+        | "sizeUnit"
+        | "unitSize"
+        | "abv"
       >;
     },
   ) {

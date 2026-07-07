@@ -2,20 +2,25 @@ import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { format } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
-import { lazy, type ReactNode, useState } from "react";
+import { lazy, type ReactNode, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
-import Products, { type ProductID } from "../api/products";
+import CreatableSelect from "react-select/creatable";
+import Products, { getProductBrandName, getProductName, type ProductID } from "../api/products";
 import type { IStock } from "../api/stocks";
+import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
 import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
-import { units } from "../util";
+import { emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
 
 const PageProductsItem = lazy(() => import("./PageProductsItem"));
+
+const toOptions = (items: string[]) =>
+  items.map((item) => ({ label: item, value: item }));
 
 const Label = ({
   label,
@@ -68,13 +73,17 @@ export default function PageStockItem({
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );
+  const stocks = useFind(
+    () => Stocks.find({ removedAt: { $exists: false } }),
+    [],
+  );
 
   const {
     handleSubmit,
     register,
     reset,
     control,
-    formState: { isDirty, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
     setValue,
   } = useForm<
     Partial<IStock> &
@@ -91,6 +100,18 @@ export default function PageStockItem({
       product?.components?.some(
         (component) => component.stockId === stock?._id,
       ),
+  );
+
+  const allBrandNames = useMemo(
+    () =>
+      Array.from(
+        [...products, ...stocks].reduce((memo, doc) => {
+          if (doc.brandName) memo.add(doc.brandName);
+
+          return memo;
+        }, new Set<string>()),
+      ).filter(Boolean),
+    [products, stocks],
   );
 
   return (
@@ -119,12 +140,45 @@ export default function PageStockItem({
           align-content: center;
         `}
       >
+        <Label label="Brand">
+          <Controller
+            name="brandName"
+            control={control}
+            rules={{ required: true }}
+            defaultValue={stock?.brandName || ""}
+            render={({ field: { onBlur, value } }) => (
+              <CreatableSelect
+                required
+                value={value ? { value, label: value } : null}
+                isClearable
+                options={toOptions(allBrandNames || emptyArray)}
+                onBlur={onBlur}
+                onChange={(option) =>
+                  setValue("brandName", option?.value || "", {
+                    shouldDirty: true,
+                  })
+                }
+                className={css`
+                  color: black;
+                `}
+              />
+            )}
+          />
+          {errors.brandName?.message}
+        </Label>
         <Label label="Name">
           <input
             required
             type="text"
             defaultValue={stock?.name || ""}
             {...register("name", { required: true })}
+          />
+        </Label>
+        <Label label="Description">
+          <input
+            type="text"
+            defaultValue={stock?.description || ""}
+            {...register("description")}
           />
         </Label>
         <Label label="Packaging">
@@ -332,22 +386,26 @@ export default function PageStockItem({
         >
           <legend>Products using this stock</legend>
           <ul>
-            {productsUsingStock.map((product) => (
-              <li key={product._id}>
-                {product.brandName} - {product.name}{" "}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+            {productsUsingStock.map((product) => {
+              const name = getProductName(product, stocks);
+              const brandName = getProductBrandName(product, stocks);
+              return (
+                <li key={product._id}>
+                  {brandName} - {name}{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
 
-                    setIsEditingProduct(product._id);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faPencilAlt} />
-                </button>
-              </li>
-            ))}
+                      setIsEditingProduct(product._id);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPencilAlt} />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </fieldset>
       ) : null}

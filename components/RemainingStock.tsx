@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Products, { type IProduct } from "../api/products";
+import Products, { getProductName, type IProduct } from "../api/products";
 import Sales from "../api/sales";
 import Stocks, {
   getRemainingServings,
@@ -145,7 +145,7 @@ export default function RemainingStock() {
                 type="monotone"
                 key={product._id}
                 dataKey={product._id}
-                name={product.name}
+                name={getProductName(product, stocks)}
                 dot={false}
                 connectNulls
               />

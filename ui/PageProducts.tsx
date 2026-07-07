@@ -18,6 +18,9 @@ import Products, {
   type IProduct,
   type ProductID,
   getProductABV,
+  getProductBrandName,
+  getProductDescription,
+  getProductName,
   getProductSize,
   isAlcoholic,
 } from "../api/products";
@@ -546,6 +549,10 @@ export default function PageProducts() {
                   location && product.locationIds?.includes(location?._id);
 
                 const productAbv = getProductABV(product, stocks);
+                const productDescription = getProductDescription(
+                  product,
+                  stocks,
+                );
 
                 return (
                   <tr key={product._id}>
@@ -610,9 +617,9 @@ export default function PageProducts() {
                       </button>
                     </td>
                     <td>
-                      <small>{product.brandName}</small>
+                      <small>{getProductBrandName(product, stocks)}</small>
                       <br />
-                      <b>{product.name}</b>
+                      <b>{getProductName(product, stocks)}</b>
                       <br />
                       {getProductSize(product)?.unitSize}
                       {getProductSize(product)?.sizeUnit}
@@ -655,7 +662,7 @@ export default function PageProducts() {
                         </span>
                       ))}
                     </td>
-                    <td>{product.description}</td>
+                    <td>{productDescription}</td>
                     <td>
                       {typeof productAbv === "number" &&
                       !Number.isNaN(productAbv)
@@ -672,7 +679,7 @@ export default function PageProducts() {
                             if (
                               window.confirm(
                                 "Are you sure you want to delete " +
-                                  product.name,
+                                  getProductName(product, stocks),
                               )
                             ) {
                               await removeProduct({ productId: product._id });

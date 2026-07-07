@@ -16,10 +16,12 @@ import Products, {
   type IProduct,
   type ProductID,
   getProductBarCode,
+  getProductBrandName,
+  getProductName,
   getProductSize,
   isAlcoholic,
 } from "../api/products";
-import Stocks from "../api/stocks";
+import Stocks, { type IStock } from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
@@ -84,11 +86,13 @@ function ProductPickerProductStock({ product }: { product: IProduct }) {
 
 function ProductPickerProduct({
   product,
+  stocks,
   onPickedProduct,
   onLongPressedProduct,
   showItemDetails,
 }: {
   product: IProduct;
+  stocks: IStock[];
   onPickedProduct: (product: IProduct) => void;
   onLongPressedProduct: (product: IProduct) => void;
   showItemDetails: boolean;
@@ -107,6 +111,9 @@ function ProductPickerProduct({
     () => sortTags(product.tags || emptyArray),
     [product],
   );
+
+  const brandName = getProductBrandName(product, stocks);
+  const name = getProductName(product, stocks);
 
   return (
     <button
@@ -151,10 +158,10 @@ function ProductPickerProduct({
           flex-direction: column;
         `}
       >
-        {product.brandName ? (
+        {brandName ? (
           <div>
             <small>
-              <small>{product.brandName}</small>
+              <small>{brandName}</small>
             </small>
           </div>
         ) : null}
@@ -164,7 +171,7 @@ function ProductPickerProduct({
               font-size: 1.1em;
             `}
           >
-            {product.name}
+            {name}
           </b>
           {showItemDetails && (
             <>
@@ -314,12 +321,14 @@ export default function ProductPicker({
   const sortedProducts = useMemo(
     () =>
       Array.from(products)
-        .sort((a, b) => a.name.localeCompare(b.name))
+        .sort((a, b) =>
+          getProductName(a, stocks).localeCompare(getProductName(b, stocks)),
+        )
         .sort((a, b) => Number(a.tap || 0) - Number(b.tap || 0))
         .sort((a, b) =>
           tagsToString(a.tags).localeCompare(tagsToString(b.tags)),
         ),
-    [products],
+    [products, stocks],
   );
 
   const filteredAndSortedProducts = useMemo(
@@ -477,6 +486,7 @@ export default function ProductPicker({
           <ProductPickerProduct
             key={product._id}
             product={product}
+            stocks={stocks}
             onPickedProduct={handlePickedProduct}
             onLongPressedProduct={handleLongPressedProduct}
             showItemDetails={showItemDetails}

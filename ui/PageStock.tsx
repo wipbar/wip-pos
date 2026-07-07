@@ -271,7 +271,7 @@ export default function PageStock() {
                     </td>
                     <td align="center">{stock.barCode ? "✅" : "❌"}</td>
                     <td>
-                      {stock.name}{" "}
+                      {stock.brandName} {stock.name}{" "}
                       <small>
                         <small>
                           Part of{" "}

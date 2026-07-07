@@ -11,7 +11,14 @@ import {
   useEffect,
   useMemo,
 } from "react";
-import { getProductABV, getProductSize, type IProduct } from "../api/products";
+import {
+  getProductABV,
+  getProductBrandName,
+  getProductDescription,
+  getProductName,
+  getProductSize,
+  type IProduct,
+} from "../api/products";
 import Stocks, { type IStock } from "../api/stocks";
 import Styles from "../api/styles";
 import {
@@ -116,7 +123,7 @@ export function ProductsItem({
   servingTime,
 }: {
   product: IProduct;
-  componentStocks?: IStock[];
+  componentStocks: IStock[];
   productSpark?: (readonly [number, number])[];
   soldOutRatio?: number | null;
   servingTime?: number;
@@ -125,13 +132,17 @@ export function ProductsItem({
 }) {
   const currentCamp = useCurrentCamp();
 
+  const productName = getProductName(product, componentStocks);
+  const productBrandName = getProductBrandName(product, componentStocks);
+  const productDescription = getProductDescription(product, componentStocks);
   const productSize = getProductSize(product);
   const productAbv = getProductABV(product, componentStocks);
+
   const subTexts = useMemo(
     () =>
       [
-        showBrandName ? product.brandName : null,
-        !showBrandName ? product.description || null : null,
+        showBrandName ? productBrandName : null,
+        !showBrandName ? productDescription || null : null,
         productAbv
           ? `${
               product.components && product.components.length > 1 ? "~" : ""
@@ -168,7 +179,16 @@ export function ProductsItem({
             ))
           : null,
       ].filter((t): t is NonNullable<typeof t> => Boolean(t)),
-    [product, productAbv, productSize, showBrandName, hidePrice],
+    [
+      showBrandName,
+      productBrandName,
+      productDescription,
+      product.components,
+      product.tags,
+      productAbv,
+      productSize,
+      hidePrice,
+    ],
   );
 
   return (
@@ -254,7 +274,7 @@ export function ProductsItem({
               line-height: 0.8;
             `}
           >
-            {product.name}{" "}
+            {productName}{" "}
             <small
               style={{
                 fontWeight: "normal",
@@ -549,6 +569,9 @@ export default function PageMenu() {
               font-size: 2.25em;
               text-align: center;
               color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
+              display: flex;
+              justify-content: center;
+              gap: 0.1em;
             `}
           >
             {sortTags(tags.split(",") || emptyArray).map((tag) => (
@@ -558,7 +581,7 @@ export default function PageMenu() {
                   display: inline-block;
                   background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
                   color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
-                  padding: 0 3px;
+                  padding: 0 0.2em;
                   border-radius: 4px;
                   margin-left: 2px;
                 `}
@@ -701,8 +724,8 @@ export default function PageMenu() {
                           <ProductsItem
                             key={product._id}
                             product={product}
-                            componentStocks={product.components
-                              ?.map((component) =>
+                            componentStocks={(product.components ?? [])
+                              .map((component) =>
                                 stocks.find(
                                   (stock) => stock._id === component.stockId,
                                 ),

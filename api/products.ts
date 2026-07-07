@@ -13,9 +13,9 @@ export interface IProduct {
   createdAt: Date;
   updatedAt?: Date;
   removedAt?: Date;
-  brandName: string;
-  name: string;
-  description?: string;
+  brandName: string | null;
+  name: string | null;
+  description?: string | null;
   salePrice?: number;
   unitSize?: number | string | null; // null means based on components
   sizeUnit?: SizeUnit | null; // null means based on components
@@ -52,9 +52,9 @@ export const productsMethods = {
     return await Products.insertAsync({
       createdAt,
       updatedAt: createdAt,
-      brandName: data.brandName.trim(),
-      name: data.name.trim(),
-      description: data.description?.trim(),
+      brandName: data.brandName?.trim() ?? null,
+      name: data.name?.trim() ?? null,
+      description: data.description?.trim() ?? null,
       salePrice: data.salePrice,
       unitSize:
         data.unitSize === "" ||
@@ -160,13 +160,65 @@ export function isAlcoholic(product: IProduct) {
   );
 }
 
-export function isMate(product: IProduct) {
-  return (
-    product.brandName?.includes("Mate") ||
-    product.brandName?.includes("Mio Mio")
-  );
+export function isMate(brandName?: string) {
+  return brandName?.includes("Mate") || brandName?.includes("Mio Mio");
 }
+export function getProductDescription(
+  product: Pick<IProduct, "description" | "components">,
+  stocks: Pick<IStock, "description" | "_id">[],
+) {
+  const singleComponent =
+    product?.components?.length === 1 &&
+    product?.components?.find(
+      (component) =>
+        stocks.find(({ _id }) => _id === component.stockId)?.description,
+    );
+  const componentStock = singleComponent
+    ? stocks.find(({ _id }) => _id === singleComponent.stockId)
+    : undefined;
 
+  return product?.description ?? componentStock?.description ?? "";
+}
+export function getProductBrandName(
+  product: Pick<IProduct, "brandName" | "components">,
+  stocks: Pick<IStock, "brandName" | "_id">[],
+) {
+  const singleComponent =
+    product?.components?.length === 1 &&
+    product?.components?.find(
+      (component) =>
+        stocks.find(({ _id }) => _id === component.stockId)?.brandName,
+    );
+  const componentStock = singleComponent
+    ? stocks.find(({ _id }) => _id === singleComponent.stockId)
+    : undefined;
+
+  return product?.brandName ?? componentStock?.brandName ?? "";
+}
+export function getProductName(
+  product: Pick<IProduct, "name" | "components">,
+  stocks: Pick<IStock, "name" | "_id">[],
+) {
+  const singleComponent =
+    product?.components?.length === 1 &&
+    product?.components?.find(
+      (component) => stocks.find(({ _id }) => _id === component.stockId)?.name,
+    );
+  const componentStock = singleComponent
+    ? stocks.find(({ _id }) => _id === singleComponent.stockId)
+    : undefined;
+
+  const name = product?.name ?? componentStock?.name;
+
+  if (!name) {
+    throw new Error(
+      `Product name is missing for product ${JSON.stringify(product)}
+      } with components: ${JSON.stringify(product.components)}`,
+    );
+  }
+
+  return name;
+}
 export function getProductSize(
   product: Pick<IProduct, "unitSize" | "sizeUnit" | "components">,
 ): {
@@ -208,7 +260,7 @@ export function getProductSize(
 
 export function getProductABV(
   product: Pick<IProduct, "abv" | "components">,
-  componentStocks?: Pick<IStock, "abv" | "_id">[],
+  componentStocks: Pick<IStock, "abv" | "_id">[],
 ): number | null {
   if (product.abv !== null && !isNaN(Number(product.abv))) {
     return Number(product.abv);

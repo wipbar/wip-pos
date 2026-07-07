@@ -1,8 +1,14 @@
 import express from "express";
 import { WebApp } from "meteor/webapp";
 import Camps from "../api/camps";
-import Products, { ProductID } from "../api/products";
+import Products, {
+  getProductBrandName,
+  getProductDescription,
+  getProductName,
+  ProductID,
+} from "../api/products";
 import Sales from "../api/sales";
+import Stocks from "../api/stocks";
 
 type AsyncRequestHandler = (
   req: express.Request,
@@ -96,6 +102,8 @@ interface PosProductCost {
       return;
     }
 
+    const stocks = await Stocks.find().fetchAsync();
+
     const campSales = await Sales.find({
       timestamp: { $gte: camp.buildup, $lte: camp.teardown },
     }).fetchAsync();
@@ -129,16 +137,19 @@ interface PosProductCost {
       _id: { $in: Array.from(productIds) },
     }).fetchAsync();
     for (const product of products) {
+      const productBrandName = getProductBrandName(product, stocks);
+      const productDescription = getProductDescription(product, stocks);
+      const productName = getProductName(product, stocks);
       pos_product.push({
         product_id: product._id,
-        brand_name: product.brandName,
-        name: product.name,
-        description: product.description ?? "",
+        brand_name: productBrandName ?? "",
+        name: productName,
+        description: productDescription ?? "",
         sales_price: product.salePrice ?? 0,
         // TODO: Use derived unit size and unit type from product.components if available ?
         unit_size: isNaN(Number(product.unitSize))
-        ? 0
-        : Number(product.unitSize),
+          ? 0
+          : Number(product.unitSize),
         size_unit: product.sizeUnit ?? "",
         abv: product.abv ?? 0,
         tags: product.tags ?? [],

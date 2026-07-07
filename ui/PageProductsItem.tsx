@@ -15,6 +15,9 @@ import Locations, { type ILocation } from "../api/locations";
 import Products, {
   getProductABV,
   getProductBarCode,
+  getProductBrandName,
+  getProductDescription,
+  getProductName,
   getProductSize,
   type IProduct,
   isAlcoholic,
@@ -88,6 +91,8 @@ export default function PageProductsItem({
   const [editProduct] = useMethod("Products.editProduct");
   const [isEditingStock, setIsEditingStock] = useState<null | StockID>(null);
   const products = useFind(() => Products.find(), []);
+  const stocks = useFind(() => Stocks.find(), []);
+
   const allTags = useMemo(
     () =>
       Array.from(
@@ -102,13 +107,13 @@ export default function PageProductsItem({
   const allBrandNames = useMemo(
     () =>
       Array.from(
-        products.reduce((memo, product) => {
-          if (product.brandName) memo.add(product.brandName);
+        [...products, ...stocks].reduce((memo, doc) => {
+          if (doc.brandName) memo.add(doc.brandName);
 
           return memo;
         }, new Set<string>()),
       ).filter(Boolean),
-    [products],
+    [products, stocks],
   );
 
   const {
@@ -117,40 +122,63 @@ export default function PageProductsItem({
     control,
     reset,
     watch,
-    formState: { errors, isDirty, isSubmitting },
+    formState: { isDirty, isSubmitting },
     setValue,
   } = useForm<
-    Partial<IProduct> & { name: string; brandName: string; buyPrice: number }
-  >({ defaultValues: { components: product?.components, ...defaultValues } });
+    Partial<IProduct> & {
+      name: string | null;
+      brandName: string | null;
+      buyPrice: number;
+    }
+  >({
+    defaultValues: {
+      components: product?.components,
+      brandName: product?.brandName,
+      name: product?.name,
+      description: product?.description,
+      ...defaultValues,
+    },
+  });
 
   const { fields, append, update, remove } = useFieldArray({
     control,
     name: "components",
   });
 
-  const stocks = useFind(
-    () => Stocks.find({}, { sort: { name: -1, createdAt: -1 } }),
-    [],
-  );
   const isOnMenu = location && product?.locationIds?.includes(location?._id);
 
   const components = watch("components");
   const abv = watch("abv");
   const unitSize = watch("unitSize");
   const sizeUnit = watch("sizeUnit");
+  const name = watch("name");
+  const brandName = watch("brandName");
 
+  const nameDerivedFromComponents = useMemo(
+    () => getProductName({ name, components }, stocks),
+    [name, components, stocks],
+  );
+  const brandNameDerivedFromComponents = useMemo(
+    () => getProductBrandName({ brandName, components }, stocks),
+    [brandName, components, stocks],
+  );
   const sizeDerivedFromComponents = useMemo(
     () => getProductSize({ components, unitSize, sizeUnit }),
     [components, unitSize, sizeUnit],
   );
-
   const abvDerivedFromComponents = useMemo(
-    () =>
-      getProductABV(
-        { abv, components },
-        stocks.map(({ _id, abv }) => ({ _id, abv })),
-      ),
+    () => getProductABV({ abv, components }, stocks),
     [abv, components, stocks],
+  );
+
+  const watchedDescription = watch("description");
+  const descriptionDerivedFromComponents = useMemo(
+    () =>
+      getProductDescription(
+        { description: watchedDescription, components },
+        stocks,
+      ),
+    [components, stocks, watchedDescription],
   );
 
   return (
@@ -183,38 +211,112 @@ export default function PageProductsItem({
         `}
       >
         <Label label="Brand">
-          <Controller
-            name="brandName"
-            control={control}
-            rules={{ required: true }}
-            defaultValue={product?.brandName || ""}
-            render={({ field: { onBlur, value } }) => (
-              <CreatableSelect
-                required
-                value={value ? { value, label: value } : null}
-                isClearable
-                options={toOptions(allBrandNames || emptyArray)}
-                onBlur={onBlur}
-                onChange={(option) =>
-                  setValue("brandName", option?.value || "", {
-                    shouldDirty: true,
-                  })
-                }
-                className={css`
-                  color: black;
-                `}
+          {watch("brandName") != null || components?.length !== 1 ? (
+            <div
+              className={css`
+                display: flex;
+              `}
+            >
+              <Controller
+                name="brandName"
+                control={control}
+                rules={{ required: true }}
+                defaultValue={product?.brandName || ""}
+                render={({ field: { onBlur, value } }) => (
+                  <CreatableSelect
+                    required
+                    value={value ? { value, label: value } : null}
+                    isClearable
+                    options={toOptions(allBrandNames || emptyArray)}
+                    onBlur={onBlur}
+                    onChange={(option) =>
+                      setValue("brandName", option?.value || "", {
+                        shouldDirty: true,
+                      })
+                    }
+                    className={css`
+                      color: black;
+                      flex: 1;
+                    `}
+                  />
+                )}
               />
-            )}
-          />
-          {errors.brandName?.message}
+              {components?.length === 1 &&
+              stocks.find(({ _id }) => _id === components[0]!.stockId)
+                ?.brandName ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue("brandName", null, { shouldDirty: true });
+                  }}
+                  className={css`
+                    flex: 0.25;
+                  `}
+                >
+                  auto
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <div>
+              {brandNameDerivedFromComponents}
+              <button
+                type="button"
+                onClick={() => {
+                  setValue(
+                    "brandName",
+                    product?.brandName ??
+                      brandNameDerivedFromComponents ??
+                      null,
+                    { shouldDirty: true },
+                  );
+                }}
+              >
+                <FontAwesomeIcon icon={faPencilAlt} />
+              </button>
+            </div>
+          )}
         </Label>
         <Label label="Name">
-          <input
-            required
-            type="text"
-            defaultValue={product?.name || ""}
-            {...register("name", { required: true })}
-          />
+          {watch("name") == null ? (
+            <div>
+              <code>{nameDerivedFromComponents}</code>
+              <small> (via component)</small>{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setValue(
+                    "name",
+                    product?.name ?? nameDerivedFromComponents ?? "",
+                    { shouldDirty: true },
+                  );
+                }}
+              >
+                <FontAwesomeIcon icon={faPencilAlt} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <input
+                type="text"
+                defaultValue={product?.name || ""}
+                {...register("name")}
+              />
+              {nameDerivedFromComponents ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue("name", null, { shouldDirty: true });
+                  }}
+                  className={css`
+                    flex: 0.25;
+                  `}
+                >
+                  auto
+                </button>
+              ) : null}
+            </>
+          )}
         </Label>
         <Label label="Price">
           <input
@@ -292,6 +394,9 @@ export default function PageProductsItem({
                     setValue("unitSize", null, { shouldDirty: true });
                     setValue("sizeUnit", undefined, { shouldDirty: true });
                   }}
+                  className={css`
+                    flex: 0.25;
+                  `}
                 >
                   auto
                 </button>
@@ -334,6 +439,9 @@ export default function PageProductsItem({
                   onClick={() => {
                     setValue("abv", null, { shouldDirty: true });
                   }}
+                  className={css`
+                    flex: 0.25;
+                  `}
                 >
                   auto
                 </button>
@@ -342,11 +450,45 @@ export default function PageProductsItem({
           )}
         </Label>
         <Label label="Description">
-          <input
-            type="text"
-            defaultValue={product?.description || ""}
-            {...register("description")}
-          />
+          {watch("description") == null ? (
+            <div>
+              <code>{descriptionDerivedFromComponents}</code>
+              <small> (via component)</small>{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setValue(
+                    "description",
+                    product?.description ?? descriptionDerivedFromComponents,
+                    { shouldDirty: true },
+                  );
+                }}
+              >
+                <FontAwesomeIcon icon={faPencilAlt} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <input
+                type="text"
+                defaultValue={product?.description || ""}
+                {...register("description")}
+              />
+              {descriptionDerivedFromComponents ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue("description", null, { shouldDirty: true });
+                  }}
+                  className={css`
+                    flex: 0.25;
+                  `}
+                >
+                  auto
+                </button>
+              ) : null}
+            </>
+          )}
         </Label>
         <Label label="Bar Code">
           {product?.components?.length === 1 &&
@@ -462,9 +604,9 @@ export default function PageProductsItem({
                 >
                   <ReactSelect
                     value={{
-                      label: `${stock.name} (${stock.unitSize}${
-                        stock.sizeUnit
-                      }, ${packageTypes.find(
+                      label: `${stock.brandName} ${stock.name} (${
+                        stock.unitSize
+                      }${stock.sizeUnit}, ${packageTypes.find(
                         ({ code }) => stock.packageType === code,
                       )?.name})`,
                       value: stock._id,
@@ -483,9 +625,9 @@ export default function PageProductsItem({
                           fields.some(({ stockId }) => stockId !== _id),
                       )
                       .map((stock) => ({
-                        label: `${stock.name} (${stock.unitSize}${
-                          stock.sizeUnit
-                        }, ${packageTypes.find(
+                        label: `${stock.brandName || ""} ${stock.name} (${
+                          stock.unitSize
+                        }${stock.sizeUnit}, ${packageTypes.find(
                           ({ code }) => stock.packageType === code,
                         )?.name})`,
                         value: stock._id,
@@ -600,10 +742,11 @@ export default function PageProductsItem({
                   fields.some(({ stockId }) => stockId !== _id),
               )
               .map((stock) => ({
-                label: `${stock.name} (${stock.unitSize}${
-                  stock.sizeUnit
-                }, ${packageTypes.find(({ code }) => stock.packageType === code)
-                  ?.name})`,
+                label: `${stock.brandName || ""} ${stock.name} (${
+                  stock.unitSize
+                }${stock.sizeUnit}, ${packageTypes.find(
+                  ({ code }) => stock.packageType === code,
+                )?.name})`,
                 value: stock._id,
                 barCode: stock.barCode,
               }))}
@@ -615,6 +758,9 @@ export default function PageProductsItem({
                   unitSize: Number(watch("unitSize")) || stock.unitSize,
                   sizeUnit: watch("sizeUnit") || stock.sizeUnit,
                 });
+                if (!watch("brandName")) {
+                  setValue("brandName", null, { shouldDirty: true });
+                }
               }
             }}
             className={css`
@@ -646,7 +792,9 @@ export default function PageProductsItem({
                 onClick={async () => {
                   if (!product) return;
                   if (
-                    !confirm(`Are you sure you want to clone ${product.name}?`)
+                    !confirm(
+                      `Are you sure you want to clone ${nameDerivedFromComponents}?`,
+                    )
                   )
                     return;
                   await addProduct({ data: { ...omit(product, ["_id"]) } });

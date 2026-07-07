@@ -13,8 +13,13 @@ import sumBy from "lodash/sumBy";
 import { useFind } from "meteor/react-meteor-data";
 import { useMemo } from "react";
 import { isUserResponsible } from "../api/accounts";
-import Products, { type IProduct } from "../api/products";
+import Products, {
+  getProductBrandName,
+  getProductName,
+  type IProduct,
+} from "../api/products";
 import Sales, { type ISale } from "../api/sales";
+import Stocks from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
@@ -73,6 +78,7 @@ export default function PageSales() {
     () => Products.find({ removedAt: { $exists: false } }),
     [],
   );
+  const stocks = useFind(() => Stocks.find(), []);
   const salesByDay = useMemo(
     () =>
       Object.entries(
@@ -180,14 +186,15 @@ export default function PageSales() {
                     </code>
                     <small>{sale.currency}</small>
                     <ul>
-                      {sale.products.map((product, i) => (
-                        <li key={sale._id + i + product._id}>
-                          {product.brandName ? (
-                            <>{product.brandName} - </>
-                          ) : null}{" "}
-                          {product.name}
-                        </li>
-                      ))}
+                      {sale.products.map((product, i) => {
+                        const brandName = getProductBrandName(product, stocks);
+                        const name = getProductName(product, stocks);
+                        return (
+                          <li key={sale._id + i + product._id}>
+                            {brandName ? <>{brandName} - </> : null} {name}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </li>
                 ))}
