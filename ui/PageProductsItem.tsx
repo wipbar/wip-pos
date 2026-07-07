@@ -392,7 +392,7 @@ export default function PageProductsItem({
                   type="button"
                   onClick={() => {
                     setValue("unitSize", null, { shouldDirty: true });
-                    setValue("sizeUnit", undefined, { shouldDirty: true });
+                    setValue("sizeUnit", null, { shouldDirty: true });
                   }}
                   className={css`
                     flex: 0.25;

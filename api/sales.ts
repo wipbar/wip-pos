@@ -323,69 +323,12 @@ if (Meteor.isServer) {
           const component = product.components[0]!;
           const stock = await Stocks.findOneAsync({ _id: component.stockId });
           if (!stock) return;
-          if (!product.brandName || stock.brandName) {
-            return;
-          }
-          await Stocks.updateAsync(component.stockId, {
-            $set: { brandName: product.brandName },
-          });
+          if (component.sizeUnit !== stock.sizeUnit) return;
+          if (component.unitSize !== stock.unitSize) return;
+
           await Products.updateAsync(product._id, {
-            $set: { brandName: null },
+            $set: { sizeUnit: null, unitSize: null },
           });
-        }
-      }),
-    );
-    await Promise.all(
-      (await Products.find().fetchAsync()).map(async (product) => {
-        if (product.components?.length === 1) {
-          const component = product.components[0]!;
-          const stock = await Stocks.findOneAsync({ _id: component.stockId });
-          if (!stock) return;
-          if (!product.description || stock.description) {
-            if (product.description === stock.description) {
-              await Products.updateAsync(product._id, {
-                $set: { description: null },
-              });
-            }
-            return;
-          }
-          await Stocks.updateAsync(component.stockId, {
-            $set: { description: product.description },
-          });
-          await Products.updateAsync(product._id, {
-            $set: { description: null },
-          });
-        }
-      }),
-    );
-    await Promise.all(
-      (await Stocks.find().fetchAsync()).map(async (stock) => {
-        if (stock.brandName && stock.name.startsWith(stock.brandName)) {
-          const nameWithoutBrandName = stock.name
-            .replace(stock.brandName, "")
-            .trim();
-          if (nameWithoutBrandName) {
-            await Stocks.updateAsync(stock._id, {
-              $set: { name: nameWithoutBrandName },
-            });
-          }
-        }
-      }),
-    );
-    await Promise.all(
-      (await Products.find().fetchAsync()).map(async (product) => {
-        if (product.components?.length === 1) {
-          const component = product.components[0]!;
-          const stock = await Stocks.findOneAsync({ _id: component.stockId });
-          if (!stock) return;
-          if (!product.name || stock.name) {
-            if (product.name === stock.name) {
-              await Products.updateAsync(product._id, {
-                $set: { name: null },
-              });
-            }
-            return;
-          }
         }
       }),
     );
