@@ -317,22 +317,6 @@ export let productsRemainingPercent: Awaited<
 > | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
-    await Promise.all(
-      (await Products.find().fetchAsync()).map(async (product) => {
-        if (product.components?.length === 1) {
-          const component = product.components[0]!;
-          const stock = await Stocks.findOneAsync({ _id: component.stockId });
-          if (!stock) return;
-          if (component.sizeUnit !== stock.sizeUnit) return;
-          if (component.unitSize !== stock.unitSize) return;
-
-          await Products.updateAsync(product._id, {
-            $set: { sizeUnit: null, unitSize: null },
-          });
-        }
-      }),
-    );
-
     console.log("Startup statsing");
     console.time("Startup statsing");
     await Promise.all([
