@@ -24,7 +24,13 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
-import { getCorrectTextColor, SizeUnit } from "../util";
+import {
+  emptyArray,
+  getCorrectTextColor,
+  SizeUnit,
+  sortTags,
+  stringToColour,
+} from "../util";
 
 const flows = [
   ...draculaFlow,
@@ -121,26 +127,49 @@ export function ProductsItem({
 
   const productSize = getProductSize(product);
   const productAbv = getProductABV(product, componentStocks);
-  const subTexts = [
-    product.description || null,
-    productAbv
-      ? `${
-          product.components && product.components.length > 1 ? "~" : ""
-        }${productAbv.toLocaleString("da", {
-          maximumSignificantDigits: 2,
-        })}%`
-      : null,
-    productSize && productAbv
-      ? sizeAndAbvToUnit(
-          productSize?.unitSize,
-          productSize?.sizeUnit,
-          productAbv,
-        ).toLocaleString("da", { maximumSignificantDigits: 2 }) + " genstande"
-      : null,
-    productSize && hidePrice
-      ? `${productSize.unitSize}${productSize.sizeUnit}`
-      : null,
-  ].filter(Boolean);
+  const subTexts = useMemo(
+    () =>
+      [
+        showBrandName ? product.brandName : null,
+        !showBrandName ? product.description || null : null,
+        productAbv
+          ? `${
+              product.components && product.components.length > 1 ? "~" : ""
+            }${productAbv.toLocaleString("da", {
+              maximumSignificantDigits: 2,
+            })}%`
+          : null,
+        productSize && productAbv
+          ? sizeAndAbvToUnit(
+              productSize?.unitSize,
+              productSize?.sizeUnit,
+              productAbv,
+            ).toLocaleString("da", { maximumSignificantDigits: 2 }) +
+            " genstande"
+          : null,
+        productSize && hidePrice
+          ? `${productSize.unitSize}${productSize.sizeUnit}`
+          : null,
+        showBrandName
+          ? sortTags(product.tags || emptyArray).map((tag) => (
+              <span
+                key={tag}
+                className={css`
+                  display: inline-block;
+                  background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
+                  color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
+                  padding: 0 3px;
+                  border-radius: 4px;
+                  margin-left: 2px;
+                `}
+              >
+                {tag.trim()}
+              </span>
+            ))
+          : null,
+      ].filter((t): t is NonNullable<typeof t> => Boolean(t)),
+    [product, productAbv, productSize, showBrandName, hidePrice],
+  );
 
   return (
     <div
@@ -174,19 +203,19 @@ export function ProductsItem({
                               z-index: 0;
                             `}
                           />*/}
-      {soldOutRatio !== undefined &&
-      soldOutRatio !== null &&
-      !Number.isNaN(soldOutRatio) ? (
-        <div
-          className={css`
-            background: red;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 4px;
-          `}
-        >
+      <div
+        className={css`
+          background: red;
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 4px;
+        `}
+      >
+        {soldOutRatio !== undefined &&
+        soldOutRatio !== null &&
+        !Number.isNaN(soldOutRatio) ? (
           <div
             className={css`
               background: rgb(0, 255, 0);
@@ -196,9 +225,20 @@ export function ProductsItem({
               bottom: 0;
               height: ${(1 - soldOutRatio) * 100}%;
             `}
-          ></div>
-        </div>
-      ) : null}
+          />
+        ) : (
+          <div
+            className={css`
+              background: rgb(127, 127, 127);
+              position: absolute;
+              right: 0;
+              left: 0;
+              bottom: 0;
+              height: 100%;
+            `}
+          />
+        )}
+      </div>
       <div
         className={css`
           flex: 1;
@@ -222,14 +262,20 @@ export function ProductsItem({
                 display: "inline-block",
               }}
             >
-              {showBrandName
-                ? product.brandName
-                : subTexts.map((thing, i) => (
-                    <Fragment key={thing}>
-                      {i > 0 ? ", " : null}
-                      <small key={thing}>{thing}</small>
-                    </Fragment>
-                  ))}
+              {subTexts.map((thing, i) => (
+                <Fragment
+                  key={typeof thing === "string" ? thing : thing[0]?.key}
+                >
+                  {i > 0 ? (
+                    typeof thing === "string" ? (
+                      <small>, </small>
+                    ) : (
+                      <small> </small>
+                    )
+                  ) : null}
+                  <small>{thing}</small>
+                </Fragment>
+              ))}
               {servingTime ? (
                 <>
                   ,{" "}

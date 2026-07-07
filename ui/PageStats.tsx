@@ -2,6 +2,7 @@ import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
 import { useCallback, useEffect } from "react";
 import Products from "../api/products";
+import Stocks, { IStock } from "../api/stocks";
 import Styles from "../api/styles";
 import CampByCamp from "../components/CampByCamp";
 import DayByDay from "../components/DayByDay";
@@ -18,6 +19,10 @@ export default function PageStats() {
 
   const products = useFind(
     () => Products.find({ removedAt: { $exists: false } }),
+    [],
+  );
+  const stocks = useFind(
+    () => Stocks.find({ removedAt: { $exists: false } }),
     [],
   );
 
@@ -93,7 +98,10 @@ export default function PageStats() {
         )}
         <ul
           className={css`
+            display: flex;
+            flex-direction: column;
             padding: 0;
+            gap: 1px;
           `}
         >
           {mostSoldData.length ? (
@@ -124,6 +132,11 @@ export default function PageStats() {
                     key={product._id}
                     product={product}
                     soldOutRatio={stockPercentage}
+                    componentStocks={product.components
+                      ?.map((component) =>
+                        stocks.find((stock) => stock._id === component.stockId),
+                      )
+                      .filter((s): s is IStock => Boolean(s))}
                     showBrandName
                     hidePrice
                   />
