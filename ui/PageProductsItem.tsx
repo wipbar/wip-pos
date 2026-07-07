@@ -650,6 +650,9 @@ export default function PageProductsItem({
                 });
               }
             }}
+            className={css`
+              color: black;
+            `}
           />
         </fieldset>
         <hr />
