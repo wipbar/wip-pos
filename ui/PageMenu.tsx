@@ -551,7 +551,21 @@ export default function PageMenu() {
               color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
             `}
           >
-            {tags}
+            {sortTags(tags.split(",") || emptyArray).map((tag) => (
+              <span
+                key={tag}
+                className={css`
+                  display: inline-block;
+                  background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
+                  color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
+                  padding: 0 3px;
+                  border-radius: 4px;
+                  margin-left: 2px;
+                `}
+              >
+                {tag.trim()}
+              </span>
+            ))}
           </h1>
           <SparkLine
             className={css`
