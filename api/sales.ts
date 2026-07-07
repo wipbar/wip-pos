@@ -299,6 +299,16 @@ export let productsRemainingPercent: Awaited<
 > | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
+    // Migrate "Tap: " prefix from product names to tags
+    await Promise.all(
+      (await Products.find({ name: { $regex: "Tap: " } }).fetchAsync()).map(
+        (p) =>
+          Products.updateAsync(p._id, {
+            $set: { name: p.name.replace("Tap: ", "") },
+          }),
+      ),
+    );
+
     console.log("Startup statsing");
     console.time("Startup statsing");
     await Promise.all([
