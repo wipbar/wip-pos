@@ -299,6 +299,35 @@ export let productsRemainingPercent: Awaited<
 > | null = null;
 if (Meteor.isServer) {
   Meteor.startup(async () => {
+    await Promise.all(
+      (await Products.find({ components: { $size: 1 } }).fetchAsync()).map(
+        async (p) => {
+          const stock = await Stocks.findOneAsync({
+            _id: p.components![0]!.stockId,
+          });
+          if (
+            stock &&
+            p.abv !== null &&
+            (!stock.abv || Number(stock.abv) === Number(p.abv))
+          ) {
+            await Stocks.updateAsync(
+              { _id: stock._id },
+              {
+                $set: {
+                  abv: stock.abv
+                    ? Number(stock.abv)
+                    : p.abv
+                    ? Number(p.abv)
+                    : undefined,
+                },
+              },
+            );
+            await Products.updateAsync({ _id: p._id }, { $set: { abv: null } });
+          }
+        },
+      ),
+    );
+
     console.log("Startup statsing");
     console.time("Startup statsing");
     await Promise.all([
