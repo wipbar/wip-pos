@@ -205,7 +205,9 @@ export function getProductABV(
   product: IProduct,
   componentStocks?: IStock[],
 ): number | null {
-  if (!isNaN(Number(product.abv))) return Number(product.abv);
+  if (product.abv !== null && !isNaN(Number(product.abv))) {
+    return Number(product.abv);
+  }
 
   const components = product.components;
   if (!components?.length) return null;
@@ -226,13 +228,13 @@ export function getProductABV(
     const componentStock = componentStocks?.find(
       ({ _id }) => _id === component.stockId,
     );
-    if (!componentStock || Number.isNaN(componentStock.abv)) return NaN;
+    if (!componentStock || Number.isNaN(componentStock.abv)) return 0;
     return (
       acc +
       catchNaN(
         () =>
           (convert(component.unitSize, component.sizeUnit).to(sizeUnit) *
-            (componentStock.abv ?? NaN)) /
+            (componentStock.abv ?? 0)) /
           100,
       )
     );

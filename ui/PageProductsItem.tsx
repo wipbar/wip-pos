@@ -177,7 +177,7 @@ export default function PageProductsItem({
         catchNaN(
           () =>
             (convert(component.unitSize, component.sizeUnit).to(sizeUnit) *
-              (componentStock.abv ?? NaN)) /
+              (componentStock.abv ?? 0)) /
             100,
         )
       );
@@ -333,11 +333,10 @@ export default function PageProductsItem({
           )}
         </Label>
         <Label label="Alcohol %">
-          {abvDerivedFromComponents &&
-          (watch("abv") === null || Number.isNaN(watch("abv"))) ? (
+          {watch("abv") === null || Number.isNaN(watch("abv")) ? (
             <div>
               <code>
-                {abvDerivedFromComponents.toLocaleString("en-DK", {
+                {(abvDerivedFromComponents || 0).toLocaleString("en-DK", {
                   maximumFractionDigits: 2,
                 })}
                 %
@@ -346,7 +345,7 @@ export default function PageProductsItem({
               <button
                 type="button"
                 onClick={() => {
-                  setValue("abv", abvDerivedFromComponents, {
+                  setValue("abv", abvDerivedFromComponents || 0, {
                     shouldDirty: true,
                   });
                 }}
