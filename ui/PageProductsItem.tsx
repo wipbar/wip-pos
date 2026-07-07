@@ -650,6 +650,8 @@ export default function PageProductsItem({
                   )
                     return;
                   await addProduct({ data: { ...omit(product, ["_id"]) } });
+
+                  onCancel?.();
                 }}
                 type="button"
                 className={css`
