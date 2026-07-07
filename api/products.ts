@@ -68,6 +68,9 @@ export const productsMethods = {
         Number.isNaN(data.unitSize)
           ? null
           : data.sizeUnit,
+      tap: data.tap,
+      barCode: data.barCode,
+      locationIds: data.locationIds,
       components: data.components,
       abv: data.abv || undefined,
       tags:
