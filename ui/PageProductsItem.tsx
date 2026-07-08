@@ -302,7 +302,7 @@ export default function PageProductsItem({
                 defaultValue={product?.name || ""}
                 {...register("name")}
               />
-              {nameDerivedFromComponents ? (
+              {nameDerivedFromComponents && components?.length ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -387,7 +387,7 @@ export default function PageProductsItem({
                   />
                 )}
               />
-              {sizeDerivedFromComponents ? (
+              {sizeDerivedFromComponents && components?.length ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -433,7 +433,7 @@ export default function PageProductsItem({
                 defaultValue={product?.abv ?? ""}
                 {...register("abv", { valueAsNumber: true })}
               />
-              {abvDerivedFromComponents ? (
+              {abvDerivedFromComponents && components?.length ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -474,7 +474,7 @@ export default function PageProductsItem({
                 defaultValue={product?.description || ""}
                 {...register("description")}
               />
-              {descriptionDerivedFromComponents ? (
+              {descriptionDerivedFromComponents && components?.length ? (
                 <button
                   type="button"
                   onClick={() => {
