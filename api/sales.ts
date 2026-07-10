@@ -735,7 +735,9 @@ async function calculateMenuDataForLocation(location: ILocation) {
                         ] as const,
                     ),
                     remainingServingsEver !== undefined &&
-                    remainingServings !== undefined
+                    remainingServings !== undefined &&
+                    !Number.isNaN(remainingServings) &&
+                    !Number.isNaN(remainingServingsEver)
                       ? Math.min(
                           1,
                           remainingServingsEver > 0
@@ -961,8 +963,16 @@ async function calculateProductRemainingPercent() {
 
     data.set(
       product._id.toString(),
-      remainingServingsEver
-        ? Math.min(1, 1 - remainingServings! / remainingServingsEver)
+      remainingServingsEver != undefined &&
+        remainingServings != undefined &&
+        !Number.isNaN(remainingServings) &&
+        !Number.isNaN(remainingServingsEver)
+        ? Math.min(
+            1,
+            remainingServingsEver > 0
+              ? 1 - remainingServings / remainingServingsEver
+              : 1,
+          )
         : null,
     );
   }
