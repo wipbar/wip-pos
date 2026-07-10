@@ -746,7 +746,7 @@ export default function PageMenu() {
                           top: 50%;
                           left: 50%;
                           transform: translate(-50%, -50%);
-                          opacity: 0.75;
+                          opacity: 0.5;
                           z-index: 0;
                         `}
                       />
