@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
 import { convert } from "convert";
 import sample from "lodash/sample";
+import uniqBy from "lodash/uniqBy";
 import zip from "lodash/zip";
 import { useFind } from "meteor/react-meteor-data";
 import { darken, lighten, transparentize } from "polished";
@@ -139,6 +140,7 @@ export function ProductsItem({
    * in the database, but should be displayed as one product in the menu.
    */
   sizePrices?: {
+    productId: IProduct["_id"];
     unitSize: IProduct["unitSize"];
     salePrice: IProduct["salePrice"];
   }[];
@@ -344,13 +346,14 @@ export function ProductsItem({
             {(
               sizePrices ?? [
                 {
+                  productId: product._id,
                   salePrice: product.salePrice,
                   unitSize: productSize?.unitSize,
                 },
               ]
             ).map((sizePrice) => (
               <div
-                key={JSON.stringify(sizePrice)}
+                key={sizePrice.productId}
                 className={css`
                   line-height: 1;
                 `}
@@ -428,7 +431,7 @@ export function StockItem({ stock }: { stock: IStock }) {
               {subTexts.map((thing, i) => (
                 <Fragment key={thing}>
                   {i > 0 ? ", " : null}
-                  <small key={thing}>{thing}</small>
+                  <small>{thing}</small>
                 </Fragment>
               ))}
             </small>
@@ -605,7 +608,7 @@ export default function PageMenu() {
             `}
           >
             {sortTags(tags.split(",") || emptyArray).map((tag) => (
-              <>
+              <Fragment key={tag}>
                 {tag === "can" ? (
                   "🥫"
                 ) : tag === "bottle" ? (
@@ -631,7 +634,7 @@ export default function PageMenu() {
                 )}
                 {tag === "cocktail" ? "🍹" : null}
                 {tag === "spirit" ? "🥃" : null}
-              </>
+              </Fragment>
             ))}
           </h1>
           <SparkLine
@@ -775,17 +778,12 @@ export default function PageMenu() {
                                     menuItemTuple[0],
                                   ))
                             ) {
-                              if (Array.isArray(lastProductOrProducts)) {
-                                memo[memo.length - 1]![0] = [
-                                  ...lastProductOrProducts,
-                                  menuItemTuple[0],
-                                ];
-                              } else {
-                                memo[memo.length - 1]![0] = [
-                                  lastProductOrProducts,
-                                  menuItemTuple[0],
-                                ];
-                              }
+                              memo[memo.length - 1]![0] = uniqBy(
+                                Array.isArray(lastProductOrProducts)
+                                  ? [...lastProductOrProducts, menuItemTuple[0]]
+                                  : [lastProductOrProducts, menuItemTuple[0]],
+                                (p) => p._id,
+                              );
                             } else {
                               memo.push(menuItemTuple as (typeof memo)[number]);
                             }
@@ -829,6 +827,7 @@ export default function PageMenu() {
                                 sizePrices={
                                   Array.isArray(productOrProducts)
                                     ? productOrProducts.map((p) => ({
+                                        productId: p._id,
                                         unitSize: getProductSize(p)?.unitSize,
                                         salePrice: p.salePrice ?? NaN,
                                       }))
