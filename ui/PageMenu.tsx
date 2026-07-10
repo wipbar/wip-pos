@@ -240,42 +240,42 @@ export function ProductsItem({
                               z-index: 0;
                             `}
                           />*/}
-      <div
-        className={css`
-          background: red;
-          position: absolute;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          width: 4px;
-        `}
-      >
-        {soldOutRatio !== undefined &&
-        soldOutRatio !== null &&
-        !Number.isNaN(soldOutRatio) ? (
-          <div
-            className={css`
-              background: rgb(0, 255, 0);
-              position: absolute;
-              right: 0;
-              left: 0;
-              bottom: 0;
-              height: ${(1 - soldOutRatio) * 100}%;
-            `}
-          />
-        ) : (
-          <div
-            className={css`
-              background: rgb(127, 127, 127);
-              position: absolute;
-              right: 0;
-              left: 0;
-              bottom: 0;
-              height: 100%;
-            `}
-          />
-        )}
-      </div>
+      {soldOutRatio !== undefined ? (
+        <div
+          className={css`
+            background: red;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 4px;
+          `}
+        >
+          {soldOutRatio !== null && !Number.isNaN(soldOutRatio) ? (
+            <div
+              className={css`
+                background: rgb(0, 255, 0);
+                position: absolute;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                height: ${(1 - soldOutRatio) * 100}%;
+              `}
+            />
+          ) : (
+            <div
+              className={css`
+                background: rgb(127, 127, 127);
+                position: absolute;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                height: 100%;
+              `}
+            />
+          )}
+        </div>
+      ) : null}
       <div
         className={css`
           flex: 1;
