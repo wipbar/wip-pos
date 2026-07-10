@@ -19,6 +19,7 @@ import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import { emptyArray, getCorrectTextColor } from "../util";
 import CartViewOpenedAt from "./CartOpenedAt";
+import { ProductsItem } from "./PageMenu";
 import type { Cart, CartID } from "./PageTend";
 
 function CartViewProductsItem({
@@ -650,10 +651,13 @@ export default function CartView({
                   return null;
                 }
                 return (
-                  <li key={i + id}>
-                    {getProductBrandName(product, stocks)}{" "}
-                    {getProductName(product, stocks)}
-                  </li>
+                  <ProductsItem
+                    key={i + id}
+                    product={product}
+                    componentStocks={stocks}
+                    showBrandName
+                    hidePrice
+                  />
                 );
               })}
             </ul>
