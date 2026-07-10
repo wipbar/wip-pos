@@ -20,6 +20,7 @@ import Products, {
   getProductName,
   getProductSize,
   isAlcoholic,
+  isBasicallySameProduct,
 } from "../api/products";
 import Stocks, { type IStock } from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -45,17 +46,17 @@ const fac = new FastAverageColor();
 
 const collator = new Intl.Collator("en");
 
-function ProductPickerProductStock({ product }: { product: IProduct }) {
-  return null;
-
+function ProductPickerProductStock({ productId }: { productId: ProductID }) {
   const [call, result] = useMethod("Products.getRemainingPercent");
 
   useEffect(() => {
-    void call({ productId: product._id });
-  }, [call, product._id]);
-  useInterval(() => call({ productId: product._id }), 30000);
+    void call({ productId });
+  }, [call, productId]);
+  useInterval(() => call({ productId }), 30000);
 
-  return typeof result.data === "number" ? (
+  const soldOutRatio = result.data;
+
+  return (
     <div
       className={css`
         white-space: nowrap;
@@ -70,42 +71,75 @@ function ProductPickerProductStock({ product }: { product: IProduct }) {
         overflow: hidden;
       `}
     >
-      <div
-        className={css`
-          background: rgb(0, 255, 0);
-          position: absolute;
-          right: 0;
-          left: 0;
-          bottom: 0;
-          height: ${(1 - (result.data ?? NaN)) * 100}%;
-        `}
-      ></div>
+      {soldOutRatio !== undefined &&
+      soldOutRatio !== null &&
+      !Number.isNaN(soldOutRatio) ? (
+        <div
+          className={css`
+            background: rgb(0, 255, 0);
+            position: absolute;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            height: ${(1 - soldOutRatio) * 100}%;
+          `}
+        />
+      ) : (
+        <div
+          className={css`
+            background: rgb(127, 127, 127);
+            position: absolute;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            height: 100%;
+          `}
+        />
+      )}
     </div>
-  ) : null;
+  );
 }
 
 function ProductPickerProduct({
-  product,
+  products,
   stocks,
   onPickedProduct,
   onLongPressedProduct,
   showItemDetails,
 }: {
-  product: IProduct;
+  products: [IProduct, ...IProduct[]];
   stocks: IStock[];
   onPickedProduct: (product: IProduct) => void;
   onLongPressedProduct: (product: IProduct) => void;
   showItemDetails: boolean;
 }) {
-  const handlers = useLongPress(() => onLongPressedProduct(product), {
-    cancelOnMovement: true,
-    cancelOutsideElement: true,
-    onCancel: (_event, meta) => {
-      if (meta.reason === LongPressCallbackReason.CancelledByRelease) {
-        onPickedProduct(product);
+  const product = products[0];
+  const [disambiguationProducts, setDisambiguationProducts] = useState<
+    [IProduct, ...IProduct[]] | null
+  >(null);
+
+  const handlers = useLongPress(
+    () => {
+      if (products.length > 1) {
+        setDisambiguationProducts(products);
+      } else {
+        onLongPressedProduct(product);
       }
     },
-  });
+    {
+      cancelOnMovement: true,
+      cancelOutsideElement: true,
+      onCancel: (_event, meta) => {
+        if (meta.reason === LongPressCallbackReason.CancelledByRelease) {
+          if (products.length > 1) {
+            setDisambiguationProducts(products);
+          } else {
+            onPickedProduct(product);
+          }
+        }
+      },
+    },
+  );
 
   const sortedTags = useMemo(
     () => sortTags(product.tags || emptyArray),
@@ -116,107 +150,145 @@ function ProductPickerProduct({
   const name = getProductName(product, stocks);
 
   return (
-    <button
-      key={product._id}
-      {...handlers()}
-      className={css`
-        background: ${sortedTags.length
-          ? sortedTags.length === 1 && sortedTags[0]
-            ? lighten(0.25, stringToColour(sortedTags[0], 0.9))
-            : `linear-gradient(
+    <>
+      {disambiguationProducts ? (
+        <Modal onDismiss={() => setDisambiguationProducts(null)}>
+          <div
+            className={css`
+              display: grid;
+              grid-gap: 0.5vw 1vw;
+              grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
+              padding: 1vw;
+            `}
+          >
+            {disambiguationProducts.map((product) => (
+              <ProductPickerProduct
+                key={product._id}
+                products={[product]}
+                stocks={stocks}
+                onPickedProduct={(product) => {
+                  setDisambiguationProducts(null);
+                  onPickedProduct(product);
+                }}
+                onLongPressedProduct={(product) => {
+                  setDisambiguationProducts(null);
+                  onLongPressedProduct(product);
+                }}
+                showItemDetails={showItemDetails}
+              />
+            ))}
+          </div>
+        </Modal>
+      ) : null}
+      <button
+        {...handlers()}
+        className={css`
+          background: ${sortedTags.length
+            ? sortedTags.length === 1 && sortedTags[0]
+              ? lighten(0.25, stringToColour(sortedTags[0], 0.9))
+              : `linear-gradient(
           135deg,
           ${sortedTags
             .map((tag) => lighten(0.25, stringToColour(tag, 0.9)))
             .join(", ")} 
         )`
-          : `rgba(255,255,255, 1)`};
-        color: ${sortedTags.length
-          ? getCorrectTextColor(
-              `rgba(${fac
-                .getColorFromArray4(
-                  sortedTags.map((tag) => stringToColours(tag)).flat(),
-                )
-                .toString()})`,
-            )
-          : `rgba(0,0,0, 1)`};
-        border: 2px solid black;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        border-radius: 5px;
-        align-items: center;
-        position: relative;
-      `}
-    >
-      <ProductPickerProductStock product={product} />
-      <div
-        className={css`
-          flex: 1;
+            : `rgba(255,255,255, 1)`};
+          color: ${sortedTags.length
+            ? getCorrectTextColor(
+                `rgba(${fac
+                  .getColorFromArray4(
+                    sortedTags.map((tag) => stringToColours(tag)).flat(),
+                  )
+                  .toString()})`,
+              )
+            : `rgba(0,0,0, 1)`};
+          border: 2px solid black;
           display: flex;
-          justify-content: center;
-          align-items: center;
           flex-direction: column;
+          justify-content: space-between;
+          border-radius: 5px;
+          align-items: center;
+          position: relative;
         `}
       >
-        {brandName ? (
-          <div>
-            <small>
-              <small>{brandName}</small>
-            </small>
-          </div>
-        ) : null}
-        <div>
-          <b
-            className={css`
-              font-size: 1.1em;
-            `}
-          >
-            {name}
-          </b>
-          {showItemDetails && (
-            <>
-              <br />
+        <ProductPickerProductStock productId={product._id} />
+        <div
+          className={css`
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+          `}
+        >
+          {brandName ? (
+            <div>
               <small>
-                <small>
-                  <i>
-                    {getProductSize(product)?.unitSize}
-                    {getProductSize(product)?.sizeUnit}
-                  </i>{" "}
-                  {sortedTags?.map((tag) => (
-                    <span
-                      key={tag}
-                      className={css`
-                        display: inline-block;
-                        background: ${stringToColour(tag) ||
-                        `rgba(0, 0, 0, 0.4)`};
-                        color: ${getCorrectTextColor(stringToColour(tag)) ||
-                        "white"};
-                        padding: 0 3px;
-                        border-radius: 4px;
-                        margin-left: 2px;
-                      `}
-                    >
-                      {tag.trim()}
-                    </span>
-                  ))}{" "}
-                </small>
+                <small>{brandName}</small>
               </small>
-            </>
-          )}
+            </div>
+          ) : null}
+          <div>
+            <b
+              className={css`
+                font-size: 1.1em;
+              `}
+            >
+              {name}
+            </b>
+            {showItemDetails && (
+              <>
+                <br />
+                <small>
+                  <small>
+                    {sortedTags?.map((tag) => (
+                      <span
+                        key={tag}
+                        className={css`
+                          display: inline-block;
+                          background: ${stringToColour(tag) ||
+                          `rgba(0, 0, 0, 0.4)`};
+                          color: ${getCorrectTextColor(stringToColour(tag)) ||
+                          "white"};
+                          padding: 0 3px;
+                          border-radius: 4px;
+                          margin-left: 2px;
+                        `}
+                      >
+                        {tag.trim()}
+                      </span>
+                    ))}{" "}
+                  </small>
+                </small>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-      <div>
-        {showItemDetails && (
-          <span>
-            <code>
-              <b>{product.salePrice}</b>
-            </code>
-            <small>ʜᴀx</small>
-          </span>
+        {products.length > 1 ? (
+          <div>{products.length} variants</div>
+        ) : (
+          <div>
+            <i
+              className={css`
+                font-size: 0.8em;
+              `}
+            >
+              {getProductSize(product)?.unitSize}
+              {getProductSize(product)?.sizeUnit}
+            </i>{" "}
+            {showItemDetails && (
+              <span>
+                <code>
+                  <b>{product.salePrice}</b>
+                </code>
+                <small>ʜᴀx</small>
+              </span>
+            )}
+            {product.tap ? <small> 🚰 {product.tap}</small> : null}
+          </div>
         )}
-        {product.tap ? <small> 🚰 {product.tap}</small> : null}
-      </div>
-    </button>
+      </button>
+    </>
   );
 }
 
@@ -482,16 +554,29 @@ export default function ProductPicker({
           padding: 1vw;
         `}
       >
-        {filteredAndSortedProducts.map((product) => (
-          <ProductPickerProduct
-            key={product._id}
-            product={product}
-            stocks={stocks}
-            onPickedProduct={handlePickedProduct}
-            onLongPressedProduct={handleLongPressedProduct}
-            showItemDetails={showItemDetails}
-          />
-        ))}
+        {filteredAndSortedProducts
+          .reduce((memo: [IProduct, ...IProduct[]][], product) => {
+            if (
+              memo[memo.length - 1]?.[0] &&
+              isBasicallySameProduct(product, memo[memo.length - 1]![0])
+            ) {
+              memo[memo.length - 1]!.push(product);
+            } else {
+              memo.push([product]);
+            }
+
+            return memo;
+          }, [])
+          .map((products) => (
+            <ProductPickerProduct
+              key={products[0]._id}
+              products={products}
+              stocks={stocks}
+              onPickedProduct={handlePickedProduct}
+              onLongPressedProduct={handleLongPressedProduct}
+              showItemDetails={showItemDetails}
+            />
+          ))}
       </div>
     </div>
   );
