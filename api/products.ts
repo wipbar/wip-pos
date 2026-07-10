@@ -335,3 +335,21 @@ export function getProductAverageOrderDuration(
 
   return deltas.reduce((memo, delta) => memo + delta, 0) / deltas.length;
 }
+
+export const isBasicallySameProduct = (a: IProduct, b: IProduct): boolean =>
+  Boolean(
+    ((!a.abv && !b.abv) || a.abv === b.abv) &&
+      a.sizeUnit === b.sizeUnit &&
+      a.name === b.name &&
+      a.brandName === b.brandName &&
+      a.description === b.description &&
+      a.components &&
+      b.components &&
+      a.components?.length === b.components?.length &&
+      a.components?.every((component) => {
+        const nextComponent = b.components?.find(
+          (c) => c.stockId === component.stockId,
+        );
+        return component.sizeUnit === nextComponent?.sizeUnit;
+      }),
+  );

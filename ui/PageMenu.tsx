@@ -6,10 +6,10 @@ import { useFind } from "meteor/react-meteor-data";
 import { darken, lighten, transparentize } from "polished";
 import {
   Fragment,
-  type SVGProps,
   useCallback,
   useEffect,
   useMemo,
+  type SVGProps,
 } from "react";
 import {
   getProductABV,
@@ -17,6 +17,7 @@ import {
   getProductDescription,
   getProductName,
   getProductSize,
+  isBasicallySameProduct,
   type IProduct,
 } from "../api/products";
 import Stocks, { type IStock } from "../api/stocks";
@@ -107,7 +108,11 @@ function SparkLine({
 }
 
 const genstandInCl = 1.5;
-const sizeAndAbvToUnit = (size: number, sizeUnit: SizeUnit, abv: number) => {
+export const sizeAndAbvToUnit = (
+  size: number,
+  sizeUnit: SizeUnit,
+  abv: number,
+) => {
   const sizeInCl = convert(size, sizeUnit).to("cl");
   const alcoholInCl = (sizeInCl * abv) / 100;
   return alcoholInCl / genstandInCl;
@@ -121,6 +126,7 @@ export function ProductsItem({
   showBrandName,
   hidePrice,
   servingTime,
+  sizePrices,
 }: {
   product: IProduct;
   componentStocks: IStock[];
@@ -129,6 +135,13 @@ export function ProductsItem({
   servingTime?: number;
   showBrandName?: boolean;
   hidePrice?: boolean;
+  /** If this is provided, it will override the default size and sale price. This represents multiple size options, which are separate products¨
+   * in the database, but should be displayed as one product in the menu.
+   */
+  sizePrices?: {
+    unitSize: IProduct["unitSize"];
+    salePrice: IProduct["salePrice"];
+  }[];
 }) {
   const currentCamp = useCurrentCamp();
 
@@ -150,6 +163,7 @@ export function ProductsItem({
               maximumSignificantDigits: 2,
             })}%`
           : null,
+        /*
         productSize && productAbv
           ? sizeAndAbvToUnit(
               productSize?.unitSize,
@@ -158,6 +172,7 @@ export function ProductsItem({
             ).toLocaleString("da", { maximumSignificantDigits: 2 }) +
             " genstande"
           : null,
+          */
         productSize && hidePrice
           ? `${productSize.unitSize}${productSize.sizeUnit}`
           : null,
@@ -274,6 +289,11 @@ export function ProductsItem({
               line-height: 0.8;
             `}
           >
+            {product.tap ? (
+              <span>
+                <small>{product.tap}🚰</small>
+              </span>
+            ) : null}{" "}
             {productName}{" "}
             <small
               style={{
@@ -315,29 +335,39 @@ export function ProductsItem({
           <div
             className={css`
               text-align: right;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+              align-items: flex-end;
             `}
           >
-            {productSize ? (
-              <span
-                className={css`
-                  font-size: 0.5em;
-                  vertical-align: top;
-                  margin-right: 0.25em;
-                  line-height: 1.75;
-                `}
-              >{`${productSize.unitSize}${productSize.sizeUnit}`}</span>
-            ) : null}
-            <b>{Number(product.salePrice) || "00"}</b>
-            {product.tap ? (
+            {(
+              sizePrices ?? [
+                {
+                  salePrice: product.salePrice,
+                  unitSize: productSize?.unitSize,
+                },
+              ]
+            ).map((sizePrice) => (
               <div
+                key={JSON.stringify(sizePrice)}
                 className={css`
-                  line-height: 0.5;
-                  white-space: nowrap;
+                  line-height: 1;
                 `}
               >
-                <small>🚰 {product.tap}</small>
+                {sizePrice.unitSize && productSize ? (
+                  <span
+                    className={css`
+                      font-size: 0.5em;
+                      vertical-align: top;
+                      margin-right: 0.25em;
+                      line-height: 1.75;
+                    `}
+                  >{`${sizePrice.unitSize}${productSize.sizeUnit}`}</span>
+                ) : null}
+                <b>{Number(sizePrice.salePrice) || "00"}</b>
               </div>
-            ) : null}
+            ))}
           </div>
         )}
       </div>
@@ -575,19 +605,33 @@ export default function PageMenu() {
             `}
           >
             {sortTags(tags.split(",") || emptyArray).map((tag) => (
-              <span
-                key={tag}
-                className={css`
-                  display: inline-block;
-                  background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
-                  color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
-                  padding: 0 0.2em;
-                  border-radius: 4px;
-                  margin-left: 2px;
-                `}
-              >
-                {tag.trim()}
-              </span>
+              <>
+                {tag === "can" ? (
+                  "🥫"
+                ) : tag === "bottle" ? (
+                  "🍾"
+                ) : tag === "tap" ? (
+                  "🍺"
+                ) : (
+                  <span
+                    key={tag}
+                    className={css`
+                      display: inline-block;
+                      background: ${stringToColour(tag) ||
+                      `rgba(0, 0, 0, 0.4)`};
+                      color: ${getCorrectTextColor(stringToColour(tag)) ||
+                      "white"};
+                      padding: 0 0.2em;
+                      border-radius: 4px;
+                      margin-left: 2px;
+                    `}
+                  >
+                    {tag.trim()}
+                  </span>
+                )}
+                {tag === "cocktail" ? "🍹" : null}
+                {tag === "spirit" ? "🥃" : null}
+              </>
             ))}
           </h1>
           <SparkLine
@@ -714,29 +758,86 @@ export default function PageMenu() {
                         gap: 0.125em;
                       `}
                     >
-                      {products.map(
-                        ([
-                          product,
-                          productSpark,
-                          soldOutRatio,
-                          servingTime,
-                        ]) => (
-                          <ProductsItem
-                            key={product._id}
-                            product={product}
-                            componentStocks={(product.components ?? [])
+                      {products
+                        .reduce(
+                          (memo, menuItemTuple) => {
+                            const lastEntry = memo[memo.length - 1];
+                            const lastProductOrProducts = lastEntry?.[0];
+                            if (
+                              lastEntry &&
+                              lastProductOrProducts &&
+                              (Array.isArray(lastProductOrProducts)
+                                ? lastProductOrProducts.some((p) =>
+                                    isBasicallySameProduct(p, menuItemTuple[0]),
+                                  )
+                                : isBasicallySameProduct(
+                                    lastProductOrProducts,
+                                    menuItemTuple[0],
+                                  ))
+                            ) {
+                              if (Array.isArray(lastProductOrProducts)) {
+                                memo[memo.length - 1]![0] = [
+                                  ...lastProductOrProducts,
+                                  menuItemTuple[0],
+                                ];
+                              } else {
+                                memo[memo.length - 1]![0] = [
+                                  lastProductOrProducts,
+                                  menuItemTuple[0],
+                                ];
+                              }
+                            } else {
+                              memo.push(menuItemTuple as (typeof memo)[number]);
+                            }
+
+                            return memo;
+                          },
+                          [] as [
+                            IProduct | IProduct[],
+                            (readonly [number, number])[],
+                            number | null,
+                            number,
+                          ][],
+                        )
+                        .map(
+                          ([
+                            productOrProducts,
+                            productSpark,
+                            soldOutRatio,
+                            servingTime,
+                          ]) => {
+                            const product = Array.isArray(productOrProducts)
+                              ? productOrProducts[0]!
+                              : productOrProducts;
+
+                            const componentStocks = (product.components ?? [])
                               .map((component) =>
                                 stocks.find(
                                   (stock) => stock._id === component.stockId,
                                 ),
                               )
-                              .filter((s): s is IStock => Boolean(s))}
-                            productSpark={productSpark}
-                            servingTime={servingTime}
-                            soldOutRatio={soldOutRatio}
-                          />
-                        ),
-                      )}
+                              .filter((s): s is IStock => Boolean(s));
+
+                            return (
+                              <ProductsItem
+                                key={product._id}
+                                product={product}
+                                componentStocks={componentStocks}
+                                productSpark={productSpark}
+                                servingTime={servingTime}
+                                soldOutRatio={soldOutRatio}
+                                sizePrices={
+                                  Array.isArray(productOrProducts)
+                                    ? productOrProducts.map((p) => ({
+                                        unitSize: getProductSize(p)?.unitSize,
+                                        salePrice: p.salePrice ?? NaN,
+                                      }))
+                                    : undefined
+                                }
+                              />
+                            );
+                          },
+                        )}
                     </div>
                   </li>
                 </Fragment>
