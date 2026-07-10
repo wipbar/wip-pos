@@ -1,12 +1,17 @@
 import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { format } from "date-fns";
+import omit from "lodash/omit";
 import { useFind } from "meteor/react-meteor-data";
 import { lazy, type ReactNode, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
 import CreatableSelect from "react-select/creatable";
-import Products, { getProductBrandName, getProductName, type ProductID } from "../api/products";
+import Products, {
+  getProductBrandName,
+  getProductName,
+  type ProductID,
+} from "../api/products";
 import type { IStock } from "../api/stocks";
 import Stocks from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
@@ -321,46 +326,28 @@ export default function PageStockItem({
           `}
         >
           <legend>{stock?.name} Stock Levels</legend>
-          {stock?.levels?.map((level, i) => (
-            <div
-              key={i}
-              className={css`
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-              `}
-            >
-              <div
-                className={css`
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                `}
-              >
-                <div
-                  className={css`
-                    margin-bottom: 4px;
-                  `}
-                >
-                  {format(level.timestamp, "yyyy/MM/dd HH:mm")} -{" "}
-                  {String(level.count)} x {stock.unitSize}
-                  {stock.sizeUnit}
-                </div>
-              </div>
-            </div>
-          ))}
           <form
             onSubmit={async (e) => {
               e.preventDefault();
               if (!stock) return;
+              const form = e.currentTarget;
 
-              const countInput = e.currentTarget.elements.namedItem("count");
-              if (countInput instanceof HTMLInputElement) {
+              const countInput = form.elements.namedItem("count");
+              const buyPriceInput = form.elements.namedItem("buyPrice");
+              if (
+                countInput instanceof HTMLInputElement &&
+                buyPriceInput instanceof HTMLInputElement
+              ) {
                 await takeStock({
                   stockId: stock._id,
                   count: countInput.valueAsNumber,
+                  buyPrice:
+                    buyPriceInput.valueAsNumber >= 0
+                      ? buyPriceInput.valueAsNumber
+                      : undefined,
                 });
                 countInput.value = "";
+                buyPriceInput.value = "";
               }
             }}
           >
@@ -370,10 +357,106 @@ export default function PageStockItem({
               step={1}
               name="count"
               type="number"
-              placeholder="New Stock Level"
+              placeholder="Stock Level"
+            />
+            <input
+              min={0}
+              step="any"
+              name="buyPrice"
+              type="number"
+              placeholder="Buy Price (optional)"
             />
             <button>Take Stock</button>
           </form>
+          {stock?.levels?.map((level, i) => (
+            <div
+              key={i}
+              className={css`
+                display: flex;
+                margin-bottom: 4px;
+                justify-content: space-between;
+              `}
+            >
+              <div
+                className={css`
+                  display: flex;
+                `}
+              >
+                {format(level.timestamp, "yyyy/MM/dd HH:mm")} -{" "}
+                {String(level.count)} x {stock.unitSize}
+                {stock.sizeUnit}
+              </div>
+              <form
+                className={css`
+                  display: flex;
+                  gap: 3px;
+                  align-items: center;
+                `}
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  const form = e.currentTarget;
+
+                  const buyPriceInput = form.elements.namedItem("buyPrice");
+                  if (buyPriceInput instanceof HTMLInputElement) {
+                    const buyPrice = buyPriceInput.valueAsNumber;
+                    try {
+                      for (const element of form.elements) {
+                        if (
+                          element instanceof HTMLInputElement ||
+                          element instanceof HTMLButtonElement
+                        ) {
+                          element.disabled = true;
+                        }
+                      }
+                      buyPriceInput.disabled = true;
+                      await editStock({
+                        stockId: stock._id,
+                        data: {
+                          levels: stock.levels?.map((l, j) =>
+                            j === i
+                              ? buyPrice >= 0
+                                ? { ...l, buyPrice }
+                                : omit(l, "buyPrice")
+                              : l,
+                          ),
+                        },
+                      });
+                    } finally {
+                      for (const element of form.elements) {
+                        if ("disabled" in element) element.disabled = false;
+                      }
+                    }
+                  }
+                }}
+              >
+                <input
+                  min={0}
+                  step="any"
+                  name="buyPrice"
+                  type="number"
+                  placeholder="DKK each"
+                  defaultValue={level.buyPrice ?? ""}
+                  className={css`
+                    width: 80px;
+                    text-align: right;
+                    font-family: monospace;
+                  `}
+                />
+                <span
+                  className={css`
+                    font-size: 12px;
+                  `}
+                >
+                  DKK
+                  <br />
+                  each
+                </span>
+                <button type="submit">💾</button>
+              </form>
+            </div>
+          ))}
         </fieldset>
       ) : null}
       {productsUsingStock.length > 0 ? (

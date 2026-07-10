@@ -28,6 +28,7 @@ export interface IStock {
   levels?: {
     count: number;
     timestamp: Date;
+    buyPrice?: number;
   }[];
 }
 
@@ -87,7 +88,11 @@ export const stocksMethods = {
   },
   async "Stock.takeStock"(
     this: Meteor.MethodThisType,
-    { stockId, count }: { stockId: StockID; count: number },
+    {
+      stockId,
+      count,
+      buyPrice,
+    }: { stockId: StockID; count: number; buyPrice?: number },
   ) {
     const user =
       (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
@@ -97,7 +102,9 @@ export const stocksMethods = {
       const updatedAt = new Date();
       return await Stocks.updateAsync(stockId, {
         $set: { approxCount: count, updatedAt },
-        $push: { levels: { count, timestamp: new Date() } },
+        $push: {
+          levels: { count, timestamp: new Date(), buyPrice },
+        },
       });
     }
   },
