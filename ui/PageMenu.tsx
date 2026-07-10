@@ -289,7 +289,7 @@ export function ProductsItem({
               line-height: 0.8;
             `}
           >
-            {product.tap ? (
+            {product.tap && !hidePrice ? (
               <span>
                 <small>{product.tap}🚰</small>
               </span>
