@@ -40,9 +40,7 @@ class Pushgateway {
   }
 }
 function useGateway(method, job, groupings, callback) {
-  // `URL` first added in v6.13.0
-  // eslint-disable-next-line node/no-deprecated-api
-  const gatewayUrlParsed = url.parse(this.gatewayUrl);
+  const gatewayUrlParsed = new URL(this.gatewayUrl);
   const gatewayUrlPath =
     gatewayUrlParsed.pathname && gatewayUrlParsed.pathname !== "/"
       ? gatewayUrlParsed.pathname
@@ -51,10 +49,8 @@ function useGateway(method, job, groupings, callback) {
     job,
   )}${generateGroupings(groupings)}`;
 
-  // eslint-disable-next-line node/no-deprecated-api
-  const target = url.resolve(this.gatewayUrl, path);
-  // eslint-disable-next-line node/no-deprecated-api
-  const requestParams = url.parse(target);
+  const target = new URL(path, this.gatewayUrl);
+  const requestParams = target;
   const httpModule = isHttps(requestParams.href) ? https : http;
   const options = Object.assign(requestParams, this.requestOptions, {
     method,
