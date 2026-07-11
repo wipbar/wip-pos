@@ -30,6 +30,7 @@ module.exports = {
       ROOT_URL: env("DEPLOY_ROOT_URL"),
       MONGO_URL: env("DEPLOY_MONGO_URL"),
       MONGO_OPLOG_URL: env("DEPLOY_MONGO_OPLOG_URL"),
+      DISABLE_SOCKJS: 1,
     },
 
     docker: { image: "zodern/meteor:root" },
