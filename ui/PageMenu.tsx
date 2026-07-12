@@ -862,6 +862,7 @@ export default function PageMenu() {
             font-size: 0.9em;
             color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
             opacity: 0.5;
+            break-inside: avoid;
           `}
         >
           {`"${flow}"`}
