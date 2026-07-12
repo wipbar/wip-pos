@@ -4,6 +4,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import { Fragment, lazy, useState } from "react";
+import { useParams } from "react-router";
 import { isUserAdmin } from "../api/accounts";
 import Products from "../api/products";
 import Stocks, { type IStock, type StockID } from "../api/stocks";
@@ -14,7 +15,6 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
 import { getCorrectTextColor } from "../util";
 import { Modal } from "./PageProducts";
-import { useParams } from "react-router";
 
 const PageStockItem = lazy(() => import("./PageStockItem"));
 const PageProductsItem = lazy(() => import("./PageProductsItem"));
@@ -72,7 +72,7 @@ export default function PageStock() {
           <PageProductsItem
             onCancel={() => setIsCreatingProductFromStock(null)}
             defaultValues={{
-              name: stockToCreateProductFrom.name,
+              name: null,
               components: [
                 {
                   stockId: stockToCreateProductFrom._id,
