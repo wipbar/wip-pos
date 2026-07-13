@@ -207,7 +207,7 @@ export default function PageProductsItem({
 
     if (!totalCost || Number.isNaN(totalCost)) return undefined;
 
-    return ceil5(totalCost * 2);
+    return ceil5(totalCost * 2 * 1.25);
   })();
   const suggestPriceMissingComponentPrices = componentCosts?.some(
     (cost) => !cost,
