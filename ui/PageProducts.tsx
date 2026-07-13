@@ -671,7 +671,10 @@ export default function PageProducts() {
                         white-space: nowrap;
                       `}
                     >
-                      {suggestedPrice && product.salePrice !== suggestedPrice
+                      {suggestedPrice &&
+                      product.salePrice &&
+                      product.salePrice !== suggestedPrice &&
+                      product.salePrice < suggestedPrice
                         ? "⚠"
                         : ""}
                       {product.salePrice}{" "}
