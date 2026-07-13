@@ -354,7 +354,7 @@ export default function PageStockItem({
             <input
               required
               min={0}
-              step={1}
+              step="any"
               name="count"
               type="number"
               placeholder="Stock Level"
