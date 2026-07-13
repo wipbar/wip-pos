@@ -28,7 +28,7 @@ import { packageTypes } from "../data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
-import { catchNaN, ceil5, emptyArray, units } from "../util";
+import { catchNaN, emptyArray, floor5, units } from "../util";
 import { Modal } from "./PageProducts";
 
 const PageStockItem = lazy(() => import("./PageStockItem"));
@@ -207,7 +207,7 @@ export default function PageProductsItem({
 
     if (!totalCost || Number.isNaN(totalCost)) return undefined;
 
-    return ceil5(totalCost * 2 * 1.25);
+    return floor5(totalCost * 2 * 1.25);
   })();
   const suggestPriceMissingComponentPrices = componentCosts?.some(
     (cost) => !cost,
