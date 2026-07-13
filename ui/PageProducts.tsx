@@ -8,6 +8,7 @@ import { faSort } from "@fortawesome/free-solid-svg-icons/faSort";
 import { faSortDown } from "@fortawesome/free-solid-svg-icons/faSortDown";
 import { faSortUp } from "@fortawesome/free-solid-svg-icons/faSortUp";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
+import { convert } from "convert";
 import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
 import { opacify, transparentize } from "polished";
@@ -33,7 +34,9 @@ import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import {
+  catchNaN,
   emptyArray,
+  floor5,
   getCorrectTextColor,
   removeItem,
   stringToColour,
@@ -554,6 +557,44 @@ export default function PageProducts() {
                   stocks,
                 );
 
+                const components = product.components;
+
+                const componentCosts = (() =>
+                  components?.map((component) => {
+                    const stock = stocks.find(
+                      ({ _id }) => _id === component.stockId,
+                    );
+                    if (!stock) return NaN;
+                    const mostRecentBuyPrice =
+                      stock.levels?.sort(
+                        (a, b) => Number(b.timestamp) - Number(a.timestamp),
+                      )?.[0]?.buyPrice ??
+                      product?.shopPrices?.sort(
+                        (a, b) => Number(b.timestamp) - Number(a.timestamp),
+                      )?.[0]?.buyPrice;
+
+                    if (!mostRecentBuyPrice) return NaN;
+
+                    const costPerUnit = mostRecentBuyPrice / stock.unitSize;
+                    const componentCost = catchNaN(() =>
+                      convert(component.unitSize, component.sizeUnit).to(
+                        stock.sizeUnit,
+                      ),
+                    );
+
+                    return costPerUnit * componentCost;
+                  }))();
+                const suggestedPrice = (() => {
+                  const totalCost = componentCosts?.reduce(
+                    (sum, cost) => sum + cost,
+                    0,
+                  );
+
+                  if (!totalCost || Number.isNaN(totalCost)) return undefined;
+
+                  return floor5(totalCost * 2 * 1.25);
+                })();
+
                 return (
                   <tr key={product._id}>
                     <td
@@ -630,6 +671,9 @@ export default function PageProducts() {
                         white-space: nowrap;
                       `}
                     >
+                      {suggestedPrice && product.salePrice !== suggestedPrice
+                        ? "⚠"
+                        : ""}
                       {product.salePrice}{" "}
                       {!isUserResponsible(
                         currentUser,
