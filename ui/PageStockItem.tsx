@@ -149,7 +149,6 @@ export default function PageStockItem({
           <Controller
             name="brandName"
             control={control}
-            rules={{ required: true }}
             defaultValue={stock?.brandName || ""}
             render={({ field: { onBlur, value } }) => (
               <CreatableSelect
