@@ -99,3 +99,5 @@ export function catchNaN(fn: () => number, defaultValue = NaN): number {
     return defaultValue;
   }
 }
+
+export const ceil5 = (x: number) => Math.ceil(x / 5) * 5;

@@ -210,13 +210,6 @@ export function getProductName(
 
   const name = product?.name ?? componentStock?.name;
 
-  if (!name) {
-    throw new Error(
-      `Product name is missing for product ${JSON.stringify(product)}
-      } with components: ${JSON.stringify(product.components)}`,
-    );
-  }
-
   return name;
 }
 export function getProductSize(

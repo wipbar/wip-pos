@@ -28,7 +28,7 @@ import { packageTypes } from "../data";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
 import useMethod from "../hooks/useMethod";
-import { catchNaN, emptyArray, units } from "../util";
+import { catchNaN, ceil5, emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
 
 const PageStockItem = lazy(() => import("./PageStockItem"));
@@ -181,6 +181,41 @@ export default function PageProductsItem({
     [components, stocks, watchedDescription],
   );
 
+  const componentCosts = useMemo(
+    () =>
+      components?.map((component) => {
+        const stock = stocks.find(({ _id }) => _id === component.stockId);
+        if (!stock) return NaN;
+        const mostRecentBuyPrice =
+          stock.levels?.sort(
+            (a, b) => Number(b.timestamp) - Number(a.timestamp),
+          )?.[0]?.buyPrice ??
+          product?.shopPrices?.sort(
+            (a, b) => Number(b.timestamp) - Number(a.timestamp),
+          )?.[0]?.buyPrice;
+
+        if (!mostRecentBuyPrice) return NaN;
+
+        const costPerUnit = mostRecentBuyPrice / stock.unitSize;
+        const componentCost = catchNaN(() =>
+          convert(component.unitSize, component.sizeUnit).to(stock.sizeUnit),
+        );
+
+        return costPerUnit * componentCost;
+      }),
+    [components, stocks, product],
+  );
+  const suggestedPrice = (() => {
+    const totalCost = componentCosts?.reduce((sum, cost) => sum + cost, 0);
+
+    if (!totalCost || Number.isNaN(totalCost)) return undefined;
+
+    return ceil5(totalCost * 2);
+  })();
+  const suggestPriceMissingComponentPrices = componentCosts?.some(
+    (cost) => !cost,
+  );
+
   return (
     <>
       {isEditingStock ? (
@@ -278,7 +313,7 @@ export default function PageProductsItem({
           )}
         </Label>
         <Label label="Name">
-          {watch("name") == null ? (
+          {watch("name") == null && nameDerivedFromComponents ? (
             <div>
               <code>{nameDerivedFromComponents}</code>
               <small> (via component)</small>{" "}
@@ -322,6 +357,17 @@ export default function PageProductsItem({
           <input
             required
             type="number"
+            placeholder={
+              (suggestedPrice
+                ? `Suggested: ${suggestedPrice.toLocaleString("en-DK", {
+                    maximumFractionDigits: 2,
+                  })}`
+                : "") +
+              (suggestPriceMissingComponentPrices
+                ? "(! missing component prices)"
+                : "")
+            }
+            step="any"
             defaultValue={product?.salePrice ?? ""}
             {...register("salePrice", { required: true, valueAsNumber: true })}
           />

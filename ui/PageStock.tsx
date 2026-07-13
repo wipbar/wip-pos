@@ -80,12 +80,15 @@ export default function PageStock() {
                   sizeUnit: stockToCreateProductFrom.sizeUnit,
                 },
               ],
-              tags:
-                stockToCreateProductFrom.packageType === "CNG"
+              tags: [
+                ...(stockToCreateProductFrom.packageType === "CNG"
                   ? ["can"]
                   : stockToCreateProductFrom.packageType === "BO"
                   ? ["bottle"]
-                  : undefined,
+                  : stockToCreateProductFrom.packageType === "BA"
+                  ? ["tap"]
+                  : []),
+              ],
             }}
           />
         </Modal>
