@@ -181,30 +181,27 @@ export default function PageProductsItem({
     [components, stocks, watchedDescription],
   );
 
-  const componentCosts = useMemo(
-    () =>
-      components?.map((component) => {
-        const stock = stocks.find(({ _id }) => _id === component.stockId);
-        if (!stock) return NaN;
-        const mostRecentBuyPrice =
-          stock.levels?.sort(
-            (a, b) => Number(b.timestamp) - Number(a.timestamp),
-          )?.[0]?.buyPrice ??
-          product?.shopPrices?.sort(
-            (a, b) => Number(b.timestamp) - Number(a.timestamp),
-          )?.[0]?.buyPrice;
+  const componentCosts = (() =>
+    components?.map((component) => {
+      const stock = stocks.find(({ _id }) => _id === component.stockId);
+      if (!stock) return NaN;
+      const mostRecentBuyPrice =
+        stock.levels?.sort(
+          (a, b) => Number(b.timestamp) - Number(a.timestamp),
+        )?.[0]?.buyPrice ??
+        product?.shopPrices?.sort(
+          (a, b) => Number(b.timestamp) - Number(a.timestamp),
+        )?.[0]?.buyPrice;
 
-        if (!mostRecentBuyPrice) return NaN;
+      if (!mostRecentBuyPrice) return NaN;
 
-        const costPerUnit = mostRecentBuyPrice / stock.unitSize;
-        const componentCost = catchNaN(() =>
-          convert(component.unitSize, component.sizeUnit).to(stock.sizeUnit),
-        );
+      const costPerUnit = mostRecentBuyPrice / stock.unitSize;
+      const componentCost = catchNaN(() =>
+        convert(component.unitSize, component.sizeUnit).to(stock.sizeUnit),
+      );
 
-        return costPerUnit * componentCost;
-      }),
-    [components, stocks, product],
-  );
+      return costPerUnit * componentCost;
+    }))();
   const suggestedPrice = (() => {
     const totalCost = componentCosts?.reduce((sum, cost) => sum + cost, 0);
 
