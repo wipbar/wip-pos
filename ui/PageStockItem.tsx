@@ -236,6 +236,8 @@ export default function PageStockItem({
               required
               type="number"
               step="any"
+              // If there are stock levels, we don't want to allow changing the unit size, as that would make the stock levels invalid.
+              disabled={Boolean(stock?.levels?.length)}
               defaultValue={stock?.unitSize || ""}
               {...register("unitSize", { valueAsNumber: true })}
             />
