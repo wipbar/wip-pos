@@ -156,7 +156,7 @@ export function ProductsItem({
   const subTexts = useMemo(
     () =>
       [
-        showBrandName ? productBrandName : null,
+        showBrandName ? productBrandName || null : null,
         !showBrandName ? productDescription || null : null,
         productAbv
           ? `${
@@ -176,7 +176,7 @@ export function ProductsItem({
           : null,
           */
         productSize && hidePrice
-          ? `${productSize.unitSize}${productSize.sizeUnit}`
+          ? `${productSize.unitSize}${productSize.sizeUnit}`.trim()
           : null,
         showBrandName
           ? sortTags(product.tags || emptyArray).map((tag) => (
@@ -195,16 +195,26 @@ export function ProductsItem({
               </span>
             ))
           : null,
+        servingTime ? (
+          <small>
+            ⏳{" "}
+            {(servingTime / 1000).toLocaleString("en", {
+              maximumSignificantDigits: 2,
+            })}
+            s
+          </small>
+        ) : null,
       ].filter((t): t is NonNullable<typeof t> => Boolean(t)),
     [
       showBrandName,
       productBrandName,
       productDescription,
+      productAbv,
       product.components,
       product.tags,
-      productAbv,
       productSize,
       hidePrice,
+      servingTime,
     ],
   );
 
@@ -306,10 +316,15 @@ export function ProductsItem({
             >
               {subTexts.map((thing, i) => (
                 <Fragment
-                  key={typeof thing === "string" ? thing : thing[0]?.key}
+                  key={String(
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    typeof thing === "string" || !Array.isArray(thing)
+                      ? thing
+                      : thing[0]?.key,
+                  )}
                 >
                   {i > 0 ? (
-                    typeof thing === "string" ? (
+                    typeof thing === "string" || !Array.isArray(thing) ? (
                       <small>, </small>
                     ) : (
                       <small> </small>
@@ -318,18 +333,6 @@ export function ProductsItem({
                   <small>{thing}</small>
                 </Fragment>
               ))}
-              {servingTime ? (
-                <>
-                  ,{" "}
-                  <small>
-                    ⏳{" "}
-                    {(servingTime / 1000).toLocaleString("en", {
-                      maximumSignificantDigits: 2,
-                    })}
-                    s
-                  </small>
-                </>
-              ) : null}
             </small>
           </div>
         </span>
