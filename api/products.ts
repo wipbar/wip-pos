@@ -336,13 +336,13 @@ export const isBasicallySameProduct = (a: IProduct, b: IProduct): boolean =>
       a.name === b.name &&
       a.brandName === b.brandName &&
       a.description === b.description &&
-      a.components &&
-      b.components &&
-      a.components?.length === b.components?.length &&
-      a.components?.every((component) => {
-        const nextComponent = b.components?.find(
-          (c) => c.stockId === component.stockId,
-        );
-        return component.sizeUnit === nextComponent?.sizeUnit;
-      }),
+      (a.components?.length || b.components?.length
+        ? a.components?.length === b.components?.length &&
+          a.components?.every((component) => {
+            const nextComponent = b.components?.find(
+              (c) => c.stockId === component.stockId,
+            );
+            return component.sizeUnit === nextComponent?.sizeUnit;
+          })
+        : true),
   );
