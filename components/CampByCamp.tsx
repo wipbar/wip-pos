@@ -172,9 +172,23 @@ export default function CampByCamp() {
               color:
                 (currentCamp || nextCamp)?.color &&
                 getCorrectTextColor((currentCamp || nextCamp)!.color),
+              textShadow: `0 0 1px ${
+                currentCamp && getCorrectTextColor(currentCamp.color, false)
+              }, 0 0 1px ${
+                currentCamp && getCorrectTextColor(currentCamp.color, false)
+              }`,
+            }}
+            {...{ wrapperStyle: { zIndex: 1337 } }}
+          />
+          <Legend
+            labelStyle={{
+              textShadow: `0 0 1px ${
+                currentCamp && getCorrectTextColor(currentCamp.color, false)
+              }, 0 0 1px ${
+                currentCamp && getCorrectTextColor(currentCamp.color, false)
+              }`,
             }}
           />
-          <Legend />
           {currentCamp ? (
             <ReferenceDot
               y={yMax}
@@ -197,7 +211,7 @@ export default function CampByCamp() {
               r={4}
               fill={currentCamp && getCorrectTextColor(currentCamp.color, true)}
               stroke={
-                currentCamp && getCorrectTextColor(currentCamp.color, true)
+                currentCamp && getCorrectTextColor(currentCamp.color, false)
               }
             />
           ) : null}
@@ -209,14 +223,15 @@ export default function CampByCamp() {
               name={"Σ" + camp.start.getFullYear()}
               stroke={
                 camp.slug === (currentCamp || nextCamp)?.slug
-                  ? "#ffffff"
+                  ? getCorrectTextColor(camp.color, false)
                   : camp.color
               }
-              fill={getCorrectTextColor(camp.color)}
+              {...{ floodColor: "pink", floodOpacity: 1 }}
+              fill={getCorrectTextColor(camp.color, false)}
               strokeDasharray={
                 camp.slug === currentCamp?.slug ? undefined : "3 3"
               }
-              strokeWidth={camp.slug === currentCamp?.slug ? 3 : 2}
+              strokeWidth={camp.slug === currentCamp?.slug ? 4 : 2}
               dot={false}
               connectNulls
             />
@@ -226,9 +241,9 @@ export default function CampByCamp() {
               key={currentCamp.slug + "-trend"}
               dataKey={currentCamp.slug + "-trend"}
               fill={currentCamp.color}
-              stroke={"#ffffff"}
-              strokeWidth={2}
-              strokeDasharray="6 3"
+              stroke={getCorrectTextColor(currentCamp.color, false)}
+              strokeWidth={3}
+              strokeDasharray="9 3"
               dot={false}
               connectNulls
             />
