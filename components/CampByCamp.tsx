@@ -174,9 +174,7 @@ export default function CampByCamp() {
             }
             contentStyle={{
               background: (currentCamp || nextCamp)?.color,
-              color:
-                (currentCamp || nextCamp)?.color &&
-                getCorrectTextColor((currentCamp || nextCamp)!.color),
+              color: (currentCamp || nextCamp)?.color,
               textShadow: `0 0 1px ${
                 currentCamp && getCorrectTextColor(currentCamp.color, false)
               }, 0 0 1px ${
@@ -220,39 +218,63 @@ export default function CampByCamp() {
               }
             />
           ) : null}
+          {currentCamp ? (
+            <>
+              <Line
+                type="monotone"
+                key={currentCamp.slug}
+                dataKey={currentCamp.slug}
+                name={"Σ" + currentCamp.start.getFullYear()}
+                stroke={getCorrectTextColor(currentCamp.color, false)}
+                fill={getCorrectTextColor(currentCamp.color, false)}
+                strokeDasharray={
+                  currentCamp.slug === currentCamp?.slug ? undefined : "3 3"
+                }
+                strokeWidth={5}
+                dot={false}
+                connectNulls
+              />
+              <Line
+                key={currentCamp.slug + "-trend"}
+                dataKey={currentCamp.slug + "-trend"}
+                fill={currentCamp.color}
+                stroke={getCorrectTextColor(currentCamp.color, false)}
+                {...{ legendType: "none" }}
+                strokeWidth={5}
+                strokeDasharray="9 3"
+                dot={false}
+                connectNulls
+              />
+              <Line
+                key={currentCamp.slug + "-trend2"}
+                dataKey={currentCamp.slug + "-trend"}
+                fill={currentCamp.color}
+                stroke={currentCamp.color}
+                {...{ legendType: "none" }}
+                strokeWidth={2}
+                strokeDasharray="9 3"
+                dot={false}
+                connectNulls
+              />
+            </>
+          ) : null}
           {camps.map((camp) => (
             <Line
               type="monotone"
               key={camp.slug}
               dataKey={camp.slug}
               name={"Σ" + camp.start.getFullYear()}
-              stroke={
-                camp.slug === (currentCamp || nextCamp)?.slug
-                  ? getCorrectTextColor(camp.color, false)
-                  : camp.color
-              }
+              stroke={camp.color}
               {...{ floodColor: "pink", floodOpacity: 1 }}
               fill={getCorrectTextColor(camp.color, false)}
               strokeDasharray={
                 camp.slug === currentCamp?.slug ? undefined : "3 3"
               }
-              strokeWidth={camp.slug === currentCamp?.slug ? 4 : 2}
+              strokeWidth={2}
               dot={false}
               connectNulls
             />
           ))}
-          {currentCamp ? (
-            <Line
-              key={currentCamp.slug + "-trend"}
-              dataKey={currentCamp.slug + "-trend"}
-              fill={currentCamp.color}
-              stroke={getCorrectTextColor(currentCamp.color, false)}
-              strokeWidth={3}
-              strokeDasharray="9 3"
-              dot={false}
-              connectNulls
-            />
-          ) : null}
         </ComposedChart>
       </ResponsiveContainer>
     </div>

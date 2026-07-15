@@ -102,7 +102,7 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
                 },
               }}
               r={4}
-              fill={currentCamp && getCorrectTextColor(currentCamp.color, true)}
+              fill={currentCamp && getCorrectTextColor(currentCamp.color, false)}
               stroke={
                 currentCamp && getCorrectTextColor(currentCamp.color, true)
               }
@@ -118,7 +118,7 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
                 numberOfDaysInCurrentCamp - 1 === i ? undefined : "3 3"
               }
               strokeWidth={numberOfDaysInCurrentCamp - 1 === i ? 3 : 2}
-              stroke={"#ffffff"}
+              stroke={getCorrectTextColor(currentCamp?.color || "#000", false)}
               strokeOpacity={1 - (numberOfDaysInCurrentCamp - 1 - i) / 10}
               style={{
                 opacity: 1 - (numberOfDaysInCurrentCamp - 1 - i) / 10,
