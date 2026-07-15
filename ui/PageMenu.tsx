@@ -612,33 +612,19 @@ export default function PageMenu() {
             `}
           >
             {sortTags(tags.split(",") || emptyArray).map((tag) => (
-              <Fragment key={tag}>
-                {tag === "can" ? (
-                  "🥫"
-                ) : tag === "bottle" ? (
-                  "🍾"
-                ) : tag === "tap" ? (
-                  "🍺"
-                ) : (
-                  <span
-                    key={tag}
-                    className={css`
-                      display: inline-block;
-                      background: ${stringToColour(tag) ||
-                      `rgba(0, 0, 0, 0.4)`};
-                      color: ${getCorrectTextColor(stringToColour(tag)) ||
-                      "white"};
-                      padding: 0 0.2em;
-                      border-radius: 4px;
-                      margin-left: 2px;
-                    `}
-                  >
-                    {tag.trim()}
-                  </span>
-                )}
-                {tag === "cocktail" ? "🍹" : null}
-                {tag === "spirit" ? "🥃" : null}
-              </Fragment>
+              <span
+                key={tag}
+                className={css`
+                  display: inline-block;
+                  background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
+                  color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
+                  padding: 0 0.2em;
+                  border-radius: 4px;
+                  margin-left: 2px;
+                `}
+              >
+                {tag.trim()}
+              </span>
             ))}
           </h1>
           <SparkLine
