@@ -140,7 +140,12 @@ export default function CampByCamp() {
                 ? { ...d, ...trendData[1] }
                 : d,
             )}
-          margin={{ top: 24, right: 8, left: currentCamp ? 16 : 64, bottom: 0 }}
+          margin={{
+            top: 24,
+            right: 8,
+            left: String(yMax).length * 8,
+            bottom: 0,
+          }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
