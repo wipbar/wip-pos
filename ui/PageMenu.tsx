@@ -197,8 +197,12 @@ export function ProductsItem({
             ))
           : null,
         servingTime ? (
-          <small>
-            ⏳{" "}
+          <small
+            className={css`
+              white-space: nowrap;
+            `}
+          >
+            ⏳
             {(servingTime / 1000).toLocaleString("en", {
               maximumSignificantDigits: 2,
             })}
