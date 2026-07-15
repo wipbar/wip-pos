@@ -674,20 +674,11 @@ export default function PageProducts() {
                       {suggestedPrice &&
                       product.salePrice &&
                       product.salePrice !== suggestedPrice &&
-                      product.salePrice < suggestedPrice
+                      product.salePrice < suggestedPrice &&
+                      isUserResponsible(currentUser)
                         ? "⚠"
                         : ""}
-                      {product.salePrice}{" "}
-                      {!isUserResponsible(
-                        currentUser,
-                      ) ? null : product.shopPrices?.some(
-                          ({ buyPrice }) =>
-                            buyPrice &&
-                            Number(buyPrice) !== Number(product.salePrice) &&
-                            Number(buyPrice) < Number(product.salePrice),
-                        ) ? null : (
-                        <small>?</small>
-                      )}
+                      {product.salePrice}
                       ʜᴀx
                     </td>
                     <td style={{ whiteSpace: "nowrap" }}>
