@@ -564,7 +564,7 @@ export default function PageMenu() {
         padding: 0.5em;
         column-width: 15em;
         @media (min-width: 1400px) {
-          column-width: 13em;
+          column-width: 11em;
         }
         column-fill: balance;
         column-gap: 0.5em;
@@ -598,12 +598,12 @@ export default function PageMenu() {
           <h1
             className={css`
               margin: 0;
-              font-size: 2.25em;
+              font-size: 2em;
               text-align: center;
               color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
               display: flex;
-              justify-content: center;
-              gap: 0.1em;
+              justify-content: space-evenly;
+              margin-bottom: -8px;
             `}
           >
             {sortTags(tags.split(",") || emptyArray).map((tag) => (
@@ -613,9 +613,10 @@ export default function PageMenu() {
                   display: inline-block;
                   background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
                   color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
-                  padding: 0 0.2em;
+                  padding: 0em;
                   border-radius: 4px;
                   margin-left: 2px;
+                  flex: 1;
                 `}
               >
                 {tag.trim()}
