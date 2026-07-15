@@ -180,12 +180,8 @@ export default function CartView({
   const { locationSlug } = useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const products = useFind(
-    () =>
-      Products.find({
-        removedAt: { $exists: false },
-        _id: { $in: cart?.productIds ?? [] },
-      }),
-    [cart?.productIds],
+    () => Products.find({ removedAt: { $exists: false } }),
+    [],
   );
   const stocks = useFind(() =>
     Stocks.find({ removedAt: { $exists: false } }, []),
