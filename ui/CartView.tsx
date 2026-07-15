@@ -616,7 +616,11 @@ export default function CartView({
             right: 0;
             bottom: 0;
           `}
-          onClick={() => setConfirmOpen(false)}
+          onClick={() => {
+            setConfirmOpen(false);
+            setIsGiven(false);
+            setIsReceived(false);
+          }}
         >
           <div
             className={css`
