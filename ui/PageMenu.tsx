@@ -33,6 +33,7 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
+import useSubscription from "../hooks/useSubscription";
 import {
   emptyArray,
   getCorrectTextColor,
@@ -40,7 +41,6 @@ import {
   sortTags,
   stringToColour,
 } from "../util";
-import useSubscription from "../hooks/useSubscription";
 
 const flows = [
   ...draculaFlow,
@@ -559,8 +559,53 @@ export default function PageMenu() {
   const getOijProductsLength = (o: NonNullable<typeof oij>[number]): number =>
     o[1]?.reduce((m, b) => m + b[1].length, 0) || NaN;
 
-  const list = oij.sort(
+  let list = oij.sort(
     (a, b) => getOijProductsLength(b) - getOijProductsLength(a),
+  );
+  const mergeBrands = (a: (typeof list)[number][1]) => {
+    const merged: typeof a = [];
+    const brandMap = new Map<string, (typeof a)[0][1]>();
+    for (const [brandName, products] of a) {
+      if (!brandMap.has(brandName)) {
+        brandMap.set(brandName, []);
+      }
+      brandMap.get(brandName)!.push(...products);
+    }
+    for (const [brandName, products] of brandMap) {
+      merged.push([brandName, products]);
+    }
+    return merged;
+  };
+  list = list.reduce(
+    (memo, [tags, productsByBrandName, tagsSpark]) => {
+      const tagsProductsLength = getOijProductsLength([
+        tags,
+        productsByBrandName,
+        tagsSpark,
+      ]);
+      if (tagsProductsLength > 12) {
+        let newLizt1: typeof productsByBrandName = [];
+        let newLizt2: typeof productsByBrandName = [];
+        let i = 0;
+        for (const [brandName, products] of productsByBrandName) {
+          for (const product of products) {
+            if (i < tagsProductsLength / 2) {
+              newLizt1.push([brandName, [product]]);
+            } else {
+              newLizt2.push([brandName, [product]]);
+            }
+            i++;
+          }
+        }
+        newLizt1 = mergeBrands(newLizt1);
+        newLizt2 = mergeBrands(newLizt2);
+        memo.push([tags, newLizt1, tagsSpark], [tags, newLizt2, tagsSpark]);
+      } else {
+        memo.push([tags, productsByBrandName, tagsSpark]);
+      }
+      return memo;
+    },
+    [] as typeof list,
   );
 
   return (
