@@ -566,9 +566,11 @@ export default function PageProducts() {
                     );
                     if (!stock) return NaN;
                     const mostRecentBuyPrice =
-                      stock.levels?.sort(
-                        (a, b) => Number(b.timestamp) - Number(a.timestamp),
-                      )?.[0]?.buyPrice ??
+                      stock.levels
+                        ?.filter((level) => level.buyPrice)
+                        ?.sort(
+                          (a, b) => Number(b.timestamp) - Number(a.timestamp),
+                        )?.[0]?.buyPrice ??
                       product?.shopPrices?.sort(
                         (a, b) => Number(b.timestamp) - Number(a.timestamp),
                       )?.[0]?.buyPrice;
