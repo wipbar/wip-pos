@@ -40,6 +40,7 @@ import {
   sortTags,
   stringToColour,
 } from "../util";
+import useSubscription from "../hooks/useSubscription";
 
 const flows = [
   ...draculaFlow,
@@ -451,6 +452,7 @@ export function StockItem({ stock }: { stock: IStock }) {
 }
 
 export default function PageMenu() {
+  useSubscription("stocks");
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(30000);
   const { location, error } = useCurrentLocation();
