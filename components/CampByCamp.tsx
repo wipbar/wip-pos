@@ -184,12 +184,12 @@ export default function CampByCamp() {
             {...{ wrapperStyle: { zIndex: 1337 } }}
           />
           <Legend
-            labelStyle={{
-              textShadow: `0 0 1px ${
+            wrapperStyle={{
+              filter: `drop-shadow(0 0 1px ${
                 currentCamp && getCorrectTextColor(currentCamp.color, false)
-              }, 0 0 1px ${
+              }) drop-shadow(0 0 1px ${
                 currentCamp && getCorrectTextColor(currentCamp.color, false)
-              }`,
+              })`,
             }}
           />
           {currentCamp ? (
@@ -230,6 +230,7 @@ export default function CampByCamp() {
                 strokeDasharray={
                   currentCamp.slug === currentCamp?.slug ? undefined : "3 3"
                 }
+                {...{ legendType: "none" }}
                 strokeWidth={5}
                 dot={false}
                 connectNulls

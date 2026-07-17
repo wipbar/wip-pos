@@ -186,7 +186,9 @@ export function ProductsItem({
                 key={tag}
                 className={css`
                   display: inline-block;
-                  background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
+                  background: ${tag === "io"
+                    ? "yellow"
+                    : stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
                   color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
                   padding: 0 3px;
                   border-radius: 4px;
@@ -295,61 +297,18 @@ export function ProductsItem({
       <div
         className={css`
           flex: 1;
-          display: flex;
-          justify-content: space-between;
         `}
       >
-        <span>
-          <div
-            className={css`
-              margin-top: 2px;
-              font-weight: bold;
-              line-height: 0.8;
-            `}
-          >
-            {product.tap && !hidePrice ? (
-              <span>
-                <small>{product.tap}🚰</small>
-              </span>
-            ) : null}{" "}
-            {productName}{" "}
-            <small
-              style={{
-                fontWeight: "normal",
-                lineHeight: 1,
-                display: "inline-block",
-              }}
-            >
-              {subTexts.map((thing, i) => (
-                <Fragment
-                  key={String(
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    typeof thing === "string" || !Array.isArray(thing)
-                      ? thing
-                      : thing[0]?.key,
-                  )}
-                >
-                  {i > 0 ? (
-                    typeof thing === "string" || !Array.isArray(thing) ? (
-                      <small>, </small>
-                    ) : (
-                      <small> </small>
-                    )
-                  ) : null}
-                  <small>{thing}</small>
-                </Fragment>
-              ))}
-            </small>
-          </div>
-        </span>
         {hidePrice ? null : (
           <div
             className={css`
+              float: right;
               text-align: right;
               display: flex;
               flex-direction: column;
               justify-content: flex-start;
               align-items: flex-end;
+              margin-left: 0.5em;
             `}
           >
             {(
@@ -360,28 +319,71 @@ export function ProductsItem({
                   unitSize: productSize?.unitSize,
                 },
               ]
-            ).map((sizePrice) => (
-              <div
-                key={sizePrice.productId}
-                className={css`
-                  line-height: 1;
-                `}
-              >
-                {sizePrice.unitSize && productSize ? (
-                  <span
-                    className={css`
-                      font-size: 0.5em;
-                      vertical-align: top;
-                      margin-right: 0.25em;
-                      line-height: 1.75;
-                    `}
-                  >{`${sizePrice.unitSize}${productSize.sizeUnit}`}</span>
-                ) : null}
-                <b>{Number(sizePrice.salePrice) || "00"}</b>
-              </div>
-            ))}
+            ).map((sizePrice) =>
+              (sizePrice.salePrice || 0) >= 0 ? (
+                <div
+                  key={sizePrice.productId}
+                  className={css`
+                    line-height: 1;
+                  `}
+                >
+                  {sizePrice.unitSize && productSize ? (
+                    <span
+                      className={css`
+                        font-size: 0.5em;
+                        vertical-align: top;
+                        margin-right: 0.25em;
+                        line-height: 1.75;
+                      `}
+                    >{`${sizePrice.unitSize}${productSize.sizeUnit}`}</span>
+                  ) : null}
+                  <b>{Number(sizePrice.salePrice) || "00"}</b>
+                </div>
+              ) : null,
+            )}
           </div>
         )}
+        <div
+          className={css`
+            margin-top: 2px;
+            font-weight: bold;
+            line-height: 0.8;
+          `}
+        >
+          {product.tap && !hidePrice ? (
+            <span>
+              <small>{product.tap}🚰</small>
+            </span>
+          ) : null}{" "}
+          {productName}{" "}
+          <small
+            style={{
+              fontWeight: "normal",
+              lineHeight: 1,
+              display: "inline-block",
+            }}
+          >
+            {subTexts.map((thing, i) => (
+              <Fragment
+                key={String(
+                  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                  typeof thing === "string" || !Array.isArray(thing)
+                    ? thing
+                    : thing[0]?.key,
+                )}
+              >
+                {i > 0 ? (
+                  typeof thing === "string" || !Array.isArray(thing) ? (
+                    <small>, </small>
+                  ) : (
+                    <small> </small>
+                  )
+                ) : null}
+                <small>{thing}</small>
+              </Fragment>
+            ))}
+          </small>
+        </div>
       </div>
       {productSpark ? (
         <SparkLine
@@ -662,7 +664,9 @@ export default function PageMenu() {
                 key={tag}
                 className={css`
                   display: inline-block;
-                  background: ${stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
+                  background: ${tag === "io"
+                    ? "yellow"
+                    : stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
                   color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
                   padding: 0em;
                   border-radius: 4px;
