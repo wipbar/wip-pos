@@ -3,24 +3,24 @@ import { FastAverageColor } from "fast-average-color";
 import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import {
-    type HTMLProps,
-    lazy,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  type HTMLProps,
+  lazy,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import { useDraggable } from "react-use-draggable-scroll-safe";
 import { LongPressCallbackReason, useLongPress } from "use-long-press";
 import Products, {
-    type IProduct,
-    type ProductID,
-    getProductBarCode,
-    getProductBrandName,
-    getProductName,
-    getProductSize,
-    isAlcoholic,
-    isBasicallySameProduct,
+  type IProduct,
+  type ProductID,
+  getProductBarCode,
+  getProductBrandName,
+  getProductName,
+  getProductSize,
+  isAlcoholic,
+  isBasicallySameProduct,
 } from "../api/products";
 import Stocks, { type IStock } from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -30,13 +30,13 @@ import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import {
-    emptyArray,
-    getCorrectTextColor,
-    removeItem,
-    sortTags,
-    stringToColour,
-    stringToColours,
-    tagsToString,
+  emptyArray,
+  getCorrectTextColor,
+  removeItem,
+  sortTags,
+  stringToColour,
+  stringToColours,
+  tagsToString,
 } from "../util";
 import { Modal } from "./PageProducts";
 
@@ -46,7 +46,7 @@ const fac = new FastAverageColor();
 
 const collator = new Intl.Collator("en");
 
-function ProductPickerProductStock({ productId }: { productId: ProductID }) {
+export function ProductPickerProductStock({ productId }: { productId: ProductID }) {
   const [call, result] = useMethod("Products.getRemainingPercent");
 
   useEffect(() => {
@@ -211,7 +211,6 @@ function ProductPickerProduct({
           position: relative;
         `}
       >
-        <ProductPickerProductStock productId={product._id} />
         <div
           className={css`
             flex: 1;
