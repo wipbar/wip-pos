@@ -19,7 +19,6 @@ import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
 import Products, {
-  getProductAverageOrderDuration,
   getProductBrandName,
   getProductName,
   getProductSize,
@@ -694,10 +693,11 @@ async function calculateMenuDataForLocation(location: ILocation) {
             [
               brand,
               products
-                .sort((a, b) =>
-                  getProductName(a, stocks).localeCompare(
-                    getProductName(b, stocks),
-                  ),
+                .sort(
+                  (a, b) =>
+                    getProductName(a, stocks)?.localeCompare(
+                      getProductName(b, stocks) || "",
+                    ) || 0,
                 )
                 .sort((a, b) => a.tap?.localeCompare(b.tap || "") || 0)
                 .map((product) => {
@@ -745,7 +745,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
                             : 1,
                         )
                       : null,
-                    getProductAverageOrderDuration(product, sales),
+                    undefined, // getProductAverageOrderDuration(product, sales),
                   ] as const;
                 }),
             ] as const,

@@ -231,6 +231,7 @@ export function ProductsItem({
       key={product._id}
       className={css`
         padding: 0.125em 0.5em 0px;
+        padding-right: 0.25em;
         position: relative;
         break-inside: avoid;
         line-height: 1.2;
@@ -297,70 +298,24 @@ export function ProductsItem({
       <div
         className={css`
           flex: 1;
+          display: flex;
         `}
       >
-        {hidePrice ? null : (
-          <div
-            className={css`
-              float: right;
-              text-align: right;
-              display: flex;
-              flex-direction: column;
-              justify-content: flex-start;
-              align-items: flex-end;
-              margin-left: 0.5em;
-            `}
-          >
-            {(
-              sizePrices ?? [
-                {
-                  productId: product._id,
-                  salePrice: product.salePrice,
-                  unitSize: productSize?.unitSize,
-                },
-              ]
-            ).map((sizePrice) =>
-              (sizePrice.salePrice || 0) >= 0 ? (
-                <div
-                  key={sizePrice.productId}
-                  className={css`
-                    line-height: 1;
-                  `}
-                >
-                  {sizePrice.unitSize && productSize ? (
-                    <span
-                      className={css`
-                        font-size: 0.5em;
-                        vertical-align: top;
-                        margin-right: 0.25em;
-                        line-height: 1.75;
-                      `}
-                    >{`${sizePrice.unitSize}${productSize.sizeUnit}`}</span>
-                  ) : null}
-                  <b>{Number(sizePrice.salePrice) || "00"}</b>
-                </div>
-              ) : null,
-            )}
-          </div>
-        )}
         <div
           className={css`
-            margin-top: 2px;
+            flex: 1;
             font-weight: bold;
             line-height: 0.8;
           `}
         >
-          {product.tap && !hidePrice ? (
-            <span>
-              <small>{product.tap}🚰</small>
-            </span>
-          ) : null}{" "}
+          {product.tap && !hidePrice ? <small>{product.tap}🚰</small> : null}{" "}
           {productName}{" "}
           <small
             style={{
               fontWeight: "normal",
-              lineHeight: 1,
+              lineHeight: 0.75,
               display: "inline-block",
+              marginBottom: "0.25em",
             }}
           >
             {subTexts.map((thing, i) => (
@@ -384,6 +339,55 @@ export function ProductsItem({
             ))}
           </small>
         </div>
+        {hidePrice ? null : (
+          <div
+            className={css`
+              text-align: right;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+              align-items: flex-end;
+              margin-left: 0.5em;
+            `}
+          >
+            {(
+              sizePrices ?? [
+                {
+                  productId: product._id,
+                  salePrice: product.salePrice,
+                  unitSize: productSize?.unitSize,
+                },
+              ]
+            ).map((sizePrice) =>
+              (sizePrice.salePrice || 0) >= 0 ? (
+                <div
+                  key={sizePrice.productId}
+                  className={css`
+                    display: flex;
+                    flex-direction: column;
+                  `}
+                >
+                  <b
+                    className={css`
+                      line-height: 0.9;
+                    `}
+                  >
+                    {Number(sizePrice.salePrice) || "00"}
+                  </b>
+                  {sizePrice.unitSize && productSize ? (
+                    <span
+                      className={css`
+                        font-size: 0.5em;
+                        vertical-align: top;
+                        line-height: 0.9;
+                      `}
+                    >{`${sizePrice.unitSize}${productSize.sizeUnit}`}</span>
+                  ) : null}
+                </div>
+              ) : null,
+            )}
+          </div>
+        )}
       </div>
       {productSpark ? (
         <SparkLine
@@ -391,7 +395,7 @@ export function ProductsItem({
             margin-top: -2px;
             /* compensate for padding and health bar */
             margin-left: calc(-0.5em + 4px);
-            width: calc(100% + 1em - 4px);
+            width: calc(100% + 0.75em - 4px);
             display: block;
             border-bottom: ${currentCamp?.color} 1px solid;
           `}
@@ -749,6 +753,7 @@ export default function PageMenu() {
                     <small
                       className={css`
                         padding: 0.25em 0.9em 0px;
+                        padding-right: 0.6em;
                       `}
                     >
                       ʜᴀx
@@ -835,7 +840,7 @@ export default function PageMenu() {
                             IProduct | IProduct[],
                             (readonly [number, number])[],
                             number | null,
-                            number,
+                            number | undefined,
                           ][],
                         )
                         .map(
