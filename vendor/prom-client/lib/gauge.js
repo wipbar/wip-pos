@@ -100,7 +100,7 @@ class Gauge extends Metric {
     return this.hashMap[hash] ? this.hashMap[hash].value : 0;
   }
 
-  labels() {
+  labels(...args) {
     const labels = getLabels(this.labelNames, arguments);
     return {
       inc: inc.call(this, labels),

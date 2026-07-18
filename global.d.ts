@@ -99,6 +99,12 @@ declare module "meteor/service-configuration" {
   };
 }
 
+declare module "meteor/webapp" {
+  var WebApp: {
+    handlers: import("express").IRouter;
+  };
+}
+
 declare module "meteor/oauth" {
   namespace OAuth {
     function registerService(

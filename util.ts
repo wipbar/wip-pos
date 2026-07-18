@@ -1,3 +1,4 @@
+import express from "express";
 import { readableColor } from "polished";
 
 export function stringToColours(inputString: string) {
@@ -102,3 +103,14 @@ export function catchNaN(fn: () => number, defaultValue = NaN): number {
 
 export const ceil5 = (x: number) => Math.ceil(x / 5) * 5;
 export const floor5 = (x: number) => Math.floor(x / 5) * 5;
+
+type AsyncRequestHandler = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => Promise<void> | void;
+
+export const wrapRoute =
+  (fn: AsyncRequestHandler): express.RequestHandler =>
+  (req, res, next) =>
+    fn(req, res, next)?.catch?.(next);

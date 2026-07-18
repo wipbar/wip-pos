@@ -1,4 +1,3 @@
-import express from "express";
 import { WebApp } from "meteor/webapp";
 import Camps from "../api/camps";
 import Products, {
@@ -9,17 +8,7 @@ import Products, {
 } from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
-
-type AsyncRequestHandler = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) => Promise<void> | void;
-
-const wrapRoute =
-  (fn: AsyncRequestHandler): express.RequestHandler =>
-  (req, res, next) =>
-    fn(req, res, next)?.catch?.(next);
+import { wrapRoute } from "../util";
 
 interface PosTransaction {
   /** The Camp this PosTransaction belongs to. */
@@ -66,9 +55,7 @@ interface PosProductCost {
   product_cost: number;
 }
 
-(
-  WebApp as unknown as typeof WebApp & { handlers: express.IRouter }
-).handlers.use(
+WebApp.handlers.use(
   "/api/django-economy-export",
   wrapRoute(async (_req, res) => {
     const url = new URL(_req.url, `http://${_req.headers.host}`);
@@ -143,7 +130,7 @@ interface PosProductCost {
       pos_product.push({
         product_id: product._id,
         brand_name: productBrandName ?? "",
-        name: productName,
+        name: productName ?? "",
         description: productDescription ?? "",
         sales_price: product.salePrice ?? 0,
         // TODO: Use derived unit size and unit type from product.components if available ?

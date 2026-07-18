@@ -1,7 +1,10 @@
 import sumBy from "lodash/sumBy";
+import { WebApp } from "meteor/webapp";
 import Locations from "../api/locations";
-import Products from "../api/products";
+import Products, { getProductBrandName, getProductName } from "../api/products";
 import Sales from "../api/sales";
+import Stocks from "../api/stocks";
+import { wrapRoute } from "../util";
 import * as client from "../vendor/prom-client";
 import Gauge from "../vendor/prom-client/lib/gauge";
 
@@ -11,36 +14,48 @@ new client.Gauge({
   labelNames: ["locationName", "brandName", "productName"],
   async collect(this: Gauge) {
     const locations = await Locations.find().fetchAsync();
+    const products = await Products.find().fetchAsync();
+    const stocks = await Stocks.find().fetchAsync();
+
     for (const location of locations) {
       const locationSales = await Sales.find({
         locationId: location._id,
       }).fetchAsync();
-      Products.find().forEach(({ brandName, name: productName, _id }) => {
+      products.forEach((product) => {
         const count = sumBy(
           locationSales,
           (sale) =>
-            sale.products.filter((saleProduct) => saleProduct._id == _id)
-              .length,
+            sale.products.filter(
+              (saleProduct) => saleProduct._id == product._id,
+            ).length,
         );
-        // if (count)
-        this.labels(location.name, brandName || "", productName).set(count);
+
+        const productBrandName = getProductBrandName(product, stocks);
+        const productName = getProductName(product, stocks);
+
+        this.labels(
+          location.name,
+          productBrandName || "",
+          productName || "",
+        ).set(count);
       });
     }
   },
 });
 client.collectDefaultMetrics();
 
-/*
-WebApp.connectHandlers.use("/metrics", (_req, res) =>
-  Fiber(async () => {
+WebApp.handlers.use(
+  "/metrics",
+  wrapRoute(async (_req, res) => {
     try {
       res.setHeader("content-type", "text/plain; version=0.0.4; charset=utf-8");
-      return res.end(await client.register.metrics());
+      res.end(await client.register.metrics());
+      return;
     } catch (error) {
       console.error(error);
       res.setHeader("content-type", "application/json");
-      return res.end(JSON.stringify(error));
+      res.end(JSON.stringify(error));
+      return;
     }
-  }).run(),
+  }),
 );
-*/
