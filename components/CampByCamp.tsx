@@ -72,7 +72,6 @@ export default function CampByCamp() {
   );
 
   const { data } = methodData || emptyData;
-  console.log({ data });
   const updateCampByCampData = useCallback(async () => {
     await getCampByCampData(undefined);
   }, [getCampByCampData]);
