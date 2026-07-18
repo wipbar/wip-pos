@@ -414,7 +414,7 @@ export function StockItem({ stock }: { stock: IStock }) {
     <div
       key={stock._id}
       className={css`
-        padding: 0.125em 0.5em 0px;
+        padding: 0.125em 0em 0px;
         position: relative;
         break-inside: avoid;
         line-height: 1.2;
@@ -430,7 +430,6 @@ export function StockItem({ stock }: { stock: IStock }) {
         <span>
           <div
             className={css`
-              margin-top: 2px;
               font-weight: bold;
               line-height: 0.8;
             `}

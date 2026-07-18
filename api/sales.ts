@@ -14,7 +14,7 @@ import uniq from "lodash/uniq";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import type { CartID } from "../ui/PageTend";
-import { tagsToString, type Flavor } from "../util";
+import { createTrend, tagsToString, type Flavor } from "../util";
 import { isUserInTeam } from "./accounts";
 import Camps, { type ICamp } from "./camps";
 import Locations, { type ILocation } from "./locations";
@@ -117,6 +117,8 @@ export const salesMethods = {
         ).map((stockId) => Stocks.findOneAsync({ _id: stockId })),
       )
     ).filter((stock): stock is NonNullable<typeof stock> => Boolean(stock));
+
+    await new Promise((resolve) => setTimeout(resolve, 3000)); // simulate slow network
 
     const insertResult = await Sales.insertAsync({
       userId: userId,
@@ -913,7 +915,17 @@ async function calculateMostSoldStock() {
 
   const now2 = new Date();
 
-  const data: Record<ICamp["slug"], [StockID, number, number | null][]> = {};
+  const data: Record<
+    ICamp["slug"],
+    [
+      StockID,
+      servingsSold: number,
+      servingsExpected: number | null,
+      /** The rate at which the stock is being used per day from first sale to last sale */
+      servingRate: number | null,
+      approxCount: number | null,
+    ][]
+  > = {};
   for (const currentCamp of camps) {
     const campSales = sales.filter(
       ({ timestamp }) =>
@@ -921,14 +933,57 @@ async function calculateMostSoldStock() {
     );
 
     data[currentCamp.slug] = stocks
-      .map(
-        (stock) =>
-          [stock._id, getServingsSold(campSales, stock), null] satisfies [
-            StockID,
-            number,
-            number | null,
+      .map((stock) => {
+        const stockSales = campSales.filter((sale) =>
+          sale.products.some(
+            (product) =>
+              product.components?.some(
+                (component) => component.stockId === stock._id,
+              ),
+          ),
+        );
+
+        if (!stockSales.length)
+          return [
+            stock._id,
+            0,
+            null,
+            null,
+            null,
+          ] satisfies (typeof data)[number][number];
+
+        const servingsSold = getServingsSold(stockSales, stock);
+
+        const stockSalesByTimestamp = [...stockSales].sort(
+          (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+        );
+        const firstSale = stockSalesByTimestamp[0] || null;
+        const lastSale =
+          stockSalesByTimestamp[stockSalesByTimestamp.length - 1] || null;
+
+        const trend = createTrend(
+          [
+            {
+              timestamp: firstSale?.timestamp?.valueOf() || 0,
+              value: 0,
+            },
+            {
+              timestamp: lastSale?.timestamp?.valueOf() || 0,
+              value: servingsSold,
+            },
           ],
-      )
+          "timestamp",
+          "value",
+        );
+
+        return [
+          stock._id,
+          servingsSold,
+          trend.calcY(currentCamp.end.valueOf()),
+          trend.slope * (HOUR_IN_MS * 24),
+          stock.approxCount || 0,
+        ] satisfies (typeof data)[number][number];
+      })
       .filter(([, count]) => count > 0);
   }
 
