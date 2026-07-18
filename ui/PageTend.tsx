@@ -156,7 +156,7 @@ export default function PageTend() {
           setCarts((oldCarts) =>
             oldCarts.filter((oldCart) => oldCart.id !== cart.id),
           );
-          if (currentCartId) setCurrentCartId(null);
+          if (currentCartId == cart.id) setCurrentCartId(null);
         }
       } else {
         const newCart = {
