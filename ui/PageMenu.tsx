@@ -435,6 +435,7 @@ export function StockItem({ stock }: { stock: IStock }) {
               line-height: 0.8;
             `}
           >
+            {stock.brandName ? `${stock.brandName} ` : null}
             {stock.name}{" "}
             <small
               style={{
