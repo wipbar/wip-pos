@@ -280,7 +280,7 @@ export function ProductsItem({
                 right: 0;
                 left: 0;
                 bottom: 0;
-                height: ${(1 - soldOutRatio) * 100}%;
+                height: ${Math.min((1 - soldOutRatio) * 100, 100)}%;
               `}
             />
           ) : (

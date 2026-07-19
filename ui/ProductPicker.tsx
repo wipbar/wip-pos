@@ -46,7 +46,11 @@ const fac = new FastAverageColor();
 
 const collator = new Intl.Collator("en");
 
-export function ProductPickerProductStock({ productId }: { productId: ProductID }) {
+export function ProductPickerProductStock({
+  productId,
+}: {
+  productId: ProductID;
+}) {
   const [call, result] = useMethod("Products.getRemainingPercent");
 
   useEffect(() => {
@@ -81,7 +85,7 @@ export function ProductPickerProductStock({ productId }: { productId: ProductID 
             right: 0;
             left: 0;
             bottom: 0;
-            height: ${(1 - soldOutRatio) * 100}%;
+            height: ${Math.min((1 - soldOutRatio) * 100, 100)}%;
           `}
         />
       ) : (
