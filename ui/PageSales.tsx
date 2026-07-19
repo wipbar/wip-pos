@@ -54,7 +54,7 @@ export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
   const currentUser = useCurrentUser();
   const selectedCamp = useCurrentCamp();
-  useSubscription(
+  const salesLoading = useSubscription(
     "sales",
     { from: selectedCamp?.buildup, to: selectedCamp?.teardown },
     [selectedCamp],
@@ -150,7 +150,7 @@ export default function PageSales() {
                 <small>
                   <button
                     type="button"
-                    disabled={!location}
+                    disabled={!location || salesLoading}
                     onClick={() => {
                       const userIsResponsible = isUserResponsible(currentUser);
                       const statements = salesOfDay.map((sale) => ({
