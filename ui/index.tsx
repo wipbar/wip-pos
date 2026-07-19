@@ -57,7 +57,7 @@ export default function UI() {
   const navigate = useNavigate();
   const match = useMatch("/:locationSlug/*");
   const locationSlug = match?.params.locationSlug;
-  const pageSlug = match?.params?.["*"];
+  const pageSlug = match?.params?.["*"]?.split("/")[0];
 
   const camps = useFind(
     () =>
