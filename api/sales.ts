@@ -919,11 +919,12 @@ async function calculateMostSoldStock() {
     ICamp["slug"],
     [
       StockID,
-      servingsSold: number,
-      servingsExpected: number | null,
-      /** The rate at which the stock is being used per day from first sale to last sale */
-      servingRate: number | null,
       approxCount: number | null,
+      servingsSold: number,
+      /** The expected number of servings that would have been sold if the stock had been used at the same rate as it was used during the sales span */
+      salesSpanServingsExpected: number | null,
+      /** The rate at which the stock is being used per day from first sale to last sale */
+      salesSpanServingRate: number | null,
     ][]
   > = {};
   for (const currentCamp of camps) {
@@ -946,8 +947,8 @@ async function calculateMostSoldStock() {
         if (!stockSales.length)
           return [
             stock._id,
-            0,
             null,
+            0,
             null,
             null,
           ] satisfies (typeof data)[number][number];
@@ -978,13 +979,13 @@ async function calculateMostSoldStock() {
 
         return [
           stock._id,
+          stock.approxCount || 0,
           servingsSold,
           trend.calcY(currentCamp.end.valueOf()),
           trend.slope * (HOUR_IN_MS * 24),
-          stock.approxCount || 0,
         ] satisfies (typeof data)[number][number];
       })
-      .filter(([, count]) => count > 0);
+      .filter(([, , count]) => count > 0);
   }
 
   const now3 = new Date();

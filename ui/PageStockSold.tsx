@@ -49,14 +49,14 @@ export default function PageStockSold() {
       >
         {mostSoldData.length ? (
           Array.from(mostSoldData)
-            .sort(([, countA], [, countB]) => countB - countA)
+            .sort(([, , countA], [, , countB]) => countB - countA)
             .map(
               ([
                 stockId,
+                approxCount,
                 servingsSold,
                 expectedServingsSoldByEndOfCamp,
                 servingsPerDay,
-                approxCount,
               ]) => {
                 const stock = stocks.find(({ _id }) => _id == stockId);
                 if (!stock) return null;
@@ -93,9 +93,7 @@ export default function PageStockSold() {
                     : null;
 
                 const campSpanEfterslaebRatio =
-                  expectedServingsSoldByEndOfCamp !== null &&
-                  camp &&
-                  campSpanForTheRestOfTheCamp != null
+                  camp && campSpanForTheRestOfTheCamp != null
                     ? approxCount !== null
                       ? approxCount / campSpanForTheRestOfTheCamp
                       : null
@@ -104,6 +102,15 @@ export default function PageStockSold() {
                 const isCriticallyLow =
                   campSpanEfterslaebRatio !== null &&
                   campSpanEfterslaebRatio < 0.5;
+
+                const salesSpanEfterslaebRatio =
+                  expectedServingsSoldByEndOfCamp !== null &&
+                  salesSpanEfterslaeb !== null
+                    ? approxCount !== null
+                      ? approxCount /
+                        (expectedServingsSoldByEndOfCamp - servingsSold)
+                      : null
+                    : null;
 
                 return (
                   <li
@@ -200,16 +207,23 @@ export default function PageStockSold() {
                                   we have{" "}
                                   {Math.abs(salesSpanEfterslaeb).toLocaleString(
                                     "en",
-                                    {
-                                      maximumSignificantDigits: 2,
-                                    },
+                                    { maximumSignificantDigits: 2 },
                                   )}{" "}
                                   {packageName}
                                   {salesSpanEfterslaeb > 0 ? (
                                     <b> too many.</b>
                                   ) : (
                                     <b> too few.</b>
-                                  )}
+                                  )}{" "}
+                                  {salesSpanEfterslaebRatio != null
+                                    ? `${
+                                        (
+                                          salesSpanEfterslaebRatio * 100
+                                        ).toLocaleString("en", {
+                                          maximumSignificantDigits: 2,
+                                        }) + "% of what we need"
+                                      }`
+                                    : null}
                                 </span>
                               </>
                             )}
