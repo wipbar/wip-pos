@@ -586,6 +586,25 @@ export default function PageMenu() {
   };
   list = list.reduce(
     (memo, [tags, productsByBrandName, tagsSpark]) => {
+      if (!tags.includes("tap")) {
+        productsByBrandName = Array.from(productsByBrandName).sort(
+          (a, b) => b[1].length - a[1].length,
+        );
+        productsByBrandName = zip(
+          productsByBrandName.slice(
+            0,
+            Math.ceil(productsByBrandName.length / 2),
+          ),
+          productsByBrandName
+            .slice(
+              Math.ceil(productsByBrandName.length / 2),
+              productsByBrandName.length,
+            )
+            .reverse(),
+        )
+          .flat()
+          .filter((l): l is NonNullable<typeof l> => Boolean(l));
+      }
       const tagsProductsLength = getOijProductsLength([
         tags,
         productsByBrandName,
@@ -638,266 +657,274 @@ export default function PageMenu() {
       `}
       style={style}
     >
-      {(
-        zip(
-          list.slice(0, Math.ceil(list.length / 2)),
-          list.slice(Math.ceil(list.length / 2), list.length).reverse(),
-        )
-          .flat()
-          .filter(Boolean) as typeof list
-      ).map(([tags, productsByBrandName, tagsSpark, key]) => (
-        <div
-          key={key || tags}
-          className={css`
-            color: ${currentCamp &&
-            getCorrectTextColor(
-              getCorrectTextColor(currentCamp.color) === "white"
-                ? lighten(4 / 5, currentCamp.color)
-                : darken(4 / 5, currentCamp.color),
-            )};
-
-            break-inside: avoid;
-          `}
-        >
-          <h1
+      {zip(
+        list.slice(0, Math.ceil(list.length / 2)),
+        list.slice(Math.ceil(list.length / 2), list.length).reverse(),
+      )
+        .flat()
+        .filter((l): l is NonNullable<typeof l> => Boolean(l))
+        .map(([tags, productsByBrandName, tagsSpark, key]) => (
+          <div
+            key={key || tags}
             className={css`
-              margin: 0;
-              font-size: 2em;
-              text-align: center;
-              color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
-              display: flex;
-              justify-content: space-evenly;
-              margin-bottom: -8px;
+              color: ${currentCamp &&
+              getCorrectTextColor(
+                getCorrectTextColor(currentCamp.color) === "white"
+                  ? lighten(4 / 5, currentCamp.color)
+                  : darken(4 / 5, currentCamp.color),
+              )};
+
+              break-inside: avoid;
             `}
           >
-            {sortTags(tags.split(",") || emptyArray).map((tag) => (
-              <span
-                key={tag}
-                className={css`
-                  display: inline-block;
-                  background: ${tag === "io"
-                    ? "yellow"
-                    : stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
-                  color: ${getCorrectTextColor(stringToColour(tag)) || "white"};
-                  padding: 0em;
-                  border-radius: 4px;
-                  margin-left: 2px;
-                  flex: 1;
-                `}
-              >
-                {tag.trim()}
-              </span>
-            ))}
-          </h1>
-          <SparkLine
-            className={css`
-              margin-top: -8px;
-              display: block;
-              border-bottom: ${currentCamp &&
+            <h1
+              className={css`
+                margin: 0;
+                font-size: 2em;
+                text-align: center;
+                color: ${currentCamp && getCorrectTextColor(currentCamp.color)};
+                display: flex;
+                justify-content: space-evenly;
+                margin-bottom: -8px;
+              `}
+            >
+              {sortTags(tags.split(",") || emptyArray).map((tag) => (
+                <span
+                  key={tag}
+                  className={css`
+                    display: inline-block;
+                    background: ${tag === "io"
+                      ? "yellow"
+                      : stringToColour(tag) || `rgba(0, 0, 0, 0.4)`};
+                    color: ${getCorrectTextColor(stringToColour(tag)) ||
+                    "white"};
+                    padding: 0em;
+                    border-radius: 4px;
+                    margin-left: 2px;
+                    flex: 1;
+                  `}
+                >
+                  {tag.trim()}
+                </span>
+              ))}
+            </h1>
+            <SparkLine
+              className={css`
+                margin-top: -8px;
+                display: block;
+                border-bottom: ${currentCamp &&
+                  getCorrectTextColor(
+                    getCorrectTextColor(currentCamp?.color) === "white"
+                      ? lighten(4 / 5, currentCamp?.color)
+                      : darken(4 / 5, currentCamp?.color),
+                  )}
+                  1px solid;
+              `}
+              fill={
+                currentCamp &&
                 getCorrectTextColor(
                   getCorrectTextColor(currentCamp?.color) === "white"
                     ? lighten(4 / 5, currentCamp?.color)
                     : darken(4 / 5, currentCamp?.color),
-                )}
-                1px solid;
-            `}
-            fill={
-              currentCamp &&
-              getCorrectTextColor(
-                getCorrectTextColor(currentCamp?.color) === "white"
-                  ? lighten(4 / 5, currentCamp?.color)
-                  : darken(4 / 5, currentCamp?.color),
-              )
-            }
-            data={tagsSpark}
-          />
-          <div
-            className={css`
-              background: ${currentCamp &&
-              transparentize(5 / 6, getCorrectTextColor(currentCamp?.color))};
-              color: ${currentCamp &&
-              getCorrectTextColor(
-                getCorrectTextColor(currentCamp?.color) === "white"
-                  ? lighten(4 / 5, currentCamp?.color)
-                  : darken(4 / 5, currentCamp?.color),
-              )};
-
-              break-inside: avoid;
-              padding: 0.25em;
-              margin-bottom: 0.5em;
-            `}
-          >
-            <ul
+                )
+              }
+              data={tagsSpark}
+            />
+            <div
               className={css`
-                margin: 0;
-                padding: 0;
-                list-style: none;
-                display: flex;
-                flex-direction: column;
-                gap: 0.25em;
+                background: ${currentCamp &&
+                transparentize(5 / 6, getCorrectTextColor(currentCamp?.color))};
+                color: ${currentCamp &&
+                getCorrectTextColor(
+                  getCorrectTextColor(currentCamp?.color) === "white"
+                    ? lighten(4 / 5, currentCamp?.color)
+                    : darken(4 / 5, currentCamp?.color),
+                )};
+
+                break-inside: avoid;
+                padding: 0.25em;
+                margin-bottom: 0.5em;
               `}
             >
-              {productsByBrandName.map(([brandName, products]) => (
-                <Fragment key={brandName}>
-                  <small
-                    className={css`
-                      flex: 1;
-                      display: flex;
-                      justify-content: space-around;
-                    `}
-                  >
-                    <div
-                      className={css`
-                        flex: 1;
-                        text-align: center;
-                        font-weight: 600;
-                        color: ${currentCamp &&
-                        getCorrectTextColor(currentCamp?.color)};
-                      `}
-                    >
-                      {brandName}
-                    </div>
+              <ul
+                className={css`
+                  margin: 0;
+                  padding: 0;
+                  list-style: none;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 0.25em;
+                `}
+              >
+                {productsByBrandName.map(([brandName, products]) => (
+                  <Fragment key={brandName}>
                     <small
                       className={css`
-                        padding: 0.25em 0.9em 0px;
-                        padding-right: 0.6em;
+                        flex: 1;
+                        display: flex;
+                        justify-content: space-around;
                       `}
                     >
-                      ʜᴀx
-                    </small>
-                  </small>
-                  <li
-                    key={brandName}
-                    className={css`
-                      margin: 0;
-                      display: flex;
-                      flex-direction: column;
-                      background: ${currentCamp &&
-                      transparentize(
-                        4 / 5,
-                        getCorrectTextColor(currentCamp?.color),
-                      )};
-                      align-items: stretch;
-                      break-inside: avoid;
-
-                      border: 1px solid
-                        ${currentCamp &&
-                        transparentize(
-                          1 / 5,
-                          getCorrectTextColor(currentCamp?.color),
-                        )};
-                      position: relative;
-                    `}
-                  >
-                    {brandName === "BornHack" &&
-                    tags.includes("spirit") &&
-                    tags.includes("bottle") ? (
-                      <img
-                        src="/img/logo_square_white_on_transparent_500_RGB.png"
+                      <div
                         className={css`
-                          object-fit: contain;
-                          position: absolute;
-                          height: 100%;
-                          width: auto;
-                          top: 50%;
-                          left: 50%;
-                          transform: translate(-50%, -50%);
-                          opacity: 0.5;
-                          z-index: 0;
+                          flex: 1;
+                          text-align: center;
+                          font-weight: 600;
+                          color: ${currentCamp &&
+                          getCorrectTextColor(currentCamp?.color)};
                         `}
-                      />
-                    ) : null}
-                    <div
+                      >
+                        {brandName}
+                      </div>
+                      <small
+                        className={css`
+                          padding: 0.25em 0.9em 0px;
+                          padding-right: 0.6em;
+                        `}
+                      >
+                        ʜᴀx
+                      </small>
+                    </small>
+                    <li
+                      key={brandName}
                       className={css`
+                        margin: 0;
                         display: flex;
                         flex-direction: column;
-                        gap: 0.125em;
+                        background: ${currentCamp &&
+                        transparentize(
+                          4 / 5,
+                          getCorrectTextColor(currentCamp?.color),
+                        )};
+                        align-items: stretch;
+                        break-inside: avoid;
+
+                        border: 1px solid
+                          ${currentCamp &&
+                          transparentize(
+                            1 / 5,
+                            getCorrectTextColor(currentCamp?.color),
+                          )};
+                        position: relative;
                       `}
                     >
-                      {products
-                        .reduce(
-                          (memo, menuItemTuple) => {
-                            const lastEntry = memo[memo.length - 1];
-                            const lastProductOrProducts = lastEntry?.[0];
-                            if (
-                              lastEntry &&
-                              lastProductOrProducts &&
-                              (Array.isArray(lastProductOrProducts)
-                                ? lastProductOrProducts.some((p) =>
-                                    isBasicallySameProduct(p, menuItemTuple[0]),
-                                  )
-                                : isBasicallySameProduct(
-                                    lastProductOrProducts,
-                                    menuItemTuple[0],
-                                  ))
-                            ) {
-                              memo[memo.length - 1]![0] = uniqBy(
-                                Array.isArray(lastProductOrProducts)
-                                  ? [...lastProductOrProducts, menuItemTuple[0]]
-                                  : [lastProductOrProducts, menuItemTuple[0]],
-                                (p) => p._id,
+                      {brandName === "BornHack" &&
+                      tags.includes("spirit") &&
+                      tags.includes("bottle") ? (
+                        <img
+                          src="/img/logo_square_white_on_transparent_500_RGB.png"
+                          className={css`
+                            object-fit: contain;
+                            position: absolute;
+                            height: 100%;
+                            width: auto;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            opacity: 0.5;
+                            z-index: 0;
+                          `}
+                        />
+                      ) : null}
+                      <div
+                        className={css`
+                          display: flex;
+                          flex-direction: column;
+                          gap: 0.125em;
+                        `}
+                      >
+                        {products
+                          .reduce(
+                            (memo, menuItemTuple) => {
+                              const lastEntry = memo[memo.length - 1];
+                              const lastProductOrProducts = lastEntry?.[0];
+                              if (
+                                lastEntry &&
+                                lastProductOrProducts &&
+                                (Array.isArray(lastProductOrProducts)
+                                  ? lastProductOrProducts.some((p) =>
+                                      isBasicallySameProduct(
+                                        p,
+                                        menuItemTuple[0],
+                                      ),
+                                    )
+                                  : isBasicallySameProduct(
+                                      lastProductOrProducts,
+                                      menuItemTuple[0],
+                                    ))
+                              ) {
+                                memo[memo.length - 1]![0] = uniqBy(
+                                  Array.isArray(lastProductOrProducts)
+                                    ? [
+                                        ...lastProductOrProducts,
+                                        menuItemTuple[0],
+                                      ]
+                                    : [lastProductOrProducts, menuItemTuple[0]],
+                                  (p) => p._id,
+                                );
+                              } else {
+                                memo.push(
+                                  menuItemTuple as (typeof memo)[number],
+                                );
+                              }
+
+                              return memo;
+                            },
+                            [] as [
+                              IProduct | IProduct[],
+                              (readonly [number, number])[],
+                              number | null,
+                              number | undefined,
+                            ][],
+                          )
+                          .map(
+                            ([
+                              productOrProducts,
+                              productSpark,
+                              soldOutRatio,
+                              servingTime,
+                            ]) => {
+                              const product = Array.isArray(productOrProducts)
+                                ? productOrProducts[0]!
+                                : productOrProducts;
+
+                              const componentStocks = (product.components ?? [])
+                                .map((component) =>
+                                  stocks.find(
+                                    (stock) => stock._id === component.stockId,
+                                  ),
+                                )
+                                .filter((s): s is IStock => Boolean(s));
+
+                              return (
+                                <ProductsItem
+                                  key={product._id}
+                                  product={product}
+                                  componentStocks={componentStocks}
+                                  productSpark={productSpark}
+                                  servingTime={servingTime}
+                                  soldOutRatio={soldOutRatio}
+                                  sizePrices={
+                                    Array.isArray(productOrProducts)
+                                      ? productOrProducts.map((p) => ({
+                                          productId: p._id,
+                                          unitSize: getProductSize(p)?.unitSize,
+                                          salePrice: p.salePrice ?? NaN,
+                                        }))
+                                      : undefined
+                                  }
+                                />
                               );
-                            } else {
-                              memo.push(menuItemTuple as (typeof memo)[number]);
-                            }
-
-                            return memo;
-                          },
-                          [] as [
-                            IProduct | IProduct[],
-                            (readonly [number, number])[],
-                            number | null,
-                            number | undefined,
-                          ][],
-                        )
-                        .map(
-                          ([
-                            productOrProducts,
-                            productSpark,
-                            soldOutRatio,
-                            servingTime,
-                          ]) => {
-                            const product = Array.isArray(productOrProducts)
-                              ? productOrProducts[0]!
-                              : productOrProducts;
-
-                            const componentStocks = (product.components ?? [])
-                              .map((component) =>
-                                stocks.find(
-                                  (stock) => stock._id === component.stockId,
-                                ),
-                              )
-                              .filter((s): s is IStock => Boolean(s));
-
-                            return (
-                              <ProductsItem
-                                key={product._id}
-                                product={product}
-                                componentStocks={componentStocks}
-                                productSpark={productSpark}
-                                servingTime={servingTime}
-                                soldOutRatio={soldOutRatio}
-                                sizePrices={
-                                  Array.isArray(productOrProducts)
-                                    ? productOrProducts.map((p) => ({
-                                        productId: p._id,
-                                        unitSize: getProductSize(p)?.unitSize,
-                                        salePrice: p.salePrice ?? NaN,
-                                      }))
-                                    : undefined
-                                }
-                              />
-                            );
-                          },
-                        )}
-                    </div>
-                  </li>
-                </Fragment>
-              ))}
-            </ul>
+                            },
+                          )}
+                      </div>
+                    </li>
+                  </Fragment>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
       <center
         className={css`
           margin-top: -0.5em;
