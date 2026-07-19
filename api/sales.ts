@@ -31,6 +31,8 @@ import Stocks, {
   getRemainingServings,
   getRemainingServingsEver,
   getServingsSold,
+  getStocksByProductIds,
+  getStocksByTags,
   type IStock,
   type StockID,
 } from "./stocks";
@@ -242,6 +244,130 @@ export const salesMethods = {
     return locationMenuData?.[locationSlug];
   },
 
+  async "Products.getEfterslaeb"(
+    this: Meteor.MethodThisType,
+    args: { campSlug: ICamp["slug"] } & (
+      | { tags?: string[] }
+      | { productIds?: ProductID[] }
+      | { stockIds?: StockID[] }
+    ),
+  ) {
+    this.unblock();
+    if (this.isSimulation) return;
+
+    const camp = await Camps.findOneAsync({ slug: args.campSlug });
+    if (!camp) throw new Meteor.Error("Camp not found");
+
+    let stocks: IStock[] | undefined;
+    if ("tags" in args && args.tags?.length) {
+      stocks = await getStocksByTags(args.tags);
+    } else if ("productIds" in args && args.productIds?.length) {
+      stocks = await getStocksByProductIds(args.productIds);
+    } else if ("stockIds" in args && args.stockIds?.length) {
+      stocks = await Stocks.find({ _id: { $in: args.stockIds } }).fetchAsync();
+    } else {
+      throw new Meteor.Error(
+        "No valid filter provided. Please provide tags, productIds, or stockIds.",
+      );
+    }
+
+    const sales = await Sales.find({
+      timestamp: { $gte: camp.buildup, $lte: camp.teardown },
+    }).fetchAsync();
+
+    // Calculate total quantity sold, rate of sale, and remaining quantity for each stock
+    const efterslaebData = stocks
+      .filter(
+        (stock) =>
+          stock.sizeUnit === "cl" ||
+          stock.sizeUnit === "l" ||
+          stock.sizeUnit === "ml",
+      )
+      .map((stock) => {
+        const stockSales = sales.filter((sale) =>
+          sale.products.some(
+            (product) =>
+              product.components?.some(
+                (component) => component.stockId === stock._id,
+              ),
+          ),
+        );
+
+        const servingsSold = getServingsSold(stockSales, stock);
+
+        const trend = createTrend(
+          [
+            { timestamp: camp.start.valueOf(), value: 0 },
+            {
+              timestamp: min([new Date(), camp.end]).valueOf(),
+              value: servingsSold,
+            },
+          ],
+          "timestamp",
+          "value",
+        );
+
+        return {
+          stockId: stock._id,
+          stockName: stock.name,
+          stockUnitSize: stock.unitSize,
+          stockSizeUnit: stock.sizeUnit,
+          servingsSold,
+          expectedServingsSold: trend.calcY(camp.end.valueOf()),
+          servingRate: trend.slope,
+          approxCount: stock.approxCount,
+          amountSold:
+            convert(stock.unitSize, stock.sizeUnit).to("l") * servingsSold,
+          amountApprox:
+            convert(stock.unitSize, stock.sizeUnit).to("l") *
+            (stock.approxCount || 0),
+          amountServingRate:
+            convert(stock.unitSize, stock.sizeUnit).to("l") * trend.slope,
+          amountExpected:
+            convert(stock.unitSize, stock.sizeUnit).to("l") *
+            trend.calcY(camp.end.valueOf()),
+        };
+      })
+      .filter((stockData) => stockData.servingsSold > 0);
+
+    const totalAmountSold = efterslaebData.reduce(
+      (total, stockData) => total + stockData.amountSold,
+      0,
+    );
+
+    const totalAmountRemaining = efterslaebData.reduce(
+      (total, stockData) => total + stockData.amountApprox,
+      0,
+    );
+
+    const totalTrend = createTrend(
+      [
+        { timestamp: camp.start.valueOf(), value: 0 },
+        {
+          timestamp: min([new Date(), camp.end]).valueOf(),
+          value: totalAmountSold,
+        },
+      ],
+      "timestamp",
+      "value",
+    );
+
+    const totalAmountExpected = totalTrend.calcY(camp.end.valueOf());
+
+    const totalEfterslaeb =
+      totalAmountRemaining - (totalAmountExpected - totalAmountSold);
+
+    const totalDemandRemaining = totalAmountExpected - totalAmountSold;
+
+    return {
+      sold: Math.round(totalAmountSold),
+      expected: Math.round(totalAmountExpected),
+      remainingStock: Math.round(totalAmountRemaining),
+      remainingDemand: Math.round(totalDemandRemaining),
+      slack: Math.round(totalEfterslaeb),
+      fulfilmentRatio: totalAmountRemaining / totalDemandRemaining,
+    };
+  },
   async "Sales.stats.GoodbyeWorld"(
     this: Meteor.MethodThisType,
     { campSlug }: { campSlug: ICamp["slug"] },

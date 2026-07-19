@@ -1,12 +1,13 @@
 import { convert } from "convert";
 import { isBefore, subDays } from "date-fns";
+import uniqBy from "lodash/uniqBy";
 import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import { PackageTypeCode } from "../data";
 import { Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
 import type { ICamp } from "./camps";
-import type { IProduct } from "./products";
+import Products, { IProduct, ProductID } from "./products";
 import type { ISale } from "./sales";
 
 export type StockID = Flavor<string, "StockID">;
@@ -346,3 +347,31 @@ export function getServingsSold(
 
   return totalServingsSold;
 }
+
+export async function getStocksByTags(tags: string[]): Promise<IStock[]> {
+  const tagProducts = await Products.find({ tags: { $in: tags } }).fetchAsync();
+  const stockIds = uniqBy(
+    tagProducts
+      .map((product) => product.components?.map((c) => c.stockId))
+      .flat()
+      .filter((stockId): stockId is StockID => Boolean(stockId)),
+    (stockId) => stockId,
+  );
+  return await Stocks.find({ _id: { $in: stockIds } }).fetchAsync();
+}
+
+export const getStocksByProductIds = async (
+  productIds: ProductID[],
+): Promise<IStock[]> => {
+  const products = await Products.find({
+    _id: { $in: productIds },
+  }).fetchAsync();
+  const stockIds = uniqBy(
+    products
+      .map((product) => product.components?.map((c) => c.stockId))
+      .flat()
+      .filter((stockId): stockId is StockID => Boolean(stockId)),
+    (stockId) => stockId,
+  );
+  return await Stocks.find({ _id: { $in: stockIds } }).fetchAsync();
+};

@@ -1,6 +1,7 @@
 import { css } from "@emotion/css";
 import { useFind } from "meteor/react-meteor-data";
 import { useCallback, useEffect } from "react";
+import { type salesMethods } from "../api/sales";
 import Stocks from "../api/stocks";
 import { packageTypes } from "../data";
 import useCurrentCamp from "../hooks/useCurrentCamp";
@@ -8,6 +9,70 @@ import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import { emptyArray } from "../util";
 import { StockItem } from "./PageMenu";
+
+function PageStockSoldTag({
+  filter,
+}: {
+  filter: Omit<
+    Parameters<(typeof salesMethods)["Products.getEfterslaeb"]>[0],
+    "campSlug"
+  >;
+}) {
+  const camp = useCurrentCamp();
+  const [getEfterslaeb, efterslaebResponse] = useMethod(
+    "Products.getEfterslaeb",
+  );
+  const efterslaebData = efterslaebResponse?.data;
+  const updateEfterslaebData = useCallback(
+    () => camp?.slug && getEfterslaeb({ campSlug: camp?.slug, ...filter }),
+    [camp?.slug, getEfterslaeb, filter],
+  );
+  useEffect(() => void updateEfterslaebData(), [updateEfterslaebData]);
+  useInterval(() => void updateEfterslaebData(), 30000);
+
+  if (!efterslaebData) {
+    return null;
+  }
+
+  return (
+    <div
+      className={css`
+        padding: 12px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      `}
+    >
+      {JSON.stringify(filter)}
+      (liters)
+      <center>
+        <b>
+          <div>
+            {efterslaebData?.fulfilmentRatio != null
+              ? `${(efterslaebData.fulfilmentRatio * 100).toLocaleString("en", {
+                  maximumSignificantDigits: 2,
+                })}% demand met`
+              : "N/A"}
+          </div>
+          <small>
+            (
+            {efterslaebData?.remainingStock?.toLocaleString("en", {
+              maximumSignificantDigits: 2,
+            }) || 0}{" "}
+            liters remaining,{" "}
+            {efterslaebData?.remainingDemand?.toLocaleString("en", {
+              maximumSignificantDigits: 2,
+            }) || 0}{" "}
+            liters expected needed)
+          </small>
+        </b>
+      </center>
+    </div>
+  );
+}
 
 export default function PageStockSold() {
   const camp = useCurrentCamp();
@@ -17,8 +82,10 @@ export default function PageStockSold() {
     [],
   );
 
-  const [getMostSoldData, result] = useMethod("Sales.stats.MostSoldStock");
-  const mostSoldData = result?.data || emptyArray;
+  const [getMostSoldData, mostSoldDataResponse] = useMethod(
+    "Sales.stats.MostSoldStock",
+  );
+  const mostSoldData = mostSoldDataResponse?.data || emptyArray;
   const updateMostSoldData = useCallback(
     () => getMostSoldData({ campSlug: camp?.slug }),
     [camp?.slug, getMostSoldData],
@@ -37,6 +104,19 @@ export default function PageStockSold() {
         justify-content: center;
       `}
     >
+      <div
+        className={css`
+          display: grid;
+          flex: 1;
+          width: 100%;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        `}
+      >
+        <PageStockSoldTag filter={{ tags: ["beer"] }} />
+        <PageStockSoldTag filter={{ tags: ["soda"] }} />
+        <PageStockSoldTag filter={{ tags: ["cocio"] }} />
+        <PageStockSoldTag filter={{ tags: ["cider"] }} />
+      </div>
       {camp ? (
         <big>Most used stock @ {camp.name}:</big>
       ) : (
