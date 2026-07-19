@@ -55,19 +55,20 @@ export default function PageSales() {
   const currentUser = useCurrentUser();
   const selectedCamp = useCurrentCamp();
   const salesLoading = useSubscription(
-    "sales",
+    selectedCamp ? "sales" : undefined,
     { from: selectedCamp?.buildup, to: selectedCamp?.teardown },
     [selectedCamp],
   );
   const sales = useFind(
     () =>
       selectedCamp &&
+      location?._id &&
       Sales.find(
         {
-          locationId: location?._id,
+          locationId: location._id,
           timestamp: {
-            $gte: selectedCamp?.buildup,
-            $lte: selectedCamp?.teardown,
+            $gte: selectedCamp.buildup,
+            $lte: selectedCamp.teardown,
           },
         },
         { sort: { timestamp: -1 } },
