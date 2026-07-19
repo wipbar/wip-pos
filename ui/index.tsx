@@ -366,17 +366,7 @@ export default function UI() {
           <Route path="/:locationSlug/stock" element={<PageStock />} />
           <Route path="/:locationSlug/stock/sold" element={<PageStockSold />} />
           <Route path="/:locationSlug/sales" element={<PageSales />} />
-          <Route
-            path="/:locationSlug/menu"
-            element={
-              <Profiler
-                id="/:locationSlug/tend"
-                onRender={onProfilerRenderCallback}
-              >
-                <PageMenu />
-              </Profiler>
-            }
-          />
+          <Route path="/:locationSlug/menu/:tags?" element={<PageMenu />} />
           <Route path="/stats" element={<PageStats />} />
           <Route path="/qr" element={<PageQR />} />
           <Route

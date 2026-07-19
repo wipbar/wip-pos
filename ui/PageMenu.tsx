@@ -12,6 +12,7 @@ import {
   useMemo,
   type SVGProps,
 } from "react";
+import { useMatch } from "react-router";
 import {
   getProductABV,
   getProductBrandName,
@@ -464,6 +465,8 @@ export default function PageMenu() {
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(30000);
   const { location, error } = useCurrentLocation();
+  const match = useMatch("/:locationSlug/menu/:tags");
+  const tagsFilter = match?.params.tags?.split(",") || emptyArray;
 
   const style = useFind(() => Styles.find({ page: "menu" }), [])?.[0]?.style;
 
@@ -567,9 +570,22 @@ export default function PageMenu() {
   const getOijProductsLength = (o: NonNullable<typeof oij>[number]): number =>
     o[1]?.reduce((m, b) => m + b[1].length, 0) || NaN;
 
-  let list = oij.sort(
-    (a, b) => getOijProductsLength(b) - getOijProductsLength(a),
-  );
+  const positiveTagFilter = tagsFilter.length
+    ? tagsFilter.filter((tag) => !tag.startsWith("!"))
+    : null;
+  const negativeTagFilter = tagsFilter.length
+    ? tagsFilter.filter((tag) => tag.startsWith("!"))
+    : null;
+
+  let list = oij
+    .filter(
+      (o) =>
+        (!positiveTagFilter ||
+          positiveTagFilter.every((tag) => o[0].includes(tag))) &&
+        (!negativeTagFilter ||
+          negativeTagFilter.every((tag) => !o[0].includes(tag.slice(1)))),
+    )
+    .sort((a, b) => getOijProductsLength(b) - getOijProductsLength(a));
   const mergeBrands = (a: (typeof list)[number][1]) => {
     const merged: typeof a = [];
     const brandMap = new Map<string, (typeof a)[0][1]>();
