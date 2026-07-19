@@ -913,6 +913,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
               }, 0),
             ] as const,
         ),
+        tags,
       ] as const;
     });
 }

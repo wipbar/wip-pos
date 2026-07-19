@@ -237,16 +237,18 @@ export function ProductsItem({
         line-height: 1.2;
         ${product.salePrice == 0
           ? `
-                          box-shadow: 0 0 20px black, 0 0 40px black;
-                          color: black;
-                          background: turquoise;
-                          padding: 0 4px;
-                          animation-name: wobble;
-                          animation-iteration-count: infinite;
-                          animation-duration: 2s;
-                          transform-origin: 50% 50%;
-                          z-index: 50;
-                      `
+              box-shadow:
+                0 0 20px black,
+                0 0 40px black;
+              color: black;
+              background: turquoise;
+              padding: 0 4px;
+              animation-name: wobble;
+              animation-iteration-count: infinite;
+              animation-duration: 2s;
+              transform-origin: 50% 50%;
+              z-index: 50;
+            `
           : ""}
       `}
     >
@@ -588,7 +590,9 @@ export default function PageMenu() {
         tags,
         productsByBrandName,
         tagsSpark,
+        tags,
       ]);
+      // TODO: split more if more than 24 products
       if (tagsProductsLength > 12) {
         let newLizt1: typeof productsByBrandName = [];
         let newLizt2: typeof productsByBrandName = [];
@@ -605,9 +609,12 @@ export default function PageMenu() {
         }
         newLizt1 = mergeBrands(newLizt1);
         newLizt2 = mergeBrands(newLizt2);
-        memo.push([tags, newLizt1, tagsSpark], [tags, newLizt2, tagsSpark]);
+        memo.push(
+          [tags, newLizt1, tagsSpark, tags + `1`],
+          [tags, newLizt2, tagsSpark, tags + `2`],
+        );
       } else {
-        memo.push([tags, productsByBrandName, tagsSpark]);
+        memo.push([tags, productsByBrandName, tagsSpark, tags]);
       }
       return memo;
     },
@@ -638,9 +645,9 @@ export default function PageMenu() {
         )
           .flat()
           .filter(Boolean) as typeof list
-      ).map(([tags, productsByBrandName, tagsSpark]) => (
+      ).map(([tags, productsByBrandName, tagsSpark, key]) => (
         <div
-          key={tags}
+          key={key || tags}
           className={css`
             color: ${currentCamp &&
             getCorrectTextColor(
