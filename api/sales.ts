@@ -30,6 +30,7 @@ import Products, {
 import Stocks, {
   getRemainingServings,
   getRemainingServingsEver,
+  getApproxRemainingServings,
   getServingsSold,
   getStocksByProductIds,
   getStocksByTags,
@@ -180,7 +181,36 @@ export const salesMethods = {
       console.error("Failed to update stocks after sale", e);
     }
 
-    return insertResult;
+    // Which just-sold products crossed into "sold out" on this sale and are
+    // still on this location's menu? (before >= 1 serving, now < 1)
+    const soldOutThreshold = 1;
+    let soldOutProductIds: ProductID[] = [];
+    try {
+      const stockIds = stocks.map((s) => s._id);
+      const stocksAfter = stockIds.length
+        ? await Stocks.find({ _id: { $in: stockIds } }).fetchAsync()
+        : [];
+      const productById = new Map(products.map((p) => [p._id, p]));
+
+      soldOutProductIds = uniq(productIds)
+        .map((id) => productById.get(id))
+        .filter((p): p is IProduct => Boolean(p))
+        .filter((p) => p.locationIds?.includes(location._id))
+        .filter((p) => {
+          const before = getApproxRemainingServings(stocks, p);
+          const after = getApproxRemainingServings(stocksAfter, p);
+          return (
+            Number.isFinite(before) &&
+            before >= soldOutThreshold &&
+            after < soldOutThreshold
+          );
+        })
+        .map((p) => p._id);
+        } catch (e) {
+          console.error("Failed to compute sold-out products after sale", e);
+        }
+
+      return { _id: insertResult, soldOutProductIds };
   },
 
   "Sales.stats.CampByCamp"(this: Meteor.MethodThisType) {

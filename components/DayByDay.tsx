@@ -102,7 +102,9 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
                 },
               }}
               r={4}
-              fill={currentCamp && getCorrectTextColor(currentCamp.color, false)}
+              fill={
+                currentCamp && getCorrectTextColor(currentCamp.color, false)
+              }
               stroke={
                 currentCamp && getCorrectTextColor(currentCamp.color, true)
               }

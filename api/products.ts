@@ -133,6 +133,23 @@ export const productsMethods = {
         $set: { removedAt: new Date() },
       });
   },
+  async "Products.removeFromMenu"(
+  this: Meteor.MethodThisType,
+  { productId, locationId }: { productId: ProductID; locationId: string },
+  ) {
+  const user =
+    (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+  await assertUserInAnyTeam(user);
+
+  if (!productId || !locationId)
+    throw new Meteor.Error("productId and locationId are required");
+
+  // Take it off this location's menu only; stays in the system + other bars.
+  return await Products.updateAsync(productId, {
+    $pull: { locationIds: locationId },
+    $set: { updatedAt: new Date() },
+  });
+},
   "Products.getRemainingPercent"(
     this: Meteor.MethodThisType,
     { productId }: { productId: ProductID },
