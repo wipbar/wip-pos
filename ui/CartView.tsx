@@ -21,6 +21,8 @@ import { emptyArray, getCorrectTextColor } from "../util";
 import CartViewOpenedAt from "./CartOpenedAt";
 import { ProductsItem } from "./PageMenu";
 import type { Cart, CartID } from "./PageTend";
+import { Modal } from "./PageProducts";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 
 function CartViewProductsItem({
   product,
@@ -174,7 +176,18 @@ export default function CartView({
   isActive?: boolean;
   onSetActive?: (cart: Cart | undefined) => void;
   onSetCurrentCartId: (id: CartID | null) => void;
-}) {
+  }) {
+  const { location } = useCurrentLocation();
+  const [doRemoveFromMenu] = useMethod("Products.removeFromMenu");
+  const [soldOutQueue, setSoldOutQueue] = useState<IProduct[]>([]);
+
+  const dismissTopSoldOut = useEvent(() => setSoldOutQueue((q) => q.slice(1)));
+  const removeTopFromMenu = useEvent(async () => {
+    const product = soldOutQueue[0];
+    if (product && location)
+      await doRemoveFromMenu({ productId: product._id, locationId: location._id });
+    setSoldOutQueue((q) => q.slice(1));
+  });
   const currentCamp = useCurrentCamp();
 
   const { locationSlug } = useParams();
@@ -199,8 +212,9 @@ export default function CartView({
     setConfirmOpen(false);
     onSetCurrentCartId(null);
 
+    let result: Awaited<ReturnType<typeof doSellProducts>> | undefined;
     try {
-      await doSellProducts({
+      result = await doSellProducts({
         locationSlug,
         cartId: cart.id,
         cartOpenedAt: cart.openedAt,
@@ -219,8 +233,12 @@ export default function CartView({
     }
     setPickedProductIds(cart, emptyArray);
     await dingSound.play();
-
     navigator.vibrate?.(500);
+
+    const justSoldOut = (result?.soldOutProductIds ?? [])
+      .map((id) => products.find((p) => p._id === id))
+      .filter((p): p is IProduct => Boolean(p));
+    if (justSoldOut.length) setSoldOutQueue((q) => [...q, ...justSoldOut]);
   });
 
   const haxTotal = sumBy(cart?.productIds || emptyArray, (id) =>
@@ -681,6 +699,20 @@ export default function CartView({
             </button>
           </div>
         </div>
+      ) : null}
+      {soldOutQueue[0] ? (
+        <Modal onDismiss={dismissTopSoldOut}>
+          <div className={css`text-align: center; padding: 1em; max-width: 320px;`}>
+            <big>
+              <b>{getProductName(soldOutQueue[0], stocks) ?? "This product"}</b>
+            </big>{" "}
+            looks sold out. Remove it from this bar's menu?
+            <div className={css`display: flex; gap: 0.5em; margin-top: 1em;`}>
+              <button type="button" onClick={dismissTopSoldOut}>Keep it</button>
+              <button type="button" onClick={removeTopFromMenu}>Remove from menu</button>
+            </div>
+          </div>
+        </Modal>
       ) : null}
     </div>
   );

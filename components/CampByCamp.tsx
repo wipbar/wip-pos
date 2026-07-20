@@ -97,8 +97,8 @@ export default function CampByCamp() {
               d.hour === trendData[0].hour
                 ? { ...d, ...trendData[0] }
                 : d.hour === trendData[1].hour
-                ? { ...d, ...trendData[1] }
-                : d,
+                  ? { ...d, ...trendData[1] }
+                  : d,
             )}
           margin={{
             top: 24,
