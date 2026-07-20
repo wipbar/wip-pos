@@ -378,4 +378,5 @@ export const tranculaFlow = [
   "Efterlod en Twink paralyseret efter en nat i byen med en lille manøvre jeg kalder Møns Klit",
   "De kalder mig ekstra bladet fordi jeg tisser hvor andre tørrer",
   "JEG HAR ONDT I MAVSEN",
+  "Gotta get a tattoo of a tractor on my dick, coz its allways plowing through shit."
 ];
