@@ -809,7 +809,7 @@ export default function PageMenu() {
                         flex-direction: column;
                         background: ${currentCamp &&
                         transparentize(
-                          4 / 5,
+                          2 / 5,
                           getCorrectTextColor(currentCamp?.color),
                         )};
                         align-items: stretch;
