@@ -22,7 +22,7 @@ import {
   isBasicallySameProduct,
   type IProduct,
 } from "../api/products";
-import Stocks, { type IStock } from "../api/stocks";
+import type { IStock } from "../api/stocks";
 import Styles from "../api/styles";
 import {
   blackulaFlow,
@@ -34,7 +34,6 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate, { useInterval } from "../hooks/useCurrentDate";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMethod from "../hooks/useMethod";
-import useSubscription from "../hooks/useSubscription";
 import {
   emptyArray,
   getCorrectTextColor,
@@ -461,7 +460,6 @@ export function StockItem({ stock }: { stock: IStock }) {
 }
 
 export default function PageMenu() {
-  useSubscription("stocks");
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate(30000);
   const { location, error } = useCurrentLocation();
@@ -472,10 +470,7 @@ export default function PageMenu() {
 
   const [getData, { data: oij }] = useMethod("Products.menu.Menu");
 
-  const stocks = useFind(
-    () => Stocks.find({ removedAt: { $exists: false } }),
-    [],
-  );
+  const stocks = oij?.stocks || emptyArray;
 
   const updateData = useCallback(async () => {
     if (currentCamp) await getData({ locationSlug: location!.slug });
@@ -525,7 +520,7 @@ export default function PageMenu() {
     );
   }
 
-  if (!oij?.length) {
+  if (!oij?.menu?.length) {
     return (
       // @ts-ignore
       // eslint-disable-next-line react/no-unknown-property
@@ -567,8 +562,9 @@ export default function PageMenu() {
       : "Unknown"
     : "Unknown";
 
-  const getOijProductsLength = (o: NonNullable<typeof oij>[number]): number =>
-    o[1]?.reduce((m, b) => m + b[1].length, 0) || NaN;
+  const getOijProductsLength = (
+    o: NonNullable<typeof oij>["menu"][number],
+  ): number => o[1]?.reduce((m, b) => m + b[1].length, 0) || NaN;
 
   const positiveTagFilter = tagsFilter.length
     ? tagsFilter.filter((tag) => !tag.startsWith("!"))
@@ -577,7 +573,7 @@ export default function PageMenu() {
     ? tagsFilter.filter((tag) => tag.startsWith("!"))
     : null;
 
-  let list = oij
+  let list = oij.menu
     .filter(
       (o) =>
         (!positiveTagFilter ||

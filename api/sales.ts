@@ -206,11 +206,11 @@ export const salesMethods = {
           );
         })
         .map((p) => p._id);
-        } catch (e) {
-          console.error("Failed to compute sold-out products after sale", e);
-        }
+    } catch (e) {
+      console.error("Failed to compute sold-out products after sale", e);
+    }
 
-      return { _id: insertResult, soldOutProductIds };
+    return { _id: insertResult, soldOutProductIds };
   },
 
   "Sales.stats.CampByCamp"(this: Meteor.MethodThisType) {
@@ -838,7 +838,7 @@ async function calculateMenuDataForLocation(location: ILocation) {
     ),
   );
 
-  return productsGroupedByTags
+  const menu = productsGroupedByTags
     .sort((a, b) => a[0].localeCompare(b[0]))
     .sort((a, b) => b[1].length - a[1].length)
     .map(([tags, products]) => {
@@ -946,6 +946,8 @@ async function calculateMenuDataForLocation(location: ILocation) {
         tags,
       ] as const;
     });
+
+  return { menu, stocks };
 }
 async function calculateMenuData() {
   const now = new Date();
