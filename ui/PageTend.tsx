@@ -1,5 +1,5 @@
 import { css } from "@emotion/css";
-import { format } from "date-fns";
+import { addDays, format, startOfHour } from "date-fns";
 import { Random } from "meteor/random";
 import { useFind } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
@@ -38,7 +38,9 @@ function MostRecentSale() {
       ),
     [location?._id],
   );
-  useSubscription(currentCamp && "sales", { from: currentCamp?.buildup }, [
+  const nowish = useMemo(() => new Date(), []);
+  const dayagoish = useMemo(() => startOfHour(addDays(nowish, -1)), [nowish]);
+  useSubscription(currentCamp && "sales", { from: dayagoish }, [
     currentCamp?.buildup,
   ]);
 
