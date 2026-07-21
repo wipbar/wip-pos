@@ -105,44 +105,48 @@ export default function PageStats() {
           `}
         >
           {mostSoldData.length ? (
-            mostSoldData.map(([productId, count, stockPercentage]) => {
-              const product = products.find(({ _id }) => _id == productId);
-              if (!product) return null;
-              return (
-                <li
-                  key={productId}
-                  className={css`
-                    list-style: none;
-                    display: flex;
-                    align-items: flex-start;
-                  `}
-                >
-                  <div
+            mostSoldData
+              .slice(0, 24)
+              .map(([productId, count, stockPercentage]) => {
+                const product = products.find(({ _id }) => _id == productId);
+                if (!product) return null;
+                return (
+                  <li
+                    key={productId}
                     className={css`
-                      width: 2.5em;
-                      text-align: right;
-                      margin-right: 0.25em;
-                      flex-shrink: 0;
+                      list-style: none;
+                      display: flex;
+                      align-items: flex-start;
                     `}
                   >
-                    <b>{count}</b>
-                    <small>x</small>
-                  </div>
-                  <ProductsItem
-                    key={product._id}
-                    product={product}
-                    soldOutRatio={stockPercentage}
-                    componentStocks={(product.components ?? [])
-                      .map((component) =>
-                        stocks.find((stock) => stock._id === component.stockId),
-                      )
-                      .filter((s): s is IStock => Boolean(s))}
-                    showBrandName
-                    hidePrice
-                  />
-                </li>
-              );
-            })
+                    <div
+                      className={css`
+                        width: 2.5em;
+                        text-align: right;
+                        margin-right: 0.25em;
+                        flex-shrink: 0;
+                      `}
+                    >
+                      <b>{count}</b>
+                      <small>x</small>
+                    </div>
+                    <ProductsItem
+                      key={product._id}
+                      product={product}
+                      soldOutRatio={stockPercentage}
+                      componentStocks={(product.components ?? [])
+                        .map((component) =>
+                          stocks.find(
+                            (stock) => stock._id === component.stockId,
+                          ),
+                        )
+                        .filter((s): s is IStock => Boolean(s))}
+                      showBrandName
+                      hidePrice
+                    />
+                  </li>
+                );
+              })
           ) : (
             <i>Nothing has been sold yet :(</i>
           )}
