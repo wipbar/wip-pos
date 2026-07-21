@@ -28,9 +28,9 @@ import Products, {
   type ProductID,
 } from "./products";
 import Stocks, {
+  getApproxRemainingServings,
   getRemainingServings,
   getRemainingServingsEver,
-  getApproxRemainingServings,
   getServingsSold,
   getStocksByProductIds,
   getStocksByTags,
@@ -412,46 +412,103 @@ export const salesMethods = {
     const campSales = await Sales.find({
       timestamp: { $gte: currentCamp.buildup, $lte: currentCamp.teardown },
     }).fetchAsync();
+    const stocks = await Stocks.find().fetchAsync();
 
     const productsSold = campSales.map(({ products }) => products).flat();
 
-    return `${campSales.reduce(
-      (revenue, { amount }) => revenue + amount,
-      0,
-    )} ʜᴀx revenue
-  ${productsSold.length} items sold
-  ${campSales.length} discrete transactions
+    return `   ${
+      uniq(
+        campSales.map(({ products }) => products.map(({ _id }) => _id)).flat(),
+      ).length
+    } different menu items!!! (composed from ${
+      uniq(
+        campSales
+          .map(({ products }) =>
+            products
+              .map(({ components }) => (components ?? []).map((c) => c.stockId))
+              .flat(),
+          )
+          .flat(),
+      ).length
+    } stock items)
+  ${productsSold.length} items sold across ${
+    campSales.length
+  } discrete transactions that on average took ${(
+    campSales.reduce((totalDuration, { cartOpenedAt, cartSoldAt }) => {
+      const salesDurationInSeconds =
+        cartOpenedAt && cartSoldAt
+          ? (cartSoldAt.valueOf() - cartOpenedAt.valueOf()) / 1000
+          : 0;
+
+      if (salesDurationInSeconds > 1000) {
+        return totalDuration;
+      }
+
+      return totalDuration + salesDurationInSeconds;
+    }, 0) / campSales.length
+  ).toLocaleString("da-EN", {
+    maximumSignificantDigits: 2,
+  })} seconds to complete
    ${Math.round(
      productsSold
        .filter(({ tags }) => tags?.includes("beer"))
        .reduce((totalLiters, product) => {
          const { unitSize, sizeUnit } = getProductSize(product) || {};
 
-         return unitSize && sizeUnit === "cl"
-           ? totalLiters + Number(unitSize) / 100
+         return unitSize && sizeUnit
+           ? convert(+unitSize, sizeUnit).to("l") + totalLiters
            : totalLiters;
        }, 0),
-   )} liters of beer
+   )} liters of beer 
    ${Math.round(
-     productsSold
+     stocks
        .filter(
          ({ brandName }) =>
-           brandName === "Club Mate" || brandName === "Mio Mio",
+           brandName?.includes("Club Mate") ||
+           brandName?.includes("Mio Mio") ||
+           brandName?.includes("Maté Maté"),
        )
-       .reduce((totalLiters, product) => {
-         const { unitSize, sizeUnit } = getProductSize(product) || {};
-
-         return unitSize && sizeUnit === "cl"
-           ? totalLiters + Number(unitSize) / 100
-           : totalLiters;
-       }, 0),
+       .reduce(
+         (totalLiters, product) =>
+           getServingsSold(campSales, product) *
+             convert(+product.unitSize, product.sizeUnit).to("l") +
+           totalLiters,
+         0,
+       ),
    )} liters of mate
+   ${Math.round(
+     stocks
+       .filter(({ brandName }) => brandName?.includes("Cocio"))
+       .reduce(
+         (totalLiters, stock) =>
+           getServingsSold(campSales, stock) *
+             convert(stock.unitSize, stock.sizeUnit).to("l") +
+           totalLiters,
+         0,
+       ),
+   )} liters of cocio ${
+     stocks
+       .filter(({ brandName }) => brandName?.includes("Cocio"))
+       .reduce(
+         (totalLiters, stock) =>
+           stock.approxCount
+             ? convert(stock.unitSize, stock.sizeUnit).to("l") *
+                 stock.approxCount +
+               totalLiters
+             : totalLiters,
+         0,
+       ) <= 0
+       ? "(that's all of it!)"
+       : ""
+   }
    ${
      productsSold.filter(({ tags }) => tags?.includes("cocktail")).length
    } cocktails
     ${
       productsSold.filter(({ name }) => name?.includes("Tsunami")).length
-    } tsunamis`;
+    } tsunamis
+${campSales.reduce((revenue, { amount }) => revenue + amount, 0)} ʜᴀx revenue
+  `;
   },
 } as const;
 
