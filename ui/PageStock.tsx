@@ -261,7 +261,7 @@ export default function PageStock() {
                           new Date(mostRecentLevel.timestamp),
                         ) &&
                         // Don't show recency doubt if it the stock was zeroed out
-                        stock.approxCount !== 0
+                        stock.approxCount === 0
                       )
                         ? `⌛️ (${
                             stock.approxCount?.toLocaleString("en-US", {
