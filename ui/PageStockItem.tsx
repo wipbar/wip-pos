@@ -12,13 +12,15 @@ import Products, {
   getProductName,
   type ProductID,
 } from "../api/products";
+import Sales from "../api/sales";
 import type { IStock } from "../api/stocks";
-import Stocks from "../api/stocks";
+import Stocks, { getServingsSold } from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
 import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
+import useSubscription from "../hooks/useSubscription";
 import { emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
 
@@ -369,95 +371,103 @@ export default function PageStockItem({
             />
             <button>Take Stock</button>
           </form>
-          {stock?.levels?.map((level, i) => (
-            <div
-              key={i}
-              className={css`
-                display: flex;
-                margin-bottom: 4px;
-                justify-content: space-between;
-              `}
-            >
-              <div
-                className={css`
-                  display: flex;
-                `}
-              >
-                {format(level.timestamp, "yyyy/MM/dd HH:mm")} -{" "}
-                {String(level.count)} x {stock.unitSize}
-                {stock.sizeUnit}
-              </div>
-              <form
-                className={css`
-                  display: flex;
-                  gap: 3px;
-                  align-items: center;
-                `}
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-
-                  const form = e.currentTarget;
-
-                  const buyPriceInput = form.elements.namedItem("buyPrice");
-                  if (buyPriceInput instanceof HTMLInputElement) {
-                    const buyPrice = buyPriceInput.valueAsNumber;
-                    try {
-                      for (const element of form.elements) {
-                        if (
-                          element instanceof HTMLInputElement ||
-                          element instanceof HTMLButtonElement
-                        ) {
-                          element.disabled = true;
-                        }
-                      }
-                      buyPriceInput.disabled = true;
-                      await editStock({
-                        stockId: stock._id,
-                        data: {
-                          levels: stock.levels?.map((l, j) =>
-                            j === i
-                              ? buyPrice >= 0
-                                ? { ...l, buyPrice }
-                                : omit(l, "buyPrice")
-                              : l,
-                          ),
-                        },
-                      });
-                    } finally {
-                      for (const element of form.elements) {
-                        if ("disabled" in element) element.disabled = false;
-                      }
-                    }
-                  }
-                }}
-              >
-                <input
-                  min={0}
-                  step="any"
-                  name="buyPrice"
-                  type="number"
-                  placeholder="DKK each"
-                  defaultValue={level.buyPrice ?? ""}
-                  className={css`
-                    width: 80px;
-                    text-align: right;
-                    font-family: monospace;
-                  `}
+          {Array.from(stock?.levels ?? [])
+            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+            .map((level, i) => (
+              <div key={i}>
+                <StockSales
+                  stock={stock}
+                  from={level.timestamp}
+                  to={i === 0 ? new Date() : stock.levels![i - 1]!.timestamp}
                 />
-                <span
+                <div
                   className={css`
-                    font-size: 12px;
+                    display: flex;
+                    margin-bottom: 4px;
+                    justify-content: space-between;
                   `}
                 >
-                  DKK
-                  <br />
-                  each
-                </span>
-                <button type="submit">💾</button>
-              </form>
-            </div>
-          ))}
+                  <div
+                    className={css`
+                      display: flex;
+                    `}
+                  >
+                    {format(level.timestamp, "yyyy/MM/dd HH:mm")} -{" "}
+                    {String(level.count)} x {stock.unitSize}
+                    {stock.sizeUnit}
+                  </div>
+                  <form
+                    className={css`
+                      display: flex;
+                      gap: 3px;
+                      align-items: center;
+                    `}
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+
+                      const form = e.currentTarget;
+
+                      const buyPriceInput = form.elements.namedItem("buyPrice");
+                      if (buyPriceInput instanceof HTMLInputElement) {
+                        const buyPrice = buyPriceInput.valueAsNumber;
+                        try {
+                          for (const element of form.elements) {
+                            if (
+                              element instanceof HTMLInputElement ||
+                              element instanceof HTMLButtonElement
+                            ) {
+                              element.disabled = true;
+                            }
+                          }
+                          buyPriceInput.disabled = true;
+                          await editStock({
+                            stockId: stock._id,
+                            data: {
+                              levels: stock.levels?.map((l, j) =>
+                                j === i
+                                  ? buyPrice >= 0
+                                    ? { ...l, buyPrice }
+                                    : omit(l, "buyPrice")
+                                  : l,
+                              ),
+                            },
+                          });
+                        } finally {
+                          for (const element of form.elements) {
+                            if ("disabled" in element) element.disabled = false;
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    <input
+                      min={0}
+                      step="any"
+                      name="buyPrice"
+                      type="number"
+                      placeholder="DKK each"
+                      defaultValue={level.buyPrice ?? ""}
+                      className={css`
+                        width: 80px;
+                        text-align: right;
+                        font-family: monospace;
+                      `}
+                    />
+                    <span
+                      className={css`
+                        font-size: 12px;
+                      `}
+                    >
+                      DKK
+                      <br />
+                      each
+                    </span>
+                    <button type="submit">💾</button>
+                  </form>
+                </div>
+              </div>
+            ))}
         </fieldset>
       ) : null}
       {productsUsingStock.length > 0 ? (
@@ -494,5 +504,46 @@ export default function PageStockItem({
         </fieldset>
       ) : null}
     </>
+  );
+}
+
+function StockSales({
+  stock,
+  from,
+  to,
+}: {
+  stock: IStock;
+  from: Date;
+  to: Date;
+}) {
+  const loading = useSubscription("sales", { from, to });
+  const campSales = useFind(
+    () => Sales.find({ timestamp: { $gte: from, $lt: to } }),
+    [from, to],
+  );
+
+  const totalSold = useMemo(
+    () => getServingsSold(campSales, stock),
+    [campSales, stock],
+  );
+
+  return (
+    <div
+      className={css`
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+        ${loading ? "opacity: 0.5;" : "opacity: 0.8;"}
+        font-size: 0.75em;
+      `}
+    >
+      <b>
+        {loading
+          ? "🧮"
+          : totalSold.toLocaleString("da-EN", { maximumFractionDigits: 2 })}
+      </b>{" "}
+      x {stock.unitSize}
+      {stock.sizeUnit} sold since
+    </div>
   );
 }
