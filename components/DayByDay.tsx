@@ -16,6 +16,8 @@ import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import { emptyArray, getCorrectTextColor } from "../util";
 
+const isAnimationActive = false;
+
 const XYAxisDomain = ["dataMin", "dataMax"];
 const YAxisTickFormatter = (amount: number) => String(~~amount);
 const XAxisTickFormatter = (hour: number) =>
@@ -112,6 +114,7 @@ export default function DayByDay({ currentCamp }: { currentCamp: ICamp }) {
           ))}
           {Array.from({ length: numberOfDaysInCurrentCamp }, (_, i) => (
             <Line
+              isAnimationActive={isAnimationActive}
               type="monotone"
               key={i}
               dataKey={i}

@@ -18,6 +18,8 @@ import { useInterval } from "../hooks/useCurrentDate";
 import useMethod from "../hooks/useMethod";
 import { createTrend, emptyArray, getCorrectTextColor } from "../util";
 
+const isAnimationActive = false;
+
 const XYAxisDomain = ["dataMin", "dataMax"];
 const emptyData = { data: emptyArray };
 export default function CampByCamp() {
@@ -97,8 +99,8 @@ export default function CampByCamp() {
               d.hour === trendData[0].hour
                 ? { ...d, ...trendData[0] }
                 : d.hour === trendData[1].hour
-                  ? { ...d, ...trendData[1] }
-                  : d,
+                ? { ...d, ...trendData[1] }
+                : d,
             )}
           margin={{
             top: 24,
@@ -181,6 +183,7 @@ export default function CampByCamp() {
           {currentCamp ? (
             <>
               <Line
+                isAnimationActive={isAnimationActive}
                 type="monotone"
                 key={currentCamp.slug}
                 dataKey={currentCamp.slug}
@@ -196,6 +199,7 @@ export default function CampByCamp() {
                 connectNulls
               />
               <Line
+                isAnimationActive={isAnimationActive}
                 key={currentCamp.slug + "-trend"}
                 dataKey={currentCamp.slug + "-trend"}
                 fill={currentCamp.color}
@@ -207,6 +211,7 @@ export default function CampByCamp() {
                 connectNulls
               />
               <Line
+                isAnimationActive={isAnimationActive}
                 key={currentCamp.slug + "-trend2"}
                 dataKey={currentCamp.slug + "-trend"}
                 fill={currentCamp.color}
@@ -221,6 +226,7 @@ export default function CampByCamp() {
           ) : null}
           {camps.map((camp) => (
             <Line
+              isAnimationActive={isAnimationActive}
               type="monotone"
               key={camp.slug}
               dataKey={camp.slug}
