@@ -190,9 +190,6 @@ export default function CampByCamp() {
                 name={"Σ" + currentCamp.start.getFullYear()}
                 stroke={getCorrectTextColor(currentCamp.color, false)}
                 fill={getCorrectTextColor(currentCamp.color, false)}
-                strokeDasharray={
-                  currentCamp.slug === currentCamp?.slug ? undefined : "3 3"
-                }
                 {...{ legendType: "none" }}
                 strokeWidth={5}
                 dot={false}
