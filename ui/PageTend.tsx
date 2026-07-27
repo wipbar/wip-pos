@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { addDays, format, startOfHour } from "date-fns";
 import { Random } from "meteor/random";
-import { useFind } from "meteor/react-meteor-data";
+import { useFind, useSubscribe } from "meteor/react-meteor-data";
 import { Session } from "meteor/session";
 import { Profiler, useEffect, useMemo, useRef, useState } from "react";
 import { useDraggable } from "react-use-draggable-scroll-safe";
@@ -16,7 +16,6 @@ import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useEvent from "../hooks/useEvent";
 import useSession from "../hooks/useSession";
-import useSubscription from "../hooks/useSubscription";
 import {
   emptyArray,
   getCorrectTextColor,
@@ -40,9 +39,7 @@ function MostRecentSale() {
   );
   const nowish = useMemo(() => new Date(), []);
   const dayagoish = useMemo(() => startOfHour(addDays(nowish, -1)), [nowish]);
-  useSubscription(currentCamp && "sales", { from: dayagoish }, [
-    currentCamp?.buildup,
-  ]);
+  useSubscribe(currentCamp && "sales", { from: dayagoish });
 
   if (!sale) return null;
 

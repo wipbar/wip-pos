@@ -1,12 +1,11 @@
 import { isWithinInterval, min, subHours } from "date-fns";
 import sumBy from "lodash/sumBy";
-import { useFind } from "meteor/react-meteor-data";
+import { useFind, useSubscribe } from "meteor/react-meteor-data";
 import { type ComponentProps, useMemo } from "react";
 import type { IProduct } from "../api/products";
 import Sales from "../api/sales";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentDate from "../hooks/useCurrentDate";
-import useSubscription from "../hooks/useSubscription";
 import Fire from "./Fire";
 
 const f = 0.25;
@@ -19,13 +18,9 @@ export default function ProductTrend({
   const currentCamp = useCurrentCamp();
   const currentDate = useCurrentDate();
 
-  useSubscription(
+  useSubscribe(
     currentCamp && "sales",
-    currentCamp && {
-      from: currentCamp.buildup,
-      to: currentCamp.teardown,
-    },
-    [currentCamp],
+    currentCamp && { from: currentCamp.buildup, to: currentCamp.teardown },
   );
   const data = useFind(
     () =>

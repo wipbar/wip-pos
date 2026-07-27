@@ -10,7 +10,7 @@ import {
 } from "date-fns";
 import groupBy from "lodash/groupBy";
 import sumBy from "lodash/sumBy";
-import { useFind } from "meteor/react-meteor-data";
+import { useFind, useSubscribe } from "meteor/react-meteor-data";
 import { useMemo } from "react";
 import { isUserResponsible } from "../api/accounts";
 import Products, {
@@ -23,7 +23,6 @@ import Stocks from "../api/stocks";
 import useCurrentCamp from "../hooks/useCurrentCamp";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useCurrentUser from "../hooks/useCurrentUser";
-import useSubscription from "../hooks/useSubscription";
 import { emptyArray } from "../util";
 
 const rolloverOffset = 6;
@@ -54,11 +53,10 @@ export default function PageSales() {
   const { location, error } = useCurrentLocation(true);
   const currentUser = useCurrentUser();
   const selectedCamp = useCurrentCamp();
-  const salesLoading = useSubscription(
-    selectedCamp ? "sales" : undefined,
-    { from: selectedCamp?.buildup, to: selectedCamp?.teardown },
-    [selectedCamp],
-  );
+  const salesLoading = useSubscribe(selectedCamp ? "sales" : undefined, {
+    from: selectedCamp?.buildup,
+    to: selectedCamp?.teardown,
+  });
   const sales = useFind(
     () =>
       selectedCamp &&
@@ -151,7 +149,7 @@ export default function PageSales() {
                 <small>
                   <button
                     type="button"
-                    disabled={!location || salesLoading}
+                    disabled={!location || salesLoading()}
                     onClick={() => {
                       const userIsResponsible = isUserResponsible(currentUser);
                       const statements = salesOfDay.map((sale) => ({

@@ -2,7 +2,7 @@ import { css } from "@emotion/css";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { format } from "date-fns";
 import omit from "lodash/omit";
-import { useFind } from "meteor/react-meteor-data";
+import { useFind, useSubscribe } from "meteor/react-meteor-data";
 import { lazy, type ReactNode, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
@@ -20,7 +20,6 @@ import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
 import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
-import useSubscription from "../hooks/useSubscription";
 import { emptyArray, units } from "../util";
 import { Modal } from "./PageProducts";
 
@@ -516,7 +515,7 @@ function StockSales({
   from: Date;
   to: Date;
 }) {
-  const loading = useSubscription("sales", { from, to });
+  const loading = useSubscribe("sales", { from, to });
   const campSales = useFind(
     () => Sales.find({ timestamp: { $gte: from, $lt: to } }),
     [from, to],
@@ -533,12 +532,12 @@ function StockSales({
         display: flex;
         justify-content: center;
         gap: 4px;
-        ${loading ? "opacity: 0.5;" : "opacity: 0.8;"}
+        ${loading() ? "opacity: 0.5;" : "opacity: 0.8;"}
         font-size: 0.75em;
       `}
     >
       <b>
-        {loading
+        {loading()
           ? "🧮"
           : totalSold.toLocaleString("da-EN", { maximumFractionDigits: 2 })}
       </b>{" "}
