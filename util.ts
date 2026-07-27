@@ -42,14 +42,13 @@ export function stringToColour(inputString: string, alpha = 1) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export function getCorrectTextColor(hex: string, invert = false) {
-  return readableColor(
+export const getCorrectTextColor = (hex: string, invert = false) =>
+  readableColor(
     hex,
     invert ? "#ffffff" : "#000000",
     invert ? "#000000" : "#ffffff",
     false,
   );
-}
 
 declare abstract class As<Tag extends keyof never> {
   private static readonly $as$: unique symbol;

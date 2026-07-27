@@ -681,7 +681,7 @@ export default function PageMenu() {
             className={css`
               color: ${currentCamp &&
               getCorrectTextColor(
-                getCorrectTextColor(currentCamp.color) === "white"
+                getCorrectTextColor(currentCamp.color) === "#ffffff"
                   ? lighten(4 / 5, currentCamp.color)
                   : darken(4 / 5, currentCamp.color),
               )};
@@ -726,7 +726,7 @@ export default function PageMenu() {
                 display: block;
                 border-bottom: ${currentCamp &&
                   getCorrectTextColor(
-                    getCorrectTextColor(currentCamp?.color) === "white"
+                    getCorrectTextColor(currentCamp?.color) === "#ffffff"
                       ? lighten(4 / 5, currentCamp?.color)
                       : darken(4 / 5, currentCamp?.color),
                   )}
@@ -735,7 +735,7 @@ export default function PageMenu() {
               fill={
                 currentCamp &&
                 getCorrectTextColor(
-                  getCorrectTextColor(currentCamp?.color) === "white"
+                  getCorrectTextColor(currentCamp?.color) === "#ffffff"
                     ? lighten(4 / 5, currentCamp?.color)
                     : darken(4 / 5, currentCamp?.color),
                 )
@@ -748,7 +748,7 @@ export default function PageMenu() {
                 transparentize(5 / 6, getCorrectTextColor(currentCamp?.color))};
                 color: ${currentCamp &&
                 getCorrectTextColor(
-                  getCorrectTextColor(currentCamp?.color) === "white"
+                  getCorrectTextColor(currentCamp?.color) === "#ffffff"
                     ? lighten(4 / 5, currentCamp?.color)
                     : darken(4 / 5, currentCamp?.color),
                 )};
@@ -805,7 +805,9 @@ export default function PageMenu() {
                         flex-direction: column;
                         background: ${currentCamp &&
                         transparentize(
-                          2 / 5,
+                          getCorrectTextColor(currentCamp?.color) === "#000000"
+                            ? 2 / 5
+                            : 1 / 5,
                           getCorrectTextColor(currentCamp?.color),
                         )};
                         align-items: stretch;
