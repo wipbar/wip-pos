@@ -1,3 +1,4 @@
+import { EJSON } from "meteor/ejson";
 import { Meteor } from "meteor/meteor";
 import { Tracker } from "meteor/tracker";
 
@@ -45,7 +46,7 @@ class SubsManager {
     return Meteor.subscribe(...args);
   }
   _addSub(args: Parameters<typeof Meteor.subscribe>) {
-    const hash = JSON.stringify(args);
+    const hash = EJSON.stringify(args as unknown as EJSON, { canonical: true });
 
     if (!this._cacheMap[hash]) {
       const sub = { args, hash };
