@@ -233,5 +233,7 @@ export const assertUserInAnyTeam = async (user: Meteor.User | null) => {
     if (isUserInTeam(user, currentCamp, location.teamName)) return;
   }
 
+  if (isUserAdmin(user)) return;
+
   throw new Meteor.Error(`You are not a member of an active team`);
 };
