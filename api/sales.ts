@@ -713,7 +713,8 @@ async function calculateDayByDayStats() {
 async function calculateSalesSankeyData() {
   const now = new Date();
 
-  const [camps, allProducts, allStocks] = await Promise.all([
+  const [locations, camps, allProducts, allStocks] = await Promise.all([
+    Locations.find().fetchAsync(),
     Camps.find({}, { sort: { end: -1 } }).fetchAsync(),
     Products.find().fetchAsync(),
     Stocks.find().fetchAsync(),
@@ -729,24 +730,41 @@ async function calculateSalesSankeyData() {
     }
   > = {};
   for (const currentCamp of camps) {
-    const campSales: Pick<ISale, "products" | "amount" | "timestamp">[] =
-      await Sales.find(
-        {
-          timestamp: {
-            $gte: currentCamp.buildup,
-            $lte: currentCamp.teardown,
-          },
+    const campSales: Pick<
+      ISale,
+      "products" | "amount" | "timestamp" | "locationId"
+    >[] = await Sales.find(
+      {
+        timestamp: {
+          $gte: currentCamp.buildup,
+          $lte: currentCamp.teardown,
         },
-        {
-          fields: {
-            products: 1,
-            amount: 1,
-            timestamp: 1,
-          },
+      },
+      {
+        fields: {
+          locationId: 1,
+          products: 1,
+          amount: 1,
+          timestamp: 1,
         },
-      ).fetchAsync();
+      },
+    ).fetchAsync();
     if (!campSales?.length) continue;
 
+    const productsSoldByLocation = campSales.reduce<Record<string, IProduct[]>>(
+      (memo, sale) => {
+        memo[sale.locationId] ||= [];
+        memo[sale.locationId]!.push(
+          ...(sale.products
+            .map(({ _id }) =>
+              allProducts.find(({ _id: productId }) => productId === _id),
+            )
+            .filter(Boolean) as IProduct[]),
+        );
+        return memo;
+      },
+      {},
+    );
     const productsSold = campSales.reduce<IProduct[]>((memo, sale) => {
       for (const saleProduct of sale.products) {
         const product = allProducts.find(({ _id }) => _id === saleProduct._id);
@@ -755,13 +773,25 @@ async function calculateSalesSankeyData() {
       return memo;
     }, []);
 
-    const salesNode: `Sales (${string})` =
-      currentCamp && campSales?.length
-        ? `Sales (${currentCamp.name})`
-        : "Sales (all time)";
+    const salesNode =
+      currentCamp && campSales?.length ? currentCamp.name : "Sales (all time)";
+
+    const locationNodes = uniq(
+      campSales.map(({ locationId }) => locationId).flat(),
+    )
+      .map((locationId) => {
+        const location = locations.find(({ _id }) => _id === locationId);
+        if (!location) return null;
+        return {
+          color: location.name.startsWith("WIP Bar") ? "#0F0" : "#F1F",
+          name: location.name,
+        };
+      })
+      .filter((node) => node !== null);
 
     const nodes = [
-      { color: "", name: salesNode },
+      ...locationNodes,
+      { color: "#000", name: salesNode },
       { color: "#FFED00", name: "Alcoholic" },
       { color: "#FFED00", name: "Beer" },
       { color: "#FFED00", name: "Tap" },
@@ -778,6 +808,11 @@ async function calculateSalesSankeyData() {
       nodes.findIndex((node) => node.name === name);
 
     const links = [
+      ...locations.map(({ _id, name }) => ({
+        source: getNode(name),
+        target: getNode(salesNode),
+        value: productsSoldByLocation[_id]?.length || 0,
+      })),
       {
         source: getNode(salesNode),
         target: getNode("Alcoholic"),
