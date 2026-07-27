@@ -189,7 +189,11 @@ if (Meteor.isClient) {
 export const isUserAdmin = (user: Meteor.User | null) => {
   if (!user) return false;
 
-  if (user?.services?.bornhack?.id === "klarstrup") return true;
+  // Klarstrup. Better if this was conveyed through the bornhack oauth service, but for now this will do.
+  if (user?.services?.bornhack?.id === "8f0c9886-289d-48a8-897b-e292b2221b68")
+    return true;
+
+  return false;
 };
 
 export const isUserResponsible = (user: Meteor.User | null) => {
@@ -197,6 +201,7 @@ export const isUserResponsible = (user: Meteor.User | null) => {
   if (isUserAdmin(user)) return true;
 
   if (
+    // TODO: All these IDs are outdated and this doesnt work, the OAuth API no longer exposes usernames.
     user?.services?.bornhack?.id === "klarstrup" ||
     user?.services?.bornhack?.id === "jagenau" ||
     user?.services?.bornhack?.id === "tykling" ||
