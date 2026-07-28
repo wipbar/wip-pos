@@ -22,6 +22,7 @@ export interface IProduct {
   abv?: number | null;
   ibu?: number;
   tags?: string[];
+  /** @deprecated Use Stock#levels#buyPrice instead */
   shopPrices?: { buyPrice: number; timestamp: Date }[];
   components?: {
     stockId: StockID;

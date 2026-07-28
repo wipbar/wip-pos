@@ -143,6 +143,7 @@ WebApp.handlers.use(
         expenses: [], // TODO: Fetch related expenses for this PosProduct
       });
 
+      // TODO: Get costs from stock levels and product components. Product#shopPrices is deprecated.
       for (const productCost of product.shopPrices ?? []) {
         pos_product_cost.push({
           camp_slug: camp.slug,
