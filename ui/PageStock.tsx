@@ -239,18 +239,24 @@ export default function PageStock() {
                         (component) => component.stockId === stock._id,
                       ),
                   );
-                  return onlyShowStockWithProducts
-                    ? stockHasProducts
-                    : !stockHasProducts;
+                  if (onlyShowStockWithProducts && !stockHasProducts) {
+                    return false;
+                  }
+                  if (!onlyShowStockWithProducts && stockHasProducts) {
+                    return false;
+                  }
                 }
 
                 if (onlyShowStockUsedThisCamp !== null) {
                   const usedDuringCamp = stockIdsUsedDuringCamp?.includes(
                     stock._id,
                   );
-                  return onlyShowStockUsedThisCamp
-                    ? usedDuringCamp
-                    : !usedDuringCamp;
+                  if (onlyShowStockUsedThisCamp && !usedDuringCamp) {
+                    return false;
+                  }
+                  if (!onlyShowStockUsedThisCamp && usedDuringCamp) {
+                    return false;
+                  }
                 }
 
                 if (showStockTakenDuringCamp !== null && camp) {
@@ -260,9 +266,12 @@ export default function PageStock() {
                         new Date(level.timestamp) >= camp.buildup &&
                         new Date(level.timestamp) <= camp.teardown,
                     ) ?? false;
-                  return showStockTakenDuringCamp
-                    ? takenDuringCamp
-                    : !takenDuringCamp;
+                  if (showStockTakenDuringCamp && !takenDuringCamp) {
+                    return false;
+                  }
+                  if (!showStockTakenDuringCamp && takenDuringCamp) {
+                    return false;
+                  }
                 }
 
                 return true;
