@@ -12,11 +12,13 @@ import { StockItem } from "./PageMenu";
 
 function PageStockSoldTag({
   filter,
+  label,
 }: {
   filter: Omit<
     Parameters<(typeof salesMethods)["Products.getEfterslaeb"]>[0],
     "campSlug"
   >;
+  label?: string;
 }) {
   const camp = useCurrentCamp();
   const [getEfterslaeb, efterslaebResponse] = useMethod(
@@ -46,8 +48,9 @@ function PageStockSoldTag({
         font-size: 18px;
       `}
     >
-      {JSON.stringify(filter)}
+      {label || JSON.stringify(filter)}
       (liters)
+      {/* <pre>{JSON.stringify(efterslaebData, null, 2)}</pre> */}
       <center>
         <b>
           <div>
@@ -109,13 +112,29 @@ export default function PageStockSold() {
           display: grid;
           flex: 1;
           width: 100%;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
         `}
       >
         <PageStockSoldTag filter={{ tags: ["beer"] }} />
         <PageStockSoldTag filter={{ tags: ["soda"] }} />
-        <PageStockSoldTag filter={{ tags: ["cocio"] }} />
         <PageStockSoldTag filter={{ tags: ["cider"] }} />
+        <PageStockSoldTag filter={{ tags: ["cocio"] }} />
+        <PageStockSoldTag
+          filter={{ stockIds: ["oH9FP6vK59Zk8zXi5"] }}
+          label={"Citron Brus"}
+        />
+        <PageStockSoldTag
+          filter={{ stockIds: ["Q6ruFzDn37oobAdvi"] }}
+          label={"Bombay Sapphire Gin"}
+        />
+        <PageStockSoldTag
+          filter={{ stockIds: ["6KcwkcYvEr6aCq2Xn"] }}
+          label={"Ginger Beer"}
+        />
+        <PageStockSoldTag
+          filter={{ stockIds: ["Qy6yidEY8SWquQ7Hs"] }}
+          label={"Tomat Juice"}
+        />
       </div>
       {camp ? (
         <big>Most used stock @ {camp.name}:</big>

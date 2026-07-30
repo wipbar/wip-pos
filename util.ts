@@ -136,14 +136,9 @@ export function createTrend<XK extends string, YK extends string>(
 
   const xMinusxMeanSq = xMinusxMean.map((val) => Math.pow(val, 2));
 
-  const xy = [];
-  for (let x = 0; x < data.length; x++) {
-    xy.push(xMinusxMean[x]! * yMinusyMean[x]!);
-  }
-
-  // const xy = xMinusxMean.map((val, index) => val * yMinusyMean[index]);
-
-  const xySum = sumBy(xy);
+  const length = xData.length;
+  let xySum = 0;
+  for (let x = 0; x < length; x++) xySum += xMinusxMean[x]! * yMinusyMean[x]!;
 
   // b1 is the slope
   const b1 = xySum / sumBy(xMinusxMeanSq);
