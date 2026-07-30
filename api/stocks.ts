@@ -7,8 +7,10 @@ import { PackageTypeCode } from "../data";
 import { Flavor, SizeUnit } from "../util";
 import { assertUserInAnyTeam } from "./accounts";
 import type { ICamp } from "./camps";
+import Camps from "./camps";
 import Products, { IProduct, ProductID } from "./products";
 import type { ISale } from "./sales";
+import Sales from "./sales";
 
 export type StockID = Flavor<string, "StockID">;
 
@@ -121,6 +123,54 @@ export const stocksMethods = {
       return await Stocks.updateAsync(stockId, {
         $set: { removedAt: new Date() },
       });
+  },
+  async "Stock.getStockIdsUsedDuringCamp"(
+    this: Meteor.MethodThisType,
+    { campSlug }: { campSlug?: string },
+  ) {
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
+    if (!campSlug) {
+      throw new Meteor.Error(
+        "Stock.getStockIdsUsedDuringCamp",
+        "Must provide campSlug",
+      );
+    }
+
+    const camp = await Camps.findOneAsync({ slug: campSlug });
+
+    if (!camp) {
+      throw new Meteor.Error(
+        "Stock.getStockIdsUsedDuringCamp",
+        `Camp not found for slug: ${campSlug}`,
+      );
+    }
+
+    const sales = await Sales.find({
+      timestamp: {
+        $gte: camp.buildup,
+        $lte: camp.teardown,
+      },
+    }).fetchAsync();
+    
+    const stockIdsUsedDuringCamp = uniqBy(
+      sales
+        .map((sale) =>
+          sale.products
+            .map(
+              (product) =>
+                product.components?.map((component) => component.stockId),
+            )
+            .flat()
+            .filter((stockId): stockId is StockID => Boolean(stockId)),
+        )
+        .flat(),
+      (stockId) => stockId,
+    );
+
+    return stockIdsUsedDuringCamp;
   },
 } as const;
 

@@ -3,7 +3,7 @@ import { faPencilAlt } from "@fortawesome/free-solid-svg-icons/faPencilAlt";
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash";
 import { isBefore, subDays } from "date-fns";
 import { useFind } from "meteor/react-meteor-data";
-import { Fragment, lazy, useState } from "react";
+import { Fragment, lazy, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { isUserAdmin } from "../api/accounts";
 import Products from "../api/products";
@@ -30,6 +30,8 @@ export default function PageStock() {
   const [onlyShowStockedItems, setOnlyShowStockedItems] = useState(false);
   const [onlyShowStockWithoutProducts, setOnlyShowStockWithoutProducts] =
     useState(false);
+  const [onlyShowStockUsedThisCamp, setOnlyShowStockUsedThisCamp] =
+    useState(false);
 
   const stocks = useFind(
     () =>
@@ -43,6 +45,13 @@ export default function PageStock() {
       ),
     [sortBy],
   );
+  const [getStockIdsUsedDuringCamp, { data: stockIdsUsedDuringCamp }] =
+    useMethod("Stock.getStockIdsUsedDuringCamp");
+  useEffect(() => {
+    if (onlyShowStockUsedThisCamp && camp) {
+      void getStockIdsUsedDuringCamp({ campSlug: camp.slug });
+    }
+  }, [onlyShowStockUsedThisCamp, camp, getStockIdsUsedDuringCamp]);
   const [isCreatingProductFromStock, setIsCreatingProductFromStock] =
     useState<null | StockID>(null);
   const stockToCreateProductFrom = stocks.find(
@@ -152,6 +161,14 @@ export default function PageStock() {
           />
           show only stock without products
         </label>
+        <label>
+          <input
+            type="checkbox"
+            onChange={(e) => setOnlyShowStockUsedThisCamp(e.target.checked)}
+            checked={onlyShowStockUsedThisCamp}
+          />
+          show only stock that was used this current camp
+        </label>
         <a
           href={`/${locationSlug}/stock/sold`}
           className={css`
@@ -224,6 +241,15 @@ export default function PageStock() {
                   )
                 )
                   return false;
+
+                if (
+                  onlyShowStockUsedThisCamp &&
+                  (!stockIdsUsedDuringCamp ||
+                    !stockIdsUsedDuringCamp.includes(stock._id))
+                ) {
+                  return false;
+                }
+
                 return true;
               })
               .map((stock) => {
