@@ -39,6 +39,7 @@ export default function PageStock() {
   const [showStockTakenDuringCamp, setShowStockTakenDuringCamp] = useState<
     null | boolean
   >(null);
+  const [showHasBuyPrice, setShowHasBuyPrice] = useState<null | boolean>(null);
 
   const stocks = useFind(
     () =>
@@ -171,14 +172,21 @@ export default function PageStock() {
             value={onlyShowStockUsedThisCamp}
             onChange={setOnlyShowStockUsedThisCamp}
           />
-          used this current camp
+          used during current camp
         </label>
         <label>
           <PlusMinusNeitherCheckbox
             value={showStockTakenDuringCamp}
             onChange={setShowStockTakenDuringCamp}
           />
-          taken during this current camp
+          taken during current camp
+        </label>
+        <label>
+          <PlusMinusNeitherCheckbox
+            value={showHasBuyPrice}
+            onChange={setShowHasBuyPrice}
+          />
+          has buy price from current camp
         </label>
         <a
           href={`/${locationSlug}/stock/sold`}
@@ -270,6 +278,23 @@ export default function PageStock() {
                     return false;
                   }
                   if (!showStockTakenDuringCamp && takenDuringCamp) {
+                    return false;
+                  }
+                }
+
+                if (showHasBuyPrice !== null && camp) {
+                  const hasPriceDuringCamp =
+                    stock.levels?.some(
+                      (level) =>
+                        new Date(level.timestamp) >= camp.buildup &&
+                        new Date(level.timestamp) <= camp.teardown &&
+                        typeof level.buyPrice === "number" &&
+                        level.buyPrice >= 0,
+                    ) ?? false;
+                  if (showHasBuyPrice && !hasPriceDuringCamp) {
+                    return false;
+                  }
+                  if (!showHasBuyPrice && hasPriceDuringCamp) {
                     return false;
                   }
                 }
