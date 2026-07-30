@@ -304,14 +304,24 @@ export default function PageStock() {
                       )}
                     </td>
                     <td align="right">
-                      {!(
-                        mostRecentLevel &&
-                        isBefore(
-                          subDays(new Date(), 14),
-                          new Date(mostRecentLevel.timestamp),
-                        ) &&
-                        // Don't show recency doubt if it the stock was zeroed out
-                        stock.approxCount === 0
+                      {(
+                        camp
+                          ? !(
+                              stock.levels?.some(
+                                (level) =>
+                                  new Date(level.timestamp) >= camp.buildup &&
+                                  new Date(level.timestamp) <= camp.teardown,
+                              ) ?? false
+                            )
+                          : !(
+                              mostRecentLevel &&
+                              isBefore(
+                                subDays(new Date(), 14),
+                                new Date(mostRecentLevel.timestamp),
+                              ) &&
+                              // Don't show recency doubt if it the stock was zeroed out
+                              stock.approxCount === 0
+                            )
                       )
                         ? `⌛️ (${
                             stock.approxCount?.toLocaleString("en-US", {
