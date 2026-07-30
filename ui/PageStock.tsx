@@ -27,11 +27,15 @@ export default function PageStock() {
   const [removeStock] = useMethod("Stock.removeStock");
   const [isEditing, setIsEditing] = useState<null | StockID | typeof NEW>(null);
   const [sortBy, setSortBy] = useState<keyof IStock | undefined>(undefined);
-  const [onlyShowStockedItems, setOnlyShowStockedItems] = useState(false);
-  const [onlyShowStockWithoutProducts, setOnlyShowStockWithoutProducts] =
-    useState(false);
-  const [onlyShowStockUsedThisCamp, setOnlyShowStockUsedThisCamp] =
-    useState(false);
+  const [onlyShowStockedItems, setOnlyShowStockedItems] = useState<
+    null | boolean
+  >(null);
+  const [onlyShowStockWithProducts, setOnlyShowStockWithProducts] = useState<
+    null | boolean
+  >(null);
+  const [onlyShowStockUsedThisCamp, setOnlyShowStockUsedThisCamp] = useState<
+    null | boolean
+  >(null);
 
   const stocks = useFind(
     () =>
@@ -146,28 +150,25 @@ export default function PageStock() {
             : null}
         </select>
         <label>
-          <input
-            type="checkbox"
-            onChange={(e) => setOnlyShowStockedItems(e.target.checked)}
-            checked={onlyShowStockedItems}
-          />
-          show only stock that is in stock
+          <PlusMinusNeitherCheckbox
+            value={onlyShowStockedItems}
+            onChange={setOnlyShowStockedItems}
+          />{" "}
+          in stock
         </label>
         <label>
-          <input
-            type="checkbox"
-            onChange={(e) => setOnlyShowStockWithoutProducts(e.target.checked)}
-            checked={onlyShowStockWithoutProducts}
+          <PlusMinusNeitherCheckbox
+            value={onlyShowStockWithProducts}
+            onChange={setOnlyShowStockWithProducts}
           />
-          show only stock without products
+          has products
         </label>
         <label>
-          <input
-            type="checkbox"
-            onChange={(e) => setOnlyShowStockUsedThisCamp(e.target.checked)}
-            checked={onlyShowStockUsedThisCamp}
+          <PlusMinusNeitherCheckbox
+            value={onlyShowStockUsedThisCamp}
+            onChange={setOnlyShowStockUsedThisCamp}
           />
-          show only stock that was used this current camp
+          used this current camp
         </label>
         <a
           href={`/${locationSlug}/stock/sold`}
@@ -215,39 +216,31 @@ export default function PageStock() {
           <tbody>
             {stocks
               .filter((stock) => {
-                const mostRecentLevel = stock.levels?.sort(
-                  (a, b) => Number(b.timestamp) - Number(a.timestamp),
-                )[0];
-
-                if (
-                  onlyShowStockedItems &&
-                  !(
-                    mostRecentLevel &&
-                    mostRecentLevel.count &&
-                    isBefore(
-                      subDays(new Date(), 14),
-                      new Date(mostRecentLevel.timestamp),
-                    )
-                  )
-                )
-                  return false;
-                if (
-                  onlyShowStockWithoutProducts &&
-                  products.some(
+                if (onlyShowStockedItems !== null) {
+                  const isStocked =
+                    typeof stock.approxCount === "number" &&
+                    stock.approxCount > 0;
+                  return onlyShowStockedItems ? isStocked : !isStocked;
+                }
+                if (onlyShowStockWithProducts !== null) {
+                  const stockHasProducts = products.some(
                     (product) =>
                       product?.components?.some(
                         (component) => component.stockId === stock._id,
                       ),
-                  )
-                )
-                  return false;
+                  );
+                  return onlyShowStockWithProducts
+                    ? stockHasProducts
+                    : !stockHasProducts;
+                }
 
-                if (
-                  onlyShowStockUsedThisCamp &&
-                  (!stockIdsUsedDuringCamp ||
-                    !stockIdsUsedDuringCamp.includes(stock._id))
-                ) {
-                  return false;
+                if (onlyShowStockUsedThisCamp !== null) {
+                  const usedDuringCamp = stockIdsUsedDuringCamp?.includes(
+                    stock._id,
+                  );
+                  return onlyShowStockUsedThisCamp
+                    ? usedDuringCamp
+                    : !usedDuringCamp;
                 }
 
                 return true;
@@ -341,5 +334,29 @@ export default function PageStock() {
         </table>
       </div>
     </div>
+  );
+}
+
+function PlusMinusNeitherCheckbox({
+  value,
+  onChange,
+}: {
+  value: null | boolean;
+  onChange: (value: null | boolean) => void;
+}) {
+  return (
+    <button
+      onClick={() => {
+        if (value === null) {
+          onChange(true);
+        } else if (value === true) {
+          onChange(false);
+        } else {
+          onChange(null);
+        }
+      }}
+    >
+      {value === null ? "⏹" : value === true ? "✅" : "❌"}
+    </button>
   );
 }
