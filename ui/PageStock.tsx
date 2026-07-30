@@ -36,6 +36,9 @@ export default function PageStock() {
   const [onlyShowStockUsedThisCamp, setOnlyShowStockUsedThisCamp] = useState<
     null | boolean
   >(null);
+  const [showStockTakenDuringCamp, setShowStockTakenDuringCamp] = useState<
+    null | boolean
+  >(null);
 
   const stocks = useFind(
     () =>
@@ -170,6 +173,13 @@ export default function PageStock() {
           />
           used this current camp
         </label>
+        <label>
+          <PlusMinusNeitherCheckbox
+            value={showStockTakenDuringCamp}
+            onChange={setShowStockTakenDuringCamp}
+          />
+          taken during this current camp
+        </label>
         <a
           href={`/${locationSlug}/stock/sold`}
           className={css`
@@ -241,6 +251,18 @@ export default function PageStock() {
                   return onlyShowStockUsedThisCamp
                     ? usedDuringCamp
                     : !usedDuringCamp;
+                }
+
+                if (showStockTakenDuringCamp !== null && camp) {
+                  const takenDuringCamp =
+                    stock.levels?.some(
+                      (level) =>
+                        new Date(level.timestamp) >= camp.buildup &&
+                        new Date(level.timestamp) <= camp.teardown,
+                    ) ?? false;
+                  return showStockTakenDuringCamp
+                    ? takenDuringCamp
+                    : !takenDuringCamp;
                 }
 
                 return true;
