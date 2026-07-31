@@ -49,25 +49,24 @@ function PageStockSoldTag({
       `}
     >
       {label || JSON.stringify(filter)}
-      (liters)
-      {/* <pre>{JSON.stringify(efterslaebData, null, 2)}</pre> */}
+      {false && <pre>{JSON.stringify(efterslaebData, null, 2)}</pre>}
       <center>
         <b>
           <div>
             {efterslaebData?.fulfilmentRatio != null
               ? `${(efterslaebData.fulfilmentRatio * 100).toLocaleString("en", {
-                  maximumSignificantDigits: 2,
+                  maximumSignificantDigits: 3,
                 })}% demand met`
               : "N/A"}
           </div>
           <small>
             (
             {efterslaebData?.remainingStock?.toLocaleString("en", {
-              maximumSignificantDigits: 2,
+              maximumSignificantDigits: 3,
             }) || 0}{" "}
             liters remaining,{" "}
             {efterslaebData?.remainingDemand?.toLocaleString("en", {
-              maximumSignificantDigits: 2,
+              maximumSignificantDigits: 3,
             }) || 0}{" "}
             liters expected needed)
           </small>

@@ -303,9 +303,10 @@ export const salesMethods = {
     }
 
     const sales = (
-      await Sales.find({
-        timestamp: { $gte: camp.buildup, $lte: camp.teardown },
-      }).fetchAsync()
+      await Sales.find(
+        { timestamp: { $gte: camp.buildup, $lte: camp.teardown } },
+        { sort: { timestamp: 1 } },
+      ).fetchAsync()
     ).filter((sale) =>
       sale.products.some(
         (product) =>
@@ -334,39 +335,25 @@ export const salesMethods = {
           ),
         );
 
-        const servingsSold = getServingsSold(stockSales, stock);
+        /*
         const firstSale = stockSales.reduce<ISale | null>(
           (earliest, sale) =>
             !earliest || sale.timestamp < earliest.timestamp ? sale : earliest,
           null,
         );
+        */
         const lastSale = stockSales.reduce<ISale | null>(
           (latest, sale) =>
             !latest || sale.timestamp > latest.timestamp ? sale : latest,
           null,
         );
 
+        let servingsSold = 0;
         const trend = createTrend(
-          [
-            { timestamp: camp.start.valueOf(), value: 0 },
-            ...(firstSale
-              ? [
-                  {
-                    timestamp: firstSale.timestamp.valueOf(),
-                    value: getServingsSold([firstSale], stock),
-                  },
-                ]
-              : []),
-            ...(lastSale
-              ? [
-                  {
-                    timestamp: lastSale.timestamp.valueOf(),
-                    value: servingsSold,
-                  },
-                ]
-              : []),
-            { timestamp: camp.end.valueOf(), value: servingsSold },
-          ],
+          sales.map((sale) => ({
+            timestamp: sale.timestamp.valueOf(),
+            value: (servingsSold += getServingsSold([sale], stock)),
+          })),
           "timestamp",
           "value",
         );
@@ -407,65 +394,36 @@ export const salesMethods = {
       (total, stockData) => total + stockData.amountApprox,
       0,
     );
-    /*
-    const totalAmountServingRate = efterslaebData.reduce(
-      (total, stockData) => total + stockData.amountServingRate,
-      0,
-    );*/
-    const lastSale = sales.reduce<ISale | null>(
-      (latest, sale) =>
-        !latest || sale.timestamp > latest.timestamp ? sale : latest,
-      null,
-    );
 
-    const firstSale = sales.reduce<ISale | null>(
-      (earliest, sale) =>
-        !earliest || sale.timestamp < earliest.timestamp ? sale : earliest,
-      null,
-    );
-
+    let amountSold = 0;
     const totalTrend = createTrend(
-      [
-        { timestamp: camp.start.valueOf(), value: 0 },
-        ...(firstSale
-          ? [
-              {
-                timestamp: firstSale.timestamp.valueOf(),
-                value: stocks.reduce(
-                  (total, stock) =>
-                    convert(
-                      getServingsSold([firstSale], stock),
-                      stock.sizeUnit,
-                    ).to("l") + total,
-                  0,
-                ),
-              },
-            ]
-          : []),
-        ...(lastSale
-          ? [
-              {
-                timestamp: lastSale.timestamp.valueOf(),
-                value: totalAmountSold,
-              },
-            ]
-          : []),
-        { timestamp: camp.end.valueOf(), value: totalAmountSold },
-      ],
+      sales.map((sale) => ({
+        timestamp: sale.timestamp.valueOf(),
+        value: (amountSold += stocks.reduce(
+          (total, stock) =>
+            convert(
+              getServingsSold([sale], stock) * stock.unitSize,
+              stock.sizeUnit,
+            ).to("l") + total,
+          0,
+        )),
+      })),
+
       "timestamp",
       "value",
     );
 
-    const totalAmountExpected = totalTrend.calcY(
-      max([camp.end, lastSale?.timestamp || camp.end]).valueOf(),
+    const totalAmountExpected = totalTrend.calcY(camp.end.valueOf());
+
+    const totalDemandRemaining = Math.max(
+      totalAmountExpected - totalAmountSold,
+      0,
     );
 
-    const totalEfterslaeb =
-      totalAmountRemaining - (totalAmountExpected - totalAmountSold);
-
-    const totalDemandRemaining = totalAmountExpected - totalAmountSold;
+    const totalEfterslaeb = totalAmountRemaining - totalDemandRemaining;
 
     return {
+      amountSold,
       sold: totalAmountSold,
       expected: totalAmountExpected,
       remainingStock: totalAmountRemaining,
@@ -473,17 +431,6 @@ export const salesMethods = {
       slack: totalEfterslaeb,
       fulfilmentRatio:
         (totalAmountSold + totalAmountRemaining) / totalAmountExpected,
-      /*
-      expected2:
-        totalAmountServingRate *
-        (max([camp.end, lastSale?.timestamp || camp.end]).valueOf() -
-          max([camp.start, firstSale?.timestamp || camp.start]).valueOf()),
-
-      expected3:
-        totalTrend.slope *
-        (max([camp.end, lastSale?.timestamp || camp.end]).valueOf() -
-          max([camp.start, firstSale?.timestamp || camp.start]).valueOf()),
-          */
     };
   },
   async "Sales.stats.GoodbyeWorld"(
@@ -1250,7 +1197,7 @@ async function calculateMostSoldStock() {
 
   const camps = await Camps.find({}, { sort: { end: -1 } }).fetchAsync();
   const stocks = await Stocks.find().fetchAsync();
-  const sales = await Sales.find().fetchAsync();
+  const sales = await Sales.find({}, { sort: { timestamp: 1 } }).fetchAsync();
 
   const now2 = new Date();
 
@@ -1294,9 +1241,7 @@ async function calculateMostSoldStock() {
 
         const servingsSold = getServingsSold(stockSales, stock);
 
-        const stockSalesByTimestamp = [...stockSales].sort(
-          (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-        );
+        const stockSalesByTimestamp = stockSales;
         const firstSale = stockSalesByTimestamp[0] || null;
         const lastSale =
           stockSalesByTimestamp[stockSalesByTimestamp.length - 1] || null;
