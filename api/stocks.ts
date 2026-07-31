@@ -154,7 +154,7 @@ export const stocksMethods = {
         $lte: camp.teardown,
       },
     }).fetchAsync();
-    
+
     const stockIdsUsedDuringCamp = uniqBy(
       sales
         .map((sale) =>
@@ -171,6 +171,59 @@ export const stocksMethods = {
     );
 
     return stockIdsUsedDuringCamp;
+  },
+
+  async "Stock.reApproxCounts"(this: Meteor.MethodThisType) {
+    if (this.isSimulation) return;
+
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
+
+    const stocks = await Stocks.find().fetchAsync();
+    const sales = await Sales.find({}, { sort: { timestamp: 1 } }).fetchAsync();
+
+    for (const stock of stocks) {
+      const mostRecentLevel = stock.levels
+        ?.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        .at(0);
+      if (!mostRecentLevel) continue;
+
+      let amountSoldSinceMostRecentLevel = 0;
+      for (const sale of sales) {
+        if (sale.timestamp <= mostRecentLevel.timestamp) continue;
+
+        for (const { components } of sale.products) {
+          if (!components) continue;
+
+          for (const component of components) {
+            if (component.stockId !== stock._id) continue;
+
+            try {
+              const amountSold = convert(
+                component.unitSize,
+                component.sizeUnit,
+              ).to(stock.sizeUnit);
+              amountSoldSinceMostRecentLevel += amountSold / stock.unitSize;
+            } catch {
+              console.warn(
+                `Could not convert component size for product component ${JSON.stringify(
+                  component,
+                )} in sale ${sale._id}`,
+              );
+            }
+          }
+        }
+      }
+
+      const amountAtMostRecentLevel = mostRecentLevel.count;
+      const remainingStock =
+        amountAtMostRecentLevel - amountSoldSinceMostRecentLevel;
+
+      await Stocks.updateAsync(stock._id, {
+        $set: { approxCount: remainingStock },
+      });
+    }
   },
 } as const;
 
