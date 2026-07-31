@@ -95,7 +95,8 @@ export const stocksMethods = {
       stockId,
       count,
       buyPrice,
-    }: { stockId: StockID; count: number; buyPrice?: number },
+      timestamp,
+    }: { stockId: StockID; count: number; buyPrice?: number; timestamp?: Date },
   ) {
     const user =
       (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
@@ -106,7 +107,7 @@ export const stocksMethods = {
       return await Stocks.updateAsync(stockId, {
         $set: { approxCount: count, updatedAt },
         $push: {
-          levels: { count, timestamp: new Date(), buyPrice },
+          levels: { count, timestamp: timestamp ?? new Date(), buyPrice },
         },
       });
     }

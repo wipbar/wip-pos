@@ -7,6 +7,7 @@ import { lazy, type ReactNode, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactSelect from "react-select";
 import CreatableSelect from "react-select/creatable";
+import { isUserAdmin } from "../api/accounts";
 import Products, {
   getProductBrandName,
   getProductName,
@@ -18,6 +19,7 @@ import Stocks, { getServingsSold } from "../api/stocks";
 import BarcodeScannerComponent from "../components/BarcodeScanner";
 import FontAwesomeIcon from "../components/FontAwesomeIcon";
 import { packageTypes } from "../data";
+import useCurrentUser from "../hooks/useCurrentUser";
 import useEvent from "../hooks/useEvent";
 import useMethod from "../hooks/useMethod";
 import { emptyArray, units } from "../util";
@@ -70,6 +72,7 @@ export default function PageStockItem({
   onCancel: () => void;
   stock?: IStock;
 }) {
+  const user = useCurrentUser();
   const [scanningBarcode, setScanningBarcode] = useState(false);
   const [addStock] = useMethod("Stock.addStock");
   const [editStock] = useMethod("Stock.editStock");
@@ -336,6 +339,7 @@ export default function PageStockItem({
 
               const countInput = form.elements.namedItem("count");
               const buyPriceInput = form.elements.namedItem("buyPrice");
+              const timestampInput = form.elements.namedItem("timestamp");
               if (
                 countInput instanceof HTMLInputElement &&
                 buyPriceInput instanceof HTMLInputElement
@@ -347,9 +351,20 @@ export default function PageStockItem({
                     buyPriceInput.valueAsNumber >= 0
                       ? buyPriceInput.valueAsNumber
                       : undefined,
+                  timestamp:
+                    timestampInput instanceof HTMLInputElement &&
+                    timestampInput.value
+                      ? new Date(timestampInput.value)
+                      : undefined,
                 });
                 countInput.value = "";
                 buyPriceInput.value = "";
+                if (timestampInput instanceof HTMLInputElement) {
+                  timestampInput.value = format(
+                    new Date(),
+                    "yyyy-MM-dd'T'HH:mm",
+                  );
+                }
               }
             }}
           >
@@ -368,6 +383,13 @@ export default function PageStockItem({
               type="number"
               placeholder="Buy Price (optional)"
             />
+            {isUserAdmin(user) && (
+              <input
+                type="datetime-local"
+                name="timestamp"
+                defaultValue={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
+              />
+            )}
             <button>Take Stock</button>
           </form>
           {Array.from(stock?.levels ?? [])
