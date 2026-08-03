@@ -61,6 +61,10 @@ function PageStockSoldTag({
           </div>
           <small>
             (
+            {efterslaebData?.amountSold?.toLocaleString("en", {
+              maximumSignificantDigits: 3,
+            }) || 0}{" "}
+            liters sold,{" "}
             {efterslaebData?.remainingStock?.toLocaleString("en", {
               maximumSignificantDigits: 3,
             }) || 0}{" "}
