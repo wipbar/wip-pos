@@ -104,12 +104,21 @@ export default function PageStockItem({
     setScanningBarcode(false);
   });
 
-  const productsUsingStock = products.filter(
-    (product) =>
-      product?.components?.some(
-        (component) => component.stockId === stock?._id,
-      ),
-  );
+  const productsUsingStock = products
+    .filter(
+      (product) =>
+        product?.components?.some(
+          (component) => component.stockId === stock?._id,
+        ),
+    )
+    .sort((a, b) => {
+      const brandA = getProductBrandName(a, stocks) || "";
+      const brandB = getProductBrandName(b, stocks) || "";
+      const nameA = getProductName(a, stocks) || "";
+      const nameB = getProductName(b, stocks) || "";
+
+      return brandA.localeCompare(brandB) || nameA.localeCompare(nameB);
+    });
 
   const allBrandNames = useMemo(
     () =>
