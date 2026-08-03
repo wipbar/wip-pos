@@ -97,7 +97,8 @@ export const packageTypes = [
   },
   {
     code: "CNG",
-    name: "Can/Tin",
+    //    name: "Can/Tin",
+    name: "Can",
     description:
       "A metallic and generally cylindrical container of unspecified size which can be used for items of consumer and institutional sizes.",
   },
