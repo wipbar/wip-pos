@@ -21,14 +21,20 @@ interface PosTransaction {
   user_id: string | null;
   /** The date and time of this PoS transaction */
   timestamp: Date;
+  /** The number of sales within this transaction */
+  sale_count: number;
 }
 
 interface PosSale {
+  /** The ID of the sale's transaction concatenated with the index of the sale within the transaction */
+  sale_id: string;
   camp_slug: string;
   transaction_id: string;
   product_id: string;
   /** The price of this product (at the time of sale).  */
   sales_price: number;
+  /** The index of this sale within the transaction */
+  sale_index_in_transaction: number;
 }
 
 /** A product sold in our PoS. This model does not inherit from CampRelatedModel, meaning pos products are not camp specific. */
@@ -108,16 +114,18 @@ WebApp.handlers.use(
         transaction_id: sale._id,
         user_id: sale.userId ?? null,
         timestamp: sale.timestamp,
+        sale_count: sale.products.length,
       });
-      for (const product of sale.products) {
-        productIds.add(product._id);
+      sale.products.forEach((product, index) => {
         pos_sale.push({
+          sale_id: sale._id + "_" + index,
+          sale_index_in_transaction: index,
           camp_slug: camp.slug,
           transaction_id: sale._id,
           product_id: product._id,
           sales_price: product.salePrice ?? 0,
         });
-      }
+      });
     }
 
     const products = await Products.find({
