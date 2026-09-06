@@ -117,6 +117,7 @@ WebApp.handlers.use(
         sale_count: sale.products.length,
       });
       sale.products.forEach((product, index) => {
+        productIds.add(product._id);
         pos_sale.push({
           sale_id: sale._id + "_" + index,
           sale_index_in_transaction: index,
