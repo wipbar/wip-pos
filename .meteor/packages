@@ -5,16 +5,16 @@
 # but you can also edit it by hand.
 
 meteor-base@1.5.2             # Packages every Meteor app needs to have
-mongo@2.5.0                   # The database Meteor supports right now
+mongo@2.5.1                   # The database Meteor supports right now
 reactive-var@1.0.13            # Reactive variable for tracker
 
 es5-shim@4.8.1                # ECMAScript 5 compatibility for older browsers
-ecmascript@0.19.0              # Enable ECMAScript2015+ syntax in app code
+ecmascript@0.19.1              # Enable ECMAScript2015+ syntax in app code
 shell-server@0.7.0            # Server-side component of the `meteor shell` command
 
 static-html@1.5.0             # Define static page content in .html files
 accounts-ui@1.5.0
-accounts-base@3.3.0
+accounts-base@3.3.1
 oauth@3.0.4
 service-configuration@1.3.5
 accounts-oauth@1.4.7
@@ -23,9 +23,9 @@ blaze
 jquery
 session@1.2.3
 hot-module-replacement@0.6.0
-typescript@5.11.0
+typescript@5.11.1
 zodern:types
 http
 react-meteor-data@4.0.1
-rspack@1.2.0
+rspack@1.3.0
 accounts-express@1.0.0
