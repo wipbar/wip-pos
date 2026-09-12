@@ -1,6 +1,7 @@
 import { WebApp } from "meteor/webapp";
 import Camps from "../api/camps";
 import Products, {
+  getProductABV,
   getProductBrandName,
   getProductDescription,
   getProductName,
@@ -136,6 +137,7 @@ WebApp.handlers.use(
       const productBrandName = getProductBrandName(product, stocks);
       const productDescription = getProductDescription(product, stocks);
       const productName = getProductName(product, stocks);
+      const productAbv = getProductABV(product, stocks);
       pos_product.push({
         product_id: product._id,
         brand_name: productBrandName ?? "",
@@ -147,7 +149,7 @@ WebApp.handlers.use(
           ? 0
           : Number(product.unitSize),
         size_unit: product.sizeUnit ?? "",
-        abv: product.abv ?? 0,
+        abv: productAbv ?? 0,
         tags: product.tags ?? [],
         expenses: [], // TODO: Fetch related expenses for this PosProduct
       });
