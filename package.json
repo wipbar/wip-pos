@@ -46,11 +46,13 @@
     "modern": true
   },
   "devDependencies": {
-    "@meteorjs/rspack": "^2.2.0",
+    "@meteorjs/rspack": "^3.0.0-beta.1",
     "@rsdoctor/rspack-plugin": "^1.6.4",
-    "@rspack/cli": "^1.7.11",
-    "@rspack/core": "^1.7.11",
-    "@rspack/plugin-react-refresh": "^1.6.2",
+    "@rspack/cli": "^2.2.5",
+    "@rspack/core": "^2.2.5",
+    "@rspack/dev-server": "^2.2.0",
+    "@rspack/plugin-react-refresh": "^2.0.2",
+    "@swc/core": "^1.15.32",
     "@types/fibers": "^3.1.4",
     "@types/lodash": "^4.17.25",
     "@types/mocha": "^10.0.10",
