@@ -1,5 +1,4 @@
 import { css } from "@emotion/css";
-import { FastAverageColor } from "fast-average-color";
 import { useFind } from "meteor/react-meteor-data";
 import { lighten } from "polished";
 import {
@@ -31,6 +30,7 @@ import useMethod from "../hooks/useMethod";
 import useSession from "../hooks/useSession";
 import {
   emptyArray,
+  getColorFromArray4,
   getCorrectTextColor,
   removeItem,
   sortTags,
@@ -41,8 +41,6 @@ import {
 import { Modal } from "./PageProducts";
 
 const PageProductsItem = lazy(() => import("./PageProductsItem"));
-
-const fac = new FastAverageColor();
 
 const collator = new Intl.Collator("en");
 
@@ -199,11 +197,9 @@ function ProductPickerProduct({
             : `rgba(255,255,255, 1)`};
           color: ${sortedTags.length
             ? getCorrectTextColor(
-                `rgba(${fac
-                  .getColorFromArray4(
-                    sortedTags.map((tag) => stringToColours(tag)).flat(),
-                  )
-                  .toString()})`,
+                `rgba(${getColorFromArray4(
+                  sortedTags.map((tag) => stringToColours(tag)).flat(),
+                ).toString()})`,
               )
             : `rgba(0,0,0, 1)`};
           border: 2px solid black;

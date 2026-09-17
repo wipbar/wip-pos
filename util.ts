@@ -50,6 +50,46 @@ export const getCorrectTextColor = (hex: string, invert = false) =>
     false,
   );
 
+export function getColorFromArray4(
+  arr: number[] | Uint8Array | Uint8ClampedArray,
+): [number, number, number, number] {
+  const bytesPerPixel = 4;
+  const arrLength = arr.length;
+
+  if (arrLength < bytesPerPixel) return [0, 0, 0, 0];
+
+  const len = arrLength - (arrLength % bytesPerPixel);
+
+  let redTotal = 0;
+  let greenTotal = 0;
+  let blueTotal = 0;
+  let alphaTotal = 0;
+  let count = 0;
+
+  for (let i = 0; i < len; i += bytesPerPixel) {
+    const red = arr[i]!;
+    const green = arr[i + 1]!;
+    const blue = arr[i + 2]!;
+    const alpha = arr[i + 3]!;
+
+    redTotal += red * red * alpha;
+    greenTotal += green * green * alpha;
+    blueTotal += blue * blue * alpha;
+    alphaTotal += alpha;
+
+    count++;
+  }
+
+  return alphaTotal
+    ? [
+        Math.round(Math.sqrt(redTotal / alphaTotal)),
+        Math.round(Math.sqrt(greenTotal / alphaTotal)),
+        Math.round(Math.sqrt(blueTotal / alphaTotal)),
+        Math.round(alphaTotal / count),
+      ]
+    : [0, 0, 0, 0];
+}
+
 declare abstract class As<Tag extends keyof never> {
   private static readonly $as$: unique symbol;
   private [As.$as$]: Record<Tag, true>;
