@@ -16,6 +16,7 @@
     "@emotion/css": "^11.13.5",
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@swc/helpers": "^0.5.23",
+    "@types/express": "^5.0.6",
     "@types/meteor": "^2.9.11",
     "bcrypt": "^6.0.0",
     "convert": "^8.0.2",

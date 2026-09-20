@@ -706,7 +706,7 @@ export default function CartView({
             <big>
               <b>{getProductName(soldOutQueue[0], stocks) ?? "This product"}</b>
             </big>{" "}
-            looks sold out. Remove it from this bar's menu?
+            looks sold out. Remove it from this bar&apos;s menu?
             <div className={css`display: flex; gap: 0.5em; margin-top: 1em;`}>
               <button type="button" onClick={dismissTopSoldOut}>Keep it</button>
               <button type="button" onClick={removeTopFromMenu}>Remove from menu</button>

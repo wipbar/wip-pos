@@ -130,8 +130,8 @@ export default function CampByCamp() {
           />
           <Tooltip
             labelFormatter={(hour) =>
-              `H${String((hour + 6) % 24).padStart(2, "0")}D${String(
-                Math.ceil(hour / 24) - 1,
+              `H${String((Number(hour) + 6) % 24).padStart(2, "0")}D${String(
+                Math.ceil(Number(hour) / 24) - 1,
               ).padStart(2, "0")}`
             }
             contentStyle={{
