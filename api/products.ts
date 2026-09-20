@@ -135,22 +135,22 @@ export const productsMethods = {
       });
   },
   async "Products.removeFromMenu"(
-  this: Meteor.MethodThisType,
-  { productId, locationId }: { productId: ProductID; locationId: string },
+    this: Meteor.MethodThisType,
+    { productId, locationId }: { productId: ProductID; locationId: string },
   ) {
-  const user =
-    (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
-  await assertUserInAnyTeam(user);
+    const user =
+      (this.userId && (await Meteor.users.findOneAsync(this.userId))) || null;
+    await assertUserInAnyTeam(user);
 
-  if (!productId || !locationId)
-    throw new Meteor.Error("productId and locationId are required");
+    if (!productId || !locationId)
+      throw new Meteor.Error("productId and locationId are required");
 
-  // Take it off this location's menu only; stays in the system + other bars.
-  return await Products.updateAsync(productId, {
-    $pull: { locationIds: locationId },
-    $set: { updatedAt: new Date() },
-  });
-},
+    // Take it off this location's menu only; stays in the system + other bars.
+    return await Products.updateAsync(productId, {
+      $pull: { locationIds: locationId },
+      $set: { updatedAt: new Date() },
+    });
+  },
   "Products.getRemainingPercent"(
     this: Meteor.MethodThisType,
     { productId }: { productId: ProductID },
@@ -273,8 +273,8 @@ export function getProductABV(
   product: Pick<IProduct, "abv" | "components">,
   componentStocks: Pick<IStock, "abv" | "_id">[],
 ): number | null {
-  if (product.abv !== null && !isNaN(Number(product.abv))) {
-    return Number(product.abv);
+  if (product.abv != undefined && !isNaN(Number(product.abv))) {
+    return product.abv;
   }
 
   const components = product.components;
