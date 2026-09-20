@@ -19,7 +19,7 @@ export interface IProduct {
   salePrice?: number;
   unitSize?: number | string | null; // null means based on components
   sizeUnit?: SizeUnit | null; // null means based on components
-  abv?: number | null;
+  abv?: number | string | null;
   ibu?: number;
   tags?: string[];
   /** @deprecated Use Stock#levels#buyPrice instead */
@@ -273,8 +273,12 @@ export function getProductABV(
   product: Pick<IProduct, "abv" | "components">,
   componentStocks: Pick<IStock, "abv" | "_id">[],
 ): number | null {
-  if (product.abv != undefined && !isNaN(Number(product.abv))) {
-    return product.abv;
+  if (
+    product.abv != undefined &&
+    product.abv !== "" &&
+    !isNaN(Number(product.abv))
+  ) {
+    return Number(product.abv);
   }
 
   const components = product.components;
