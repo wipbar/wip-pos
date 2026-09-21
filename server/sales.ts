@@ -1,3 +1,4 @@
+import { convert } from "convert";
 import { WebApp } from "meteor/webapp";
 import Camps from "../api/camps";
 import Products, {
@@ -9,7 +10,7 @@ import Products, {
 } from "../api/products";
 import Sales from "../api/sales";
 import Stocks from "../api/stocks";
-import { wrapRoute } from "../util";
+import { catchNaN, wrapRoute } from "../util";
 
 interface PosTransaction {
   /** The Camp this PosTransaction belongs to. */
@@ -154,7 +155,6 @@ WebApp.handlers.use(
         expenses: [], // TODO: Fetch related expenses for this PosProduct
       });
 
-      // TODO: Get costs from stock levels and product components. Product#shopPrices is deprecated.
       for (const productCost of product.shopPrices ?? []) {
         pos_product_cost.push({
           camp_slug: camp.slug,
@@ -162,6 +162,65 @@ WebApp.handlers.use(
           timestamp: productCost.timestamp,
           product_cost: productCost.buyPrice ?? 0,
         });
+      }
+
+      const stockPriceChangeTimestamps = new Set<number>();
+      // Get all stock price change timestamps for all components of this product
+      for (const component of product.components ?? []) {
+        const stock = stocks.find((s) => s._id === component.stockId);
+        if (stock) {
+          for (const level of stock.levels ?? []) {
+            if (level.buyPrice) {
+              stockPriceChangeTimestamps.add(level.timestamp.valueOf());
+            }
+          }
+        }
+      }
+
+      // Calculate product costs for entire product based on each stock price change timestamps
+      for (const stockPriceChangeTimestamp of stockPriceChangeTimestamps) {
+        const componentCosts = (() =>
+          product.components?.map((component) => {
+            const stock = stocks.find(({ _id }) => _id === component.stockId);
+            if (!stock) return NaN;
+            const mostRecentBuyPrice =
+              stock.levels
+                ?.filter((level) => level.buyPrice)
+                .filter(
+                  (level) =>
+                    level.timestamp.valueOf() <= stockPriceChangeTimestamp,
+                )
+                ?.sort((a, b) => Number(b.timestamp) - Number(a.timestamp))?.[0]
+                ?.buyPrice ??
+              product?.shopPrices?.sort(
+                (a, b) => Number(b.timestamp) - Number(a.timestamp),
+              )?.[0]?.buyPrice;
+
+            if (!mostRecentBuyPrice) return NaN;
+
+            const costPerUnit = mostRecentBuyPrice / stock.unitSize;
+            const componentCost = catchNaN(() =>
+              convert(component.unitSize, component.sizeUnit).to(
+                stock.sizeUnit,
+              ),
+            );
+
+            return costPerUnit * componentCost;
+          }))();
+
+        const productCost = componentCosts?.reduce(
+          (sum, cost) => sum + cost,
+          0,
+        );
+
+        if (productCost != undefined && productCost >= 0) {
+          pos_product_cost.push({
+            camp_slug: camp.slug,
+            product_id: product._id,
+            timestamp: new Date(stockPriceChangeTimestamp),
+            product_cost: productCost,
+          });
+        }
       }
     }
 
