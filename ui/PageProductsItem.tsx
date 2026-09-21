@@ -372,9 +372,7 @@ export default function PageProductsItem({
         </Label>
         <Label label="Unit Size">
           {sizeDerivedFromComponents &&
-          (watch("unitSize") === null ||
-            watch("unitSize") === "" ||
-            Number.isNaN(watch("unitSize"))) ? (
+          (watch("unitSize") === null || Number.isNaN(watch("unitSize"))) ? (
             <div>
               <code>
                 {sizeDerivedFromComponents.unitSize.toLocaleString("en-DK", {
@@ -413,7 +411,6 @@ export default function PageProductsItem({
                 render={({ field: { onBlur, value } }) => (
                   <ReactSelect
                     isDisabled={
-                      watch("unitSize") === "" ||
                       watch("unitSize") === null ||
                       Number.isNaN(watch("unitSize"))
                     }

@@ -17,7 +17,7 @@ export interface IProduct {
   name: string | null;
   description?: string | null;
   salePrice?: number;
-  unitSize?: number | string | null; // null means based on components
+  unitSize?: number | null; // null means based on components
   sizeUnit?: SizeUnit | null; // null means based on components
   abv?: number | null;
   ibu?: number;
@@ -161,15 +161,11 @@ export const productsMethods = {
       description: data.description?.trim() ?? null,
       salePrice: data.salePrice,
       unitSize:
-        data.unitSize === "" ||
-        data.unitSize === null ||
-        Number.isNaN(data.unitSize)
+        data.unitSize === null || Number.isNaN(data.unitSize)
           ? null
           : data.unitSize,
       sizeUnit:
-        data.unitSize === "" ||
-        data.unitSize === null ||
-        Number.isNaN(data.unitSize)
+        data.unitSize === null || Number.isNaN(data.unitSize)
           ? null
           : data.sizeUnit,
       tap: data.tap,
@@ -204,13 +200,11 @@ export const productsMethods = {
       $set: {
         ...updatedProduct,
         unitSize:
-          updatedProduct.unitSize === "" ||
           updatedProduct.unitSize === null ||
           Number.isNaN(updatedProduct.unitSize)
             ? null
             : updatedProduct.unitSize,
         sizeUnit:
-          updatedProduct.unitSize === "" ||
           updatedProduct.unitSize === null ||
           Number.isNaN(updatedProduct.unitSize)
             ? null
@@ -342,7 +336,6 @@ export function getProductSize(
   if (
     product.unitSize &&
     product.sizeUnit &&
-    product.unitSize !== "" &&
     product.unitSize !== null &&
     product.unitSize !== undefined &&
     !Number.isNaN(Number(product.unitSize))
