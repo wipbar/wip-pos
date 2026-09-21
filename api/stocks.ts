@@ -39,6 +39,27 @@ const Stocks = new Mongo.Collection<IStock>("stocks");
 
 export default Stocks;
 
+if (Meteor.isServer) {
+  Meteor.startup(async () => {
+    // Migrate string unitSize values, valid numeric strings to number and invalid strings to null
+    const stocksWithStringUnitSize = (await Stocks.find({
+      unitSize: { $type: "string" },
+    }).fetchAsync()) as unknown as (Omit<IStock, "unitSize"> & {
+      unitSize: string;
+    })[];
+    for (const stock of stocksWithStringUnitSize) {
+      const unitSizeNumber = Number(stock.unitSize);
+      if (!Number.isNaN(unitSizeNumber) && stock.unitSize !== "") {
+        await Stocks.updateAsync(stock._id, {
+          $set: { unitSize: unitSizeNumber },
+        });
+      } else {
+        await Stocks.updateAsync(stock._id, { $unset: { unitSize: true } });
+      }
+    }
+  });
+}
+
 export const stocksMethods = {
   async "Stock.addStock"(
     this: Meteor.MethodThisType,
