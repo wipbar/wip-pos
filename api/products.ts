@@ -19,7 +19,7 @@ export interface IProduct {
   salePrice?: number;
   unitSize?: number | string | null; // null means based on components
   sizeUnit?: SizeUnit | null; // null means based on components
-  abv?: number | string | null;
+  abv?: number | null;
   ibu?: number;
   tags?: string[];
   /** @deprecated Use Stock#levels#buyPrice instead */
@@ -37,6 +37,23 @@ export interface IProduct {
 const Products = new Mongo.Collection<IProduct>("products");
 
 export default Products;
+
+if (Meteor.isServer) {
+  Meteor.startup(async () => {
+    // Migrate string ABV values, valid numeric strings to number and invalid strings to null
+    const productsWithStringAbv = (await Products.find({
+      abv: { $type: "string" },
+    }).fetchAsync()) as unknown as (Omit<IProduct, "abv"> & { abv: string })[];
+    for (const product of productsWithStringAbv) {
+      const abvNumber = Number(product.abv);
+      if (!Number.isNaN(abvNumber) && product.abv !== "") {
+        await Products.updateAsync(product._id, { $set: { abv: abvNumber } });
+      } else {
+        await Products.updateAsync(product._id, { $set: { abv: null } });
+      }
+    }
+  });
+}
 
 export const productsMethods = {
   async "Products.addProduct"(
@@ -273,11 +290,7 @@ export function getProductABV(
   product: Pick<IProduct, "abv" | "components">,
   componentStocks: Pick<IStock, "abv" | "_id">[],
 ): number | null {
-  if (
-    product.abv != undefined &&
-    product.abv !== "" &&
-    !isNaN(Number(product.abv))
-  ) {
+  if (product.abv != undefined && !isNaN(Number(product.abv))) {
     return Number(product.abv);
   }
 
