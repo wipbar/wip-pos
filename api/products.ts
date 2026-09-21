@@ -52,6 +52,92 @@ if (Meteor.isServer) {
         await Products.updateAsync(product._id, { $set: { abv: null } });
       }
     }
+
+    // Migrate string salePrice values, valid numeric strings to number and invalid strings to null
+    const productsWithStringSalePrice = (await Products.find({
+      salePrice: { $type: "string" },
+    }).fetchAsync()) as unknown as (Omit<IProduct, "salePrice"> & {
+      salePrice: string;
+    })[];
+    for (const product of productsWithStringSalePrice) {
+      const salePriceNumber = Number(product.salePrice);
+      if (!Number.isNaN(salePriceNumber) && product.salePrice !== "") {
+        await Products.updateAsync(product._id, {
+          $set: { salePrice: salePriceNumber },
+        });
+      } else {
+        await Products.updateAsync(product._id, {
+          $set: { salePrice: undefined },
+        });
+      }
+    }
+
+    // Migrate string unitSize values, valid numeric strings to number and invalid strings to null
+    const productsWithStringUnitSize = (await Products.find({
+      unitSize: { $type: "string" },
+    }).fetchAsync()) as unknown as (Omit<IProduct, "unitSize"> & {
+      unitSize: string;
+    })[];
+    for (const product of productsWithStringUnitSize) {
+      const unitSizeNumber = Number(product.unitSize);
+      if (!Number.isNaN(unitSizeNumber) && product.unitSize !== "") {
+        await Products.updateAsync(product._id, {
+          $set: { unitSize: unitSizeNumber },
+        });
+      } else {
+        await Products.updateAsync(product._id, { $set: { unitSize: null } });
+      }
+    }
+
+    // Migrate string component unitSize values, valid numeric strings to number and invalid strings to null
+    const productsWithStringComponentUnitSize = (await Products.find({
+      "components.unitSize": { $type: "string" },
+    }).fetchAsync()) as unknown as (Omit<IProduct, "components"> & {
+      components: { unitSize: string }[];
+    })[];
+    for (const product of productsWithStringComponentUnitSize) {
+      for (const component of product.components) {
+        const unitSizeNumber = Number(component.unitSize);
+        if (!Number.isNaN(unitSizeNumber) && component.unitSize !== "") {
+          await Products.updateAsync(
+            product._id,
+            { $set: { "components.$[elem].unitSize": unitSizeNumber } },
+            { arrayFilters: [{ "elem.unitSize": component.unitSize }] },
+          );
+        } else {
+          await Products.updateAsync(
+            product._id,
+            { $set: { "components.$[elem].unitSize": null } },
+            { arrayFilters: [{ "elem.unitSize": component.unitSize }] },
+          );
+        }
+      }
+    }
+
+    // Migrate string shopPrices buyPrice values, valid numeric strings to number and invalid strings to null
+    const productsWithStringShopPricesBuyPrice = (await Products.find({
+      "shopPrices.buyPrice": { $type: "string" },
+    }).fetchAsync()) as unknown as (Omit<IProduct, "shopPrices"> & {
+      shopPrices: { buyPrice: string; timestamp: Date }[];
+    })[];
+    for (const product of productsWithStringShopPricesBuyPrice) {
+      for (const shopPrice of product.shopPrices) {
+        const buyPriceNumber = Number(shopPrice.buyPrice);
+        if (!Number.isNaN(buyPriceNumber) && shopPrice.buyPrice !== "") {
+          await Products.updateAsync(
+            product._id,
+            { $set: { "shopPrices.$[elem].buyPrice": buyPriceNumber } },
+            { arrayFilters: [{ "elem.buyPrice": shopPrice.buyPrice }] },
+          );
+        } else {
+          await Products.updateAsync(
+            product._id,
+            { $set: { "shopPrices.$[elem].buyPrice": null } },
+            { arrayFilters: [{ "elem.buyPrice": shopPrice.buyPrice }] },
+          );
+        }
+      }
+    }
   });
 }
 
